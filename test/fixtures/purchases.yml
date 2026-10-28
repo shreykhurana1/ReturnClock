@@ -1,0 +1,19 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  store_policy: one
+  item_name: MyString
+  price: 9.99
+  purchase_date: 2026-10-28
+  return_by: 2026-10-28
+  status: MyString
+
+two:
+  user: two
+  store_policy: two
+  item_name: MyString
+  price: 9.99
+  purchase_date: 2026-10-28
+  return_by: 2026-10-28
+  status: MyString
