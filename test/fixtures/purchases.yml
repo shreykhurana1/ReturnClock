@@ -6,8 +6,8 @@ one:
   item_name: MyString
   price: 9.99
   purchase_date: 2026-10-28
-  return_by: 2026-10-28
-  status: MyString
+  return_by: 2026-10-29
+  status: active
 
 two:
   user: two
@@ -15,5 +15,5 @@ two:
   item_name: MyString
   price: 9.99
   purchase_date: 2026-10-28
-  return_by: 2026-10-28
-  status: MyString
+  return_by: 2026-10-29
+  status: active

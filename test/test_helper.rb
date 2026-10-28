@@ -8,9 +8,7 @@ module ActiveSupport
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
 
-    # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
-    fixtures :all
-
-    # Add more helper methods to be used by all tests here...
+    # Create records in each test's setup instead of bulk-loading fixtures.
+    # Foreign keys stay enabled, and Rails rolls back each test's records.
   end
 end

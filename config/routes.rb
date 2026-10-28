@@ -3,5 +3,5 @@ Rails.application.routes.draw do
   resources :passwords, param: :token
 
   root "home#index"
-  resource :sign_up, only: [:show, :create]
+  resource :sign_up, only: [ :show, :create ]
 end

@@ -9,7 +9,7 @@ class CreateStorePolicies < ActiveRecord::Migration[8.1]
     end
 
     add_index :store_policies,
-              [:user_id, :store_name],
+              [ :user_id, :store_name ],
               unique: true
 
     add_check_constraint :store_policies,

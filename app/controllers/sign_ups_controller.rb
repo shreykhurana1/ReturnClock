@@ -1,6 +1,6 @@
 
 class SignUpsController < ApplicationController
-  allow_unauthenticated_access only: [:show, :create]
+  allow_unauthenticated_access only: [ :show, :create ]
 
   def show
     @user = User.new
@@ -20,6 +20,6 @@ class SignUpsController < ApplicationController
   private
 
   def sign_up_params
-    params.expect(user: [:email_address, :password, :password_confirmation])
+    params.expect(user: [ :email_address, :password, :password_confirmation ])
   end
 end

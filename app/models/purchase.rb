@@ -45,7 +45,7 @@ class Purchase < ApplicationRecord
   def store_policy_belongs_to_user
     return unless user && store_policy
 
-    if store_policy.user_id != user.id
+    if store_policy.user != user
       errors.add(:store_policy, "must belong to the same user")
     end
   end

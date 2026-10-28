@@ -1,7 +1,9 @@
 require "test_helper"
 
 class PasswordsControllerTest < ActionDispatch::IntegrationTest
-  setup { @user = User.take }
+  setup do
+    @user = User.create!(email_address: "password-test@example.com", password: "Password1!")
+  end
 
   test "new" do
     get new_password_path
@@ -41,7 +43,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
 
   test "update" do
     assert_changes -> { @user.reload.password_digest } do
-      put password_path(@user.password_reset_token), params: { password: "new", password_confirmation: "new" }
+      put password_path(@user.password_reset_token), params: { password: "NewPassword1!", password_confirmation: "NewPassword1!" }
       assert_redirected_to new_session_path
     end
 
@@ -52,7 +54,7 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
   test "update with non matching passwords" do
     token = @user.password_reset_token
     assert_no_changes -> { @user.reload.password_digest } do
-      put password_path(token), params: { password: "no", password_confirmation: "match" }
+      put password_path(token), params: { password: "NewPassword1!", password_confirmation: "Different1!" }
       assert_redirected_to edit_password_path(token)
     end
 
