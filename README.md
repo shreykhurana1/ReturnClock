@@ -1,55 +1,20 @@
 # ReturnClock
 
-ReturnClock is a Rails SaaS course project for Columbia University's Engineering
-Software as a Service course. It tracks purchases and calculates return deadlines
-from store policies. Authentication, database models, and automated tests are
-implemented, including a read-only Dashboard and History. Purchase creation,
-editing, deletion, status updates, and account settings remain teammate work.
+ReturnClock is a Columbia Engineering SaaS course project that tracks purchases
+and calculates return deadlines from store policies. Authentication, read-only
+Dashboard/History, and automated tests work today. Purchase CRUD and account
+editing are still pending; Account Settings currently displays your email only.
 
 ## Prerequisites
 
-- Ruby **3.3.12**, Rails **8.1.4**, and Bundler **2.5.22**; use the checked-in version files.
-- PostgreSQL (verified with **18.6**), Git, and libvips.
-- A Ruby version manager such as rbenv with ruby-build. No Node/npm or Redis is required.
+Use **Ruby 3.3.12**, **Rails 8.1.4**, Bundler **2.5.22**, Git, PostgreSQL
+(verified with 18.6), and libvips. Node/npm and Redis are not required.
+Follow [macOS / Windows WSL setup](docs/local-setup.md) for packages, Ruby,
+PostgreSQL startup, and a local login role with `CREATEDB`; tests need no superuser.
 
-See [detailed local setup](docs/local-setup.md) for Ruby installation, PostgreSQL
-18 installation, native gem dependencies, and troubleshooting.
+## Install and start
 
-## Local PostgreSQL setup
-
-On **WSL Ubuntu**, install dependencies and start PostgreSQL inside Ubuntu:
-
-```sh
-sudo apt-get update
-sudo apt-get install -y build-essential libssl-dev libreadline-dev zlib1g-dev libyaml-dev libffi-dev libpq-dev libvips-dev postgresql postgresql-contrib
-sudo service postgresql start
-sudo -u postgres psql -d postgres -c '\du'
-```
-
-Only if a role matching your Linux username is missing:
-
-```sh
-sudo -u postgres createuser --createdb --no-superuser --no-createrole "$(whoami)"
-```
-
-On **macOS with Homebrew**:
-
-```sh
-brew install rbenv ruby-build postgresql@18 vips
-brew services start postgresql@18
-export PATH="$(brew --prefix postgresql@18)/bin:$PATH"
-psql -d postgres -c 'SELECT current_user;'
-```
-
-Homebrew normally creates your local login role. If it is missing, follow the
-[role setup instructions](docs/local-setup.md). Rails uses your OS username and
-a local Unix socket by default. Neither suite requires PostgreSQL superuser
-privileges. Existing developers should keep their working roles and databases.
-
-## Install and run
-
-Clone the repository and check out the branch agreed with the team (`main` after
-integration), then run these commands from the project directory with Ruby 3.3.12:
+Run these in Terminal on macOS or Ubuntu on WSL, after PostgreSQL is ready:
 
 ```sh
 git clone https://github.com/shreykhurana1/ReturnClock.git
@@ -61,54 +26,45 @@ RAILS_ENV=test bin/rails db:prepare
 bin/rails server
 ```
 
-Open <http://localhost:3000> and create an account. There are no required seeds or
-default credentials. The default databases are `return_clock_development` and
-`return_clock_test`. After pulling migrations, rerun `bundle install` and
-`bin/rails db:prepare`; do not reset existing data. Keep production credentials
-out of your local `DATABASE_URL`. `.env` files are not automatically loaded.
+Use the team's agreed branch until integration into `main`. Open
+<http://localhost:3000> and create an account; no seeds or default login are needed.
+Rails uses your OS username for local PostgreSQL and the databases
+`return_clock_development` / `return_clock_test`. Keep production URLs out of your
+local `DATABASE_URL`. After pulling migrations, rerun `bundle install` and
+`bin/rails db:prepare`; preserve existing data.
 
-## Test
+## Run tests
 
 ```sh
 bundle exec rspec
 bin/rails test
+bundle exec cucumber
 ```
 
-Both suites create and roll back their own records. CI runs both suites plus
-style/security checks. See [testing notes](spec/README.md) and
-[additional checks](docs/local-setup.md#tests-and-checks).
+The suites create and roll back their own records. GitHub CI runs all three plus
+lint/security checks. See [acceptance-test notes](features/README.md) for adding stories.
 
-## Git and pull requests
+## Contribute
 
-Start new work from an updated, integrated `main`:
+Start from the updated, integrated `main`; coordinate shared files with teammates:
 
 ```sh
 git switch main
 git pull --ff-only origin main
 git switch -c your-name/feature-name
+# Make changes and run the tests above.
+git add path/to/changed-file
+git commit -m "Describe the change"
+git push -u origin your-name/feature-name
 ```
 
-Keep changes focused, coordinate shared files, and add new migrations rather
-than editing applied ones. When authorized, commit and push your feature branch,
-open a PR into `main`, obtain team review, and wait for CI before merging. Rerun
-both suites after resolving integration conflicts. Do not commit secrets or
-force-push another teammate's branch.
+On GitHub, choose **Compare & pull request** for your branch, targeting `main`.
+Request team review and wait for CI before merging. Never commit credentials.
 
-## Authentication convention
+## Integration notes
 
-Controllers use **`Current.user`**, not `current_user`. `ApplicationController`
-requires authentication by default; public actions explicitly opt out. On public
-actions, resume the session (for example with `authenticated?`) before reading
-`Current.user`. Scope purchase/policy queries through that user and never permit
-`user_id` from a form.
-
-## Team references
-
-- [Architecture, model rules, ownership, and responsibilities](docs/architecture.md)
-- [Heroku setup, environment variables, deployment steps, and limitations](docs/deployment.md)
-- [Navigation, purchase classification, and acceptance criteria](docs/navigation.md)
-
-Purchase CRUD, Cucumber stories, and final UI decisions remain with their assigned
-teammates. The current authentication styling implements only the agreed layout
-requirements. Production password reset stays disabled until email delivery is
-configured. The read-only pages do not add purchase mutation routes.
+Use **`Current.user`** in authenticated controllers and scope records through it,
+e.g. `Current.user.purchases` and `Current.user.store_policies`. Never accept an
+owner's `user_id` from a form. Controllers require authentication by default.
+See [architecture and ownership](docs/architecture.md), [navigation and team
+handoff](docs/navigation.md), and [Heroku deployment](docs/deployment.md).
