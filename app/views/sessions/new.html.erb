@@ -8,4 +8,6 @@
 <% end %>
 <br>
 
-<%= link_to "Forgot password?", new_password_path %>
+<% if Rails.configuration.x.password_resets_enabled %>
+  <%= link_to "Forgot password?", new_password_path %>
+<% end %>

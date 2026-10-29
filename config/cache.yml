@@ -12,5 +12,8 @@ test:
   <<: *default
 
 production:
-  database: cache
+  # No separate database: use ActiveRecord::Base's connection pool.
   <<: *default
+  store_options:
+    max_size: <%= 32.megabytes %>
+    namespace: <%= Rails.env %>
