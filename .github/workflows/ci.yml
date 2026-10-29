@@ -96,7 +96,7 @@ jobs:
         with:
           bundler-cache: true
 
-      - name: Run RSpec and Minitest
+      - name: Run RSpec, Minitest, and Cucumber
         env:
           RAILS_ENV: test
           DATABASE_URL: postgres://postgres:postgres@localhost:5432
@@ -106,6 +106,7 @@ jobs:
           bin/rails db:test:prepare
           bundle exec rspec
           bin/rails test
+          bundle exec cucumber
 
   system-test:
     runs-on: ubuntu-latest

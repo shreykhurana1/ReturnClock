@@ -13,7 +13,7 @@
 | Server/assets | Puma, Propshaft, import maps, Turbo, Stimulus |
 | Authentication | Rails authentication concern and BCrypt |
 | Background services | Solid Cache, Solid Queue, Solid Cable; no Redis required |
-| Tests/checks | RSpec Rails, Minitest, RuboCop, Brakeman, Bundler Audit |
+| Tests/checks | RSpec Rails, Minitest, Cucumber Rails, RuboCop, Brakeman, Bundler Audit |
 
 Install Git, a Ruby version manager such as rbenv with ruby-build, PostgreSQL
 server/client/development headers, and libvips. Import maps mean the current
@@ -64,7 +64,7 @@ sudo -u postgres createuser --createdb --no-superuser --no-createrole "$(whoami)
 ```
 
 Skip role creation if it already exists. Existing developers should not change
-permissions or run Rails as `postgres`. Neither test suite requires superuser
+permissions or run Rails as `postgres`. None of the test suites requires superuser
 privileges.
 
 **macOS with Homebrew**:
@@ -149,6 +149,7 @@ With PostgreSQL running:
 ```sh
 bundle exec rspec
 bin/rails test
+bundle exec cucumber
 bin/rails test:system
 bin/rubocop
 bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error
@@ -156,12 +157,13 @@ bin/bundler-audit check --update
 bin/importmap audit
 ```
 
-Both suites create records through Active Record and roll back test changes.
+All three suites create records through Active Record and roll back test changes.
 Minitest does not automatically bulk-load the generated YAML sample fixtures,
 so PostgreSQL foreign-key triggers stay enabled. `test:system` currently has no
 browser tests; a successful empty run is not browser coverage. Audit commands
 need internet access. See [the testing notes](../spec/README.md) for focused runs.
+See [acceptance-test notes](../features/README.md) for Cucumber setup and new stories.
 
-GitHub Actions runs RSpec and Minitest plus style/security checks on pull requests
+GitHub Actions runs RSpec, Minitest, and Cucumber plus style/security checks on pull requests
 and pushes to `main`. Avoid using `bin/ci` against valuable local data without
 reviewing `config/ci.rb`: its generated seed check replants the **test** database.
