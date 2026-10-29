@@ -1,0 +1,41 @@
+
+<h1>Create Account</h1>
+
+<%= form_with model: @user, url: sign_up_path do |form| %>
+
+  <% if @user.errors.any? %>
+    <ul>
+      <% @user.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <div>
+    <%= form.label :email_address, "Email" %>
+    <%= form.email_field :email_address, required: true %>
+  </div>
+
+  <div>
+    <%= form.label :password, "Password" %>
+    <%= form.password_field :password, required: true, minlength: 8 %>
+    <p>
+        Password must have at least 8 characters, including an uppercase letter,
+        a lowercase letter, a number, and a special character.
+    </p>
+    
+  </div>
+
+  <div>
+    <%= form.label :password_confirmation, "Confirm Password" %>
+    <%= form.password_field :password_confirmation, required: true %>
+  </div>
+
+  <%= form.submit "Create Account" %>
+
+<% end %>
+
+<p>
+  Already have an account?
+  <%= link_to "Sign In", new_session_path %>
+</p>

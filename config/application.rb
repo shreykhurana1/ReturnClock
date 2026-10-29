@@ -11,6 +11,9 @@ module ReturnClock
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
 
+    # Production disables this until a real email provider is configured.
+    config.x.password_resets_enabled = true
+
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
