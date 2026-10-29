@@ -10,7 +10,7 @@ RSpec.describe "Authentication", type: :request do
     it "creates a normalized account and signs it in" do
       expect { post sign_up_path, params: { user: attributes } }
         .to change(User, :count).by(1).and change(Session, :count).by(1)
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
       account = User.find_by!(email_address: "new@example.com")
       expect(account.authenticate(password)).to eq(account)
       expect(account.sessions.count).to eq(1)
@@ -54,7 +54,7 @@ RSpec.describe "Authentication", type: :request do
       user
       expect { post session_path, params: { email_address: " STUDENT@EXAMPLE.COM ", password: password } }
         .to change(user.sessions, :count).by(1)
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
       expect(cookies[:session_id]).to be_present
       cookie_header = Array(response.headers["Set-Cookie"]).join("\n")
       expect(cookie_header).to match(/httponly/i)
@@ -120,10 +120,10 @@ RSpec.describe "Authentication", type: :request do
       expect(response).to redirect_to(new_session_path)
     end
 
-    it "returns to the home page after an anonymous non-GET request and login" do
+    it "returns to the dashboard after an anonymous non-GET request and login" do
       delete session_path
       post session_path, params: { email_address: user.email_address, password: password }
-      expect(response).to redirect_to(root_path)
+      expect(response).to redirect_to(dashboard_path)
       follow_redirect!
       expect(response).to have_http_status(:ok)
     end

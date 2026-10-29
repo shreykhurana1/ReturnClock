@@ -40,8 +40,8 @@ RSpec.describe "Password reset availability", type: :request do
     end
   end
 
-  it "preserves the built-in reset link in development and test" do
+  it "does not advertise password reset before real email delivery is configured" do
     get new_session_path
-    expect(response.parsed_body.css("a[href='#{new_password_path}']")).not_to be_empty
+    expect(response.parsed_body.css("a[href='#{new_password_path}']")).to be_empty
   end
 end

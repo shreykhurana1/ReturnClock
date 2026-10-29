@@ -1,0 +1,11 @@
+<main class="app-container">
+  <h1>History</h1>
+  <p>Expired active purchases and purchases marked keeping or refunded.</p>
+  <% if @purchases.any? %>
+    <div class="purchase-grid">
+      <%= render partial: "shared/purchase_card", collection: @purchases, as: :purchase %>
+    </div>
+  <% else %>
+    <p class="empty-state">No purchases in History yet.</p>
+  <% end %>
+</main>

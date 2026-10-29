@@ -8,3 +8,210 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/* Only the specified authentication layout; other pages keep their own styles. */
+.auth-page {
+  box-sizing: border-box;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #222;
+}
+
+.auth-page * {
+  box-sizing: border-box;
+}
+
+.auth-landing {
+  max-width: 40rem;
+  text-align: center;
+}
+
+.auth-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.auth-form-container {
+  max-width: 28rem;
+}
+
+.auth-form-container h1,
+.auth-form-links {
+  text-align: center;
+}
+
+.auth-field {
+  margin: 1.25rem 0;
+}
+
+.auth-field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+}
+
+.auth-field input {
+  display: block;
+  width: 100%;
+  padding: 0.65rem;
+  border: 1px solid #777;
+  border-radius: 0.25rem;
+  font: inherit;
+}
+
+.auth-field input[aria-invalid="true"] {
+  border-color: #a32121;
+}
+
+.auth-button {
+  display: inline-block;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid #333;
+  border-radius: 0.25rem;
+  background: #333;
+  color: #fff;
+  font: inherit;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.auth-button:focus-visible {
+  outline: 2px solid #333;
+  outline-offset: 3px;
+}
+
+.auth-submit {
+  width: 100%;
+}
+
+.auth-hint,
+.auth-field-errors {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+.auth-hint {
+  color: #555;
+}
+
+.auth-error,
+.auth-field-errors {
+  color: #a32121;
+}
+
+.auth-field-errors {
+  padding-left: 1.25rem;
+}
+
+.auth-notice,
+.auth-form-links {
+  margin: 1.25rem 0;
+}
+
+/* Read-only purchase pages and the specified authenticated navigation. */
+.app-header,
+.app-container {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #222;
+}
+
+.app-header {
+  border-bottom: 1px solid #ccc;
+}
+
+.app-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  max-width: 75rem;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.app-brand,
+.app-header a[aria-current="page"] {
+  font-weight: 600;
+}
+
+.coming-soon {
+  color: #555;
+}
+
+.profile-menu {
+  position: relative;
+  margin-left: auto;
+}
+
+.profile-menu summary {
+  cursor: pointer;
+}
+
+.profile-menu-content {
+  position: absolute;
+  right: 0;
+  z-index: 1;
+  width: max-content;
+  max-width: min(20rem, 85vw);
+  padding: 1rem;
+  border: 1px solid #ccc;
+  background: #fff;
+  overflow-wrap: anywhere;
+}
+
+.app-container {
+  max-width: 75rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.purchase-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.purchase-card {
+  padding: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.purchase-card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.purchase-card dl,
+.purchase-card dd {
+  margin: 0;
+}
+
+.purchase-card dt {
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.empty-state {
+  margin: 2rem 0;
+}
+
+@media (max-width: 64rem) {
+  .purchase-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 36rem) {
+  .purchase-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

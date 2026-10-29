@@ -11,7 +11,7 @@ class SignUpsController < ApplicationController
 
     if @user.save
       start_new_session_for(@user)
-      redirect_to root_path, notice: "Account created successfully!"
+      redirect_to dashboard_path, notice: "Account created successfully!"
     else
       render :show, status: :unprocessable_entity
     end

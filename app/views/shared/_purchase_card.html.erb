@@ -1,0 +1,15 @@
+<article class="purchase-card">
+  <h2><%= purchase.item_name %></h2>
+  <dl>
+    <dt>Store</dt>
+    <dd><%= purchase.store_policy.store_name %></dd>
+    <dt>Price</dt>
+    <dd><%= number_to_currency(purchase.price) %></dd>
+    <dt>Return deadline</dt>
+    <dd><time datetime="<%= purchase.return_by.iso8601 %>"><%= l(purchase.return_by, format: :long) %></time></dd>
+    <dt>Days remaining</dt>
+    <dd><%= purchase.days_left %></dd>
+    <dt>Status</dt>
+    <dd><%= purchase.status.humanize %></dd>
+  </dl>
+</article>

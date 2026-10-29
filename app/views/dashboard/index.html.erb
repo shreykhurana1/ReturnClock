@@ -1,0 +1,12 @@
+<main class="app-container">
+  <h1>Dashboard</h1>
+  <%= tag.div(flash[:notice], role: "status") if flash[:notice] %>
+  <p>Upcoming returns and purchases awaiting a return or refund, ordered by return deadline.</p>
+  <% if @purchases.any? %>
+    <div class="purchase-grid">
+      <%= render partial: "shared/purchase_card", collection: @purchases, as: :purchase %>
+    </div>
+  <% else %>
+    <p class="empty-state">No actionable purchases yet.</p>
+  <% end %>
+</main>

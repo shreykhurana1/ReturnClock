@@ -1,15 +1,13 @@
-<% if notice.present? %>
-  <p><%= notice %></p>
-<% end %>
+<main class="auth-page auth-landing">
+  <% if notice.present? %>
+    <div class="auth-notice" role="status"><%= notice %></div>
+  <% end %>
 
-<h1>ReturnClock</h1>
-<p>Never miss a return window again.</p>
+  <h1>ReturnClock</h1>
+  <p>Never miss a return window again.</p>
 
-<% if authenticated? %>
-  <p>You are signed in successfully.</p>
-
-  <%= button_to "Sign Out", session_path, method: :delete %>
-<% else %>
-  <%= link_to "Create Account", sign_up_path %>
-  <%= link_to "Sign In", new_session_path %>
-<% end %>
+  <div class="auth-actions">
+    <%= link_to "Create Account", sign_up_path, class: "auth-button" %>
+    <%= link_to "Sign In", new_session_path, class: "auth-button" %>
+  </div>
+</main>

@@ -1,0 +1,20 @@
+<header class="app-header">
+  <nav aria-label="Main navigation">
+    <%= link_to "ReturnClock", dashboard_path, class: "app-brand" %>
+    <%= link_to "Dashboard", dashboard_path, aria: { current: ("page" if current_page?(dashboard_path)) } %>
+    <%= link_to "History", history_path, aria: { current: ("page" if current_page?(history_path)) } %>
+    <% if respond_to?(:new_purchase_path) %>
+      <%= link_to "Add Purchase", new_purchase_path %>
+    <% else %>
+      <%= link_to "Add Purchase", coming_soon_add_purchase_path %>
+    <% end %>
+    <details class="profile-menu">
+      <summary aria-label="Profile menu"><span aria-hidden="true">&#128100;</span></summary>
+      <div class="profile-menu-content">
+        <p><%= Current.user.email_address %></p>
+        <p><%= link_to "Account Settings", settings_path %></p>
+        <%= button_to "Sign Out", session_path, method: :delete, class: "auth-button" %>
+      </div>
+    </details>
+  </nav>
+</header>
