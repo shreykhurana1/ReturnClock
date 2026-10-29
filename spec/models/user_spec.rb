@@ -50,6 +50,16 @@ RSpec.describe User, type: :model do
     expect(user.errors[:password_confirmation]).to be_present
   end
 
+  it "accepts a 72-byte password but rejects 73 bytes" do
+    boundary_password = "Aa1!" + "a" * 68
+    user.password = user.password_confirmation = boundary_password
+    expect(user).to be_valid
+
+    user.password = user.password_confirmation = boundary_password + "a"
+    expect(user).not_to be_valid
+    expect(user.errors.of_kind?(:password, :password_too_long)).to be(true)
+  end
+
   it "allows updating an existing user without resubmitting a password" do
     user.save!
     expect(User.find(user.id).update(email_address: "updated@example.com")).to be(true)

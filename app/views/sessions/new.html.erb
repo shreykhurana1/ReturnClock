@@ -1,13 +1,27 @@
-<%= tag.div(flash[:alert], style: "color:red") if flash[:alert] %>
-<%= tag.div(flash[:notice], style: "color:green") if flash[:notice] %>
+<main class="auth-page auth-form-container">
+  <h1>Sign In</h1>
+  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
 
-<%= form_with url: session_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72 %><br>
-  <%= form.submit "Sign in" %>
-<% end %>
-<br>
+  <%= form_with url: session_path do |form| %>
+    <%= tag.div(flash[:alert], id: "sign-in-error", class: "auth-error", role: "alert") if flash[:alert] %>
 
-<% if Rails.configuration.x.password_resets_enabled %>
-  <%= link_to "Forgot password?", new_password_path %>
-<% end %>
+    <div class="auth-field">
+      <%= form.label :email_address, "Email" %>
+      <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username",
+            value: flash[:email_address] || params[:email_address],
+            aria: { invalid: flash[:alert].present?, describedby: ("sign-in-error" if flash[:alert]) } %>
+    </div>
+
+    <div class="auth-field">
+      <%= form.label :password, "Password" %>
+      <%= form.password_field :password, value: nil, required: true, autocomplete: "current-password", maxlength: 72,
+            aria: { invalid: flash[:alert].present?, describedby: ("sign-in-error" if flash[:alert]) } %>
+    </div>
+
+    <%= form.submit "Sign In", class: "auth-button auth-submit" %>
+  <% end %>
+
+  <div class="auth-form-links">
+    <p>New to ReturnClock? <%= link_to "Create Account", sign_up_path %></p>
+  </div>
+</main>

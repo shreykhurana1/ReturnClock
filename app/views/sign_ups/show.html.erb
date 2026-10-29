@@ -1,41 +1,63 @@
+<main class="auth-page auth-form-container">
+  <h1>Create Account</h1>
 
-<h1>Create Account</h1>
+  <%= form_with model: @user, url: sign_up_path,
+        data: { controller: "signup-validation", action: "submit->signup-validation#submit" } do |form| %>
+    <% if @user.errors.any? %>
+      <div class="auth-error" role="alert">
+        <p>Please correct the fields below.</p>
+        <% @user.errors.full_messages_for(:base).each do |message| %>
+          <p><%= message %></p>
+        <% end %>
+      </div>
+    <% end %>
 
-<%= form_with model: @user, url: sign_up_path do |form| %>
-
-  <% if @user.errors.any? %>
-    <ul>
-      <% @user.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
+    <div class="auth-field">
+      <%= form.label :email_address, "Email" %>
+      <%= form.email_field :email_address, required: true, autocomplete: "username",
+            aria: { invalid: @user.errors[:email_address].any?, describedby: ("email-errors" if @user.errors[:email_address].any?) } %>
+      <% if @user.errors[:email_address].any? %>
+        <ul id="email-errors" class="auth-field-errors">
+          <% @user.errors.full_messages_for(:email_address).each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
       <% end %>
-    </ul>
+    </div>
+
+    <div class="auth-field">
+      <%= form.label :password, "Password" %>
+      <%= form.password_field :password, value: nil, required: true, minlength: 8, autocomplete: "new-password",
+            data: { signup_validation_target: "password", action: "input->signup-validation#validate change->signup-validation#validate" },
+            aria: { invalid: @user.errors[:password].any?, describedby: [ "password-hint", "password-client-error", ("password-errors" if @user.errors[:password].any?) ].compact.join(" ") } %>
+      <p id="password-hint" class="auth-hint">At least 8 characters, including uppercase and lowercase letters, a number, and a symbol.</p>
+      <p id="password-client-error" class="auth-error" data-signup-validation-target="passwordError" aria-live="polite" hidden></p>
+      <% if @user.errors[:password].any? %>
+        <ul id="password-errors" class="auth-field-errors" data-signup-validation-target="serverErrors">
+          <% signup_password_errors(@user, :password).each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+
+    <div class="auth-field">
+      <%= form.label :password_confirmation, "Confirm Password" %>
+      <%= form.password_field :password_confirmation, value: nil, required: true, autocomplete: "new-password",
+            data: { signup_validation_target: "confirmation", action: "input->signup-validation#validate change->signup-validation#validate" },
+            aria: { invalid: @user.errors[:password_confirmation].any?, describedby: [ "confirmation-client-error", ("confirmation-errors" if @user.errors[:password_confirmation].any?) ].compact.join(" ") } %>
+      <p id="confirmation-client-error" class="auth-error" data-signup-validation-target="confirmationError" aria-live="polite" hidden></p>
+      <% if @user.errors[:password_confirmation].any? %>
+        <ul id="confirmation-errors" class="auth-field-errors" data-signup-validation-target="serverErrors">
+          <% signup_password_errors(@user, :password_confirmation).each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      <% end %>
+    </div>
+
+    <%= form.submit "Create Account", class: "auth-button auth-submit", data: { action: "click->signup-validation#validate" } %>
   <% end %>
 
-  <div>
-    <%= form.label :email_address, "Email" %>
-    <%= form.email_field :email_address, required: true %>
-  </div>
-
-  <div>
-    <%= form.label :password, "Password" %>
-    <%= form.password_field :password, required: true, minlength: 8 %>
-    <p>
-        Password must have at least 8 characters, including an uppercase letter,
-        a lowercase letter, a number, and a special character.
-    </p>
-    
-  </div>
-
-  <div>
-    <%= form.label :password_confirmation, "Confirm Password" %>
-    <%= form.password_field :password_confirmation, required: true %>
-  </div>
-
-  <%= form.submit "Create Account" %>
-
-<% end %>
-
-<p>
-  Already have an account?
-  <%= link_to "Sign In", new_session_path %>
-</p>
+  <p class="auth-form-links">Already have an account? <%= link_to "Sign In", new_session_path %></p>
+</main>
