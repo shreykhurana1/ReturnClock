@@ -5,16 +5,17 @@
 ## Current implementation
 
 - Signup, login, logout, password hashing, email normalization, and validation.
-- Read-only Dashboard and History, with authentication and owner-scoped records.
+- Dashboard and History cards, with authentication and owner-scoped management links.
 - Database-backed sessions using Rails' built-in authentication system.
 - User-owned store policies and purchases, with model validations and foreign keys.
-- Authenticated store-policy and purchase creation, including a first-purchase flow.
+- Authenticated purchase creation/editing/deletion and updates to all six statuses.
+- Store policy listing/creation/editing and deletion of unused policies.
 - Automatic return deadlines, six purchase statuses, and a `days_left` calculation.
-- RSpec model/request tests and the retained Minitest suite, both run by CI.
+- RSpec model/request tests, Minitest, and Cucumber acceptance scenarios, all run by CI.
 - Heroku configuration for one PostgreSQL database, HTTPS, and Solid services.
 
-Purchase editing/deletion/status updates, further Cucumber stories, final UI
-refinements, and email reminders are pending teammate/future work. This repository is prepared for
+Account editing, further Cucumber stories, final UI refinements, and email
+reminders are pending teammate/future work. This repository is prepared for
 Heroku; this documentation does not mean an application has been deployed.
 Password-reset code is retained and tested locally but disabled in production
 until real email delivery is configured.
@@ -42,7 +43,7 @@ purchase deadlines, including on unrelated purchase edits. New purchases use
 the edited window. `days_left` compares the stored deadline with `Date.current`
 and can be negative. Rails currently uses UTC; a user-specific time zone and
 inclusive/exclusive retailer policy variations are not implemented. Future
-CRUD should treat `return_by` as calculated rather than permitting arbitrary input.
+endpoints must keep `return_by` calculated rather than permitting arbitrary input.
 
 `ApplicationController` includes the existing `Authentication` concern and
 requires login by default. Controllers obtain the signed-in user through
@@ -60,16 +61,15 @@ purchase = Current.user.purchases.build(permitted_params)
 ```
 
 Do not permit `user_id`, use unscoped `Purchase.find`, or return another user's
-records. Dashboard and History have two-user request authorization coverage. Add the
-same coverage when introducing purchase creation/editing/deletion/status-update
-endpoints; the read-only tests do not prove the security of future mutation routes.
+records. Dashboard, History, and purchase/policy management have two-user request
+authorization coverage. Keep that coverage when extending these endpoints.
 
 ## Team workflow and responsibilities
 
 | Area | Owner/scope |
 | --- | --- |
 | Authentication, models/schema, RSpec, README, deployment preparation | Shrey / `shrey/authentication` |
-| Purchase workflow | Basic policy/purchase creation implemented; editing/deletion/status updates remain teammate work |
+| Purchase workflow | Creation, editing, deletion confirmation, and status updates implemented; coordinate further changes with teammates |
 | Cucumber stories | Teammate implementation |
 | UI | Teammate implementation |
 
@@ -86,7 +86,7 @@ add migrations rather than modifying another person's applied migration.
 Include tests, setup/migration notes, and any changed environment variables.
 Push your feature branch, open a PR into `main`, obtain team review, and wait
 for CI before merging. Incorporate `origin/main` into a feature branch before
-integration, resolve conflicts, and rerun both suites. Do not force-push another
+integration, resolve conflicts, and rerun all three suites. Do not force-push another
 person's branch or merge directly into `main` without review.
 
 Review each feature branch against `main`, commit/push only after approval,

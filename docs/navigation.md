@@ -7,11 +7,14 @@
 | Area | Behavior |
 | --- | --- |
 | Public landing (`/`) | Centered ReturnClock heading/tagline with Create Account and Sign In. Signed-in visits redirect to Dashboard. |
-| Dashboard (`/dashboard`) | Authenticated, read-only cards for upcoming active purchases and all actionable returns/refunds. |
-| History (`/history`) | Authenticated, read-only cards for expired active purchases and purchases marked keeping or refunded. |
-| Authenticated header | ReturnClock, Dashboard, History, and a profile icon/menu showing the signed-in email, Account Settings, and Sign Out. |
+| Dashboard (`/dashboard`) | Authenticated cards for upcoming active purchases and all actionable returns/refunds, with Edit and Delete links. |
+| History (`/history`) | Authenticated cards for expired active purchases and purchases marked keeping or refunded, with Edit and Delete links. |
+| Authenticated header | ReturnClock, Dashboard, History, Add Purchase, Store Policies, and a profile menu with email, Account Settings, and Sign Out. |
 | Add Purchase (`/purchases/new`) | Authenticated form using the user's own store policies. Users without a policy are directed to create one first. |
 | Create Store Policy (`/store_policies/new`) | Saves a store name and positive return window in days, then returns to Add Purchase with the new policy selected. |
+| Store Policies (`/store_policies`) | Lists owned policies with creation/editing links. Unused policies can be deleted; referenced policies cannot. |
+| Edit Purchase (`/purchases/:id/edit`) | Updates item, price, date, owned policy, and status. Successful updates return to the appropriate Dashboard or History page. |
+| Delete Purchase (`/purchases/:id/confirm_delete`) | Requires confirmation on a separate page before submitting DELETE; Cancel leaves the purchase intact. |
 | Account Settings (`/settings`) | Authenticated placeholder showing the current email and a coming-soon message, with no update functionality. |
 
 Signup and normal login redirect to Dashboard. If an anonymous visitor first
@@ -45,18 +48,19 @@ columns on large screens, two on medium screens, and one on small screens.
 
 ## Integration notes for Ryan and Jordan
 
-- Ryan: Iteration 1 now implements `new`/`create` in `PurchasesController` and
-  `StorePoliciesController`. Purchase creation permits only item name, price,
-  purchase date, and an owner-scoped policy; the model calculates the deadline.
-  Editing, deletion, and status updates remain unimplemented. Add owner-scoped
-  authorization tests when extending these controllers.
+- Ryan: purchase creation, editing, deletion, and status updates now live in
+  `PurchasesController`; policy management lives in `StorePoliciesController`.
+  Creation retains the active status default; editing permits all six existing
+  statuses. All record lookups and policy selections are owner-scoped, and the
+  model calculates deadlines. Coordinate further changes to these controllers.
 - The read-only pages live in `DashboardController` and `HistoryController`,
-  separate from the creation controllers. Reuse or coordinate changes
+  separate from the management controllers. Reuse or coordinate changes
   to `shared/_purchase_card.html.erb`, header navigation, and classification.
 - Jordan and the Cucumber/UI teammates: further interface decisions remain with
   the assigned teammates. The current layout implements only the stated header,
   card-grid, form, and empty-state requirements. Use the behavior below for
-  acceptance scenarios; the existing Cucumber suite includes a first-purchase flow.
+  acceptance scenarios; Cucumber covers first purchase, editing/status changes,
+  deletion confirmation/cancellation, and policy edits preserving old deadlines.
 - Account updates, change password, reminders, and uploads remain unimplemented.
   Login does not advertise Forgot Password until real delivery is configured.
   Local reset controller tests remain intact; production resets stay disabled.

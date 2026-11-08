@@ -1,0 +1,8 @@
+<main class="auth-page auth-form-container">
+  <h1>Delete Purchase</h1>
+  <p>Delete <strong><%= @purchase.item_name %></strong>? This cannot be undone.</p>
+  <%= button_to "Delete Purchase", purchase_path(@purchase), method: :delete, class: "auth-button auth-submit" %>
+  <p><%= link_to "Cancel", edit_purchase_path(@purchase) %></p>
+  <p><%= link_to "Back to Dashboard", dashboard_path %></p>
+  <p><%= link_to "View History", history_path %></p>
+</main>

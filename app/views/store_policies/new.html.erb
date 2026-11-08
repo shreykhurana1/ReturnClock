@@ -2,20 +2,9 @@
   <h1>Create Store Policy</h1>
   <p>Save a store's return window to calculate deadlines for your purchases.</p>
 
-  <%= render "shared/form_errors", record: @store_policy %>
-
-  <%= form_with model: @store_policy do |form| %>
-    <div class="auth-field">
-      <%= form.label :store_name, "Store Name" %>
-      <%= form.text_field :store_name, required: true %>
-    </div>
-    <div class="auth-field">
-      <%= form.label :window_days, "Return Window (days)" %>
-      <%= form.number_field :window_days, min: 1, step: 1, required: true %>
-    </div>
-    <%= form.submit "Create Store Policy", class: "auth-button auth-submit" %>
-  <% end %>
+  <%= render "form" %>
 
   <p><%= link_to "Back to Add Purchase", new_purchase_path %></p>
+  <p><%= link_to "Back to Store Policies", store_policies_path %></p>
   <p><%= link_to "Back to Dashboard", dashboard_path %></p>
 </main>

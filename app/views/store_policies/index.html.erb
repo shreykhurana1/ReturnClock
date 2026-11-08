@@ -1,0 +1,25 @@
+<main class="app-container">
+  <h1>Store Policies</h1>
+  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
+  <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
+  <p><%= link_to "Create Store Policy", new_store_policy_path, class: "auth-button" %></p>
+  <% if @store_policies.any? %>
+    <div class="purchase-grid">
+      <% @store_policies.each do |store_policy| %>
+        <article class="purchase-card">
+          <h2><%= store_policy.store_name %></h2>
+          <p>Return window: <%= pluralize(store_policy.window_days, "day") %></p>
+          <p><%= link_to "Edit Store Policy", edit_store_policy_path(store_policy) %></p>
+          <% if store_policy.purchases.exists? %>
+            <p>In use by purchases; cannot be deleted.</p>
+          <% else %>
+            <%= button_to "Delete Store Policy", store_policy_path(store_policy), method: :delete,
+                  class: "auth-button", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
+          <% end %>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">No store policies yet.</p>
+  <% end %>
+</main>
