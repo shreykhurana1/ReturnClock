@@ -1,12 +1,15 @@
-<main class="app-container">
-  <h1>Dashboard</h1>
-  <%= tag.div(flash[:notice], role: "status") if flash[:notice] %>
-  <p>Upcoming returns and purchases awaiting a return or refund, ordered by return deadline.</p>
-  <% if @purchases.any? %>
-    <div class="purchase-grid">
-      <%= render partial: "shared/purchase_card", collection: @purchases, as: :purchase %>
-    </div>
-  <% else %>
-    <p class="empty-state">No actionable purchases yet.</p>
-  <% end %>
+<main class="rc-page rc-dashboard">
+  <% sample_mode = !Current.user.purchases.exists? %>
+  <% purchases = sample_mode ? sample_purchases(history: false) : @purchases %>
+  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.purchases_kicker") %></span><h1><%= t("ui.dashboard") %></h1><p><%= t("ui.dashboard_intro") %></p></div><% if respond_to?(:new_purchase_path) %><%= link_to t("ui.add_purchase_button"), new_purchase_path, class: "rc-btn rc-btn-primary" %><% else %><%= link_to t("ui.add_purchase_button"), coming_soon_add_purchase_path, class: "rc-btn rc-btn-primary", data: { action: "rc-purchase-preview#new" } %><% end %></div>
+  <%= tag.div(localized_flash(flash[:notice]), class: "rc-alert", role: "status") if flash[:notice] %>
+  <% active = purchases.select { |purchase| purchase.status == "active" } %>
+  <%= render "shared/sample_purchases" if sample_mode %>
+  <div class="rc-stat-grid"><div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.tracked") %></span><div><strong><%= purchases.size %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail"><%= t("ui.tracked_detail") %></span></div><div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.due_week") %></span><div><strong><%= active.count { |purchase| purchase.days_left && purchase.days_left <= 7 && purchase.days_left >= 0 } %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail rc-text-orange"><%= t("ui.needs_attention") %></span></div><div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.tracked_value") %></span><div><strong><%= number_to_currency(purchases.sum(&:price)) %></strong></div><span class="rc-stat-detail"><%= t("ui.tracked_value_detail") %></span></div><div class="card rc-stat rc-stat-quiet"><span class="rc-stat-title"><%= t("ui.savings") %></span><div><strong>—</strong></div><span class="rc-stat-detail"><%= t("ui.savings_pending") %></span></div></div>
+  <section class="rc-section"><div class="rc-section-heading"><div><h2><%= t("ui.upcoming") %></h2><p><%= t("ui.upcoming_detail") %></p></div><span class="rc-small-count"><%= t("ui.record_count", count: purchases.size) %></span></div>
+    <% if purchases.any? %>
+      <div class="purchase-grid rc-card-grid"><%= render partial: "shared/purchase_card", collection: purchases.first(6), as: :purchase %></div>
+      <% if purchases.size > 6 %><details class="rc-expand"><summary><%= t("ui.more_records", count: purchases.size - 6) %> <span aria-hidden="true">⌄</span></summary><div class="purchase-grid rc-card-grid rc-expanded-grid"><%= render partial: "shared/purchase_card", collection: purchases.drop(6), as: :purchase %></div></details><% end %>
+    <% else %><div class="card rc-empty"><span class="rc-empty-icon">▦</span><h3><%= t("ui.dashboard_empty") %></h3><p><%= t("ui.dashboard_empty_detail") %></p></div><% end %>
+  </section>
 </main>

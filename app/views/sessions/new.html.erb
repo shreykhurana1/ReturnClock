@@ -1,27 +1,27 @@
 <main class="auth-page auth-form-container">
-  <h1>Sign In</h1>
-  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
+  <h1><%= t("ui.sign_in") %></h1>
+  <%= tag.div(localized_flash(flash[:notice]), class: "auth-notice", role: "status") if flash[:notice] %>
 
   <%= form_with url: session_path do |form| %>
-    <%= tag.div(flash[:alert], id: "sign-in-error", class: "auth-error", role: "alert") if flash[:alert] %>
+    <%= tag.div(localized_flash(flash[:alert]), id: "sign-in-error", class: "auth-error", role: "alert") if flash[:alert] %>
 
     <div class="auth-field">
-      <%= form.label :email_address, "Email" %>
+      <%= form.label :email_address, t("ui.email") %>
       <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username",
             value: flash[:email_address] || params[:email_address],
             aria: { invalid: flash[:alert].present?, describedby: ("sign-in-error" if flash[:alert]) } %>
     </div>
 
     <div class="auth-field">
-      <%= form.label :password, "Password" %>
+      <%= form.label :password, t("ui.password") %>
       <%= form.password_field :password, value: nil, required: true, autocomplete: "current-password", maxlength: 72,
             aria: { invalid: flash[:alert].present?, describedby: ("sign-in-error" if flash[:alert]) } %>
     </div>
 
-    <%= form.submit "Sign In", class: "auth-button auth-submit" %>
+    <%= form.submit t("ui.sign_in"), class: "auth-button auth-submit" %>
   <% end %>
 
   <div class="auth-form-links">
-    <p>New to ReturnClock? <%= link_to "Create Account", sign_up_path %></p>
+    <p><%= t("ui.new_account") %> <%= link_to t("ui.create_account"), sign_up_path %></p>
   </div>
 </main>

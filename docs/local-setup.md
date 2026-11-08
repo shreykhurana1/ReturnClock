@@ -7,7 +7,7 @@
 | Component | Project configuration |
 | --- | --- |
 | Ruby | 3.3.12, pinned in `.ruby-version` and read by `Gemfile` |
-| Rails | 8.1.4 in `Gemfile.lock` |
+| Rails | 8.1.4.1 in `Gemfile.lock` |
 | Bundler | 2.5.22 in `Gemfile.lock` |
 | Database | PostgreSQL; development verified with 18.6 |
 | Server/assets | Puma, Propshaft, import maps, Turbo, Stimulus |

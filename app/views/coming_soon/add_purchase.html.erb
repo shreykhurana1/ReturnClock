@@ -1,5 +1,15 @@
-<main class="app-container">
-  <h1>Add Purchase</h1>
-  <p>Purchase creation is coming soon.</p>
-  <%= link_to "Back to Dashboard", dashboard_path, class: "auth-button" %>
+<main class="rc-page rc-purchase-editor">
+  <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>"><span><%= t("ui.dashboard") %></span><span>/</span><span><%= t("ui.add") %></span></nav>
+  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.form_kicker") %></span><h1><%= t("ui.add_purchase") %></h1><p><%= t("ui.purchase_pending_intro") %></p></div><%= link_to t("ui.back_dashboard"), dashboard_path, class: "rc-btn rc-btn-outline" %></div>
+  <section class="card rc-form-panel" aria-label="<%= t('ui.purchase_preview') %>">
+    <div class="rc-form-panel-head"><span class="rc-step-num">01</span><div><h2><%= t("ui.purchase_details") %></h2><p><%= t("ui.purchase_preview_detail") %></p></div></div>
+    <div class="rc-field-grid">
+      <div class="rc-form-field rc-field-wide"><label class="form-label"><%= t("ui.item_name") %></label><input type="text" class="form-control" placeholder="<%= t('ui.example_item') %>" disabled></div>
+      <div class="rc-form-field"><label class="form-label"><%= t("ui.item_price") %></label><input type="number" class="form-control" placeholder="<%= t('ui.example_price') %>" disabled></div>
+      <div class="rc-form-field"><label class="form-label"><%= t("ui.purchase_date") %></label><input type="date" class="form-control" disabled></div>
+      <div class="rc-form-field rc-field-wide"><label class="form-label"><%= t("ui.store_policy") %></label><select class="form-select" disabled><option><%= t("ui.policy_preview") %></option></select></div>
+    </div>
+    <p class="rc-deadline-note"><%= t("ui.preview_deadline") %></p>
+    <div class="rc-form-footer"><span class="rc-field-hint"><%= t("ui.preview_only") %></span><button type="button" class="rc-btn rc-btn-primary" data-action="rc-purchase-preview#new"><%= t("ui.add") %></button></div>
+  </section>
 </main>

@@ -9,7 +9,7 @@ Feature: Manage access to ReturnClock
     And I sign up with email "new@example.com" and password "Password1!"
     Then I should see the "Dashboard" heading
     And I should see "Account created successfully!" in the main content
-    And I should see "No actionable purchases yet." in the main content
+    And I should see "Demo preview" in the main content
 
   Scenario: Reject signup with an email that already has an account
     Given an account exists for "student@example.com" with password "Password1!"
@@ -65,6 +65,6 @@ Feature: Manage access to ReturnClock
     Then I should see the "Sign In" heading
     When I sign in with email "student@example.com" and password "Password1!"
     Then I should see the "History" heading
-    And I should see "No purchases in History yet." in the main content
+    And I should see "Demo preview" in the main content
     When I follow "Dashboard"
     Then I should see the "Dashboard" heading

@@ -1,11 +1,15 @@
 <main class="auth-page auth-form-container">
-  <h1>Create Account</h1>
+  <h1><%= t("ui.create_account") %></h1>
 
   <%= form_with model: @user, url: sign_up_path,
-        data: { controller: "signup-validation", action: "submit->signup-validation#submit" } do |form| %>
+        data: { controller: "signup-validation", action: "submit->signup-validation#submit",
+          signup_validation_short_message_value: t("ui.password_short"),
+          signup_validation_long_message_value: t("ui.password_long"),
+          signup_validation_strength_message_value: t("ui.password_strength"),
+          signup_validation_mismatch_message_value: t("ui.password_mismatch") } do |form| %>
     <% if @user.errors.any? %>
       <div class="auth-error" role="alert">
-        <p>Please correct the fields below.</p>
+        <p><%= t("ui.correct_fields") %></p>
         <% @user.errors.full_messages_for(:base).each do |message| %>
           <p><%= message %></p>
         <% end %>
@@ -13,7 +17,7 @@
     <% end %>
 
     <div class="auth-field">
-      <%= form.label :email_address, "Email" %>
+      <%= form.label :email_address, t("ui.email") %>
       <%= form.email_field :email_address, required: true, autocomplete: "username",
             aria: { invalid: @user.errors[:email_address].any?, describedby: ("email-errors" if @user.errors[:email_address].any?) } %>
       <% if @user.errors[:email_address].any? %>
@@ -26,11 +30,11 @@
     </div>
 
     <div class="auth-field">
-      <%= form.label :password, "Password" %>
+      <%= form.label :password, t("ui.password") %>
       <%= form.password_field :password, value: nil, required: true, minlength: 8, autocomplete: "new-password",
             data: { signup_validation_target: "password", action: "input->signup-validation#validate change->signup-validation#validate" },
             aria: { invalid: @user.errors[:password].any?, describedby: [ "password-hint", "password-client-error", ("password-errors" if @user.errors[:password].any?) ].compact.join(" ") } %>
-      <p id="password-hint" class="auth-hint">At least 8 characters, including uppercase and lowercase letters, a number, and a symbol.</p>
+      <p id="password-hint" class="auth-hint"><%= t("ui.password_hint") %></p>
       <p id="password-client-error" class="auth-error" data-signup-validation-target="passwordError" aria-live="polite" hidden></p>
       <% if @user.errors[:password].any? %>
         <ul id="password-errors" class="auth-field-errors" data-signup-validation-target="serverErrors">
@@ -42,7 +46,7 @@
     </div>
 
     <div class="auth-field">
-      <%= form.label :password_confirmation, "Confirm Password" %>
+      <%= form.label :password_confirmation, t("ui.confirm_password") %>
       <%= form.password_field :password_confirmation, value: nil, required: true, autocomplete: "new-password",
             data: { signup_validation_target: "confirmation", action: "input->signup-validation#validate change->signup-validation#validate" },
             aria: { invalid: @user.errors[:password_confirmation].any?, describedby: [ "confirmation-client-error", ("confirmation-errors" if @user.errors[:password_confirmation].any?) ].compact.join(" ") } %>
@@ -56,8 +60,8 @@
       <% end %>
     </div>
 
-    <%= form.submit "Create Account", class: "auth-button auth-submit", data: { action: "click->signup-validation#validate" } %>
+    <%= form.submit t("ui.create_account"), class: "auth-button auth-submit", data: { action: "click->signup-validation#validate" } %>
   <% end %>
 
-  <p class="auth-form-links">Already have an account? <%= link_to "Sign In", new_session_path %></p>
+  <p class="auth-form-links"><%= t("ui.existing_account") %> <%= link_to t("ui.sign_in"), new_session_path %></p>
 </main>

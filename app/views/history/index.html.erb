@@ -1,11 +1,15 @@
-<main class="app-container">
-  <h1>History</h1>
-  <p>Expired active purchases and purchases marked keeping or refunded.</p>
-  <% if @purchases.any? %>
-    <div class="purchase-grid">
-      <%= render partial: "shared/purchase_card", collection: @purchases, as: :purchase %>
-    </div>
-  <% else %>
-    <p class="empty-state">No purchases in History yet.</p>
-  <% end %>
+<main class="rc-page rc-history" data-controller="rc-purchase-filter">
+  <% sample_mode = !Current.user.purchases.exists? %>
+  <% purchases = sample_mode ? sample_purchases(history: true) : @purchases %>
+  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.history_kicker") %></span><h1><%= t("ui.history") %></h1><p><%= t("ui.history_intro") %></p></div></div>
+  <%= render "shared/sample_purchases" if sample_mode %>
+  <div class="rc-stat-grid">
+    <div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.history_total") %></span><div><strong><%= purchases.size %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail"><%= t("ui.history_total_detail") %></span></div>
+    <div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.refunded") %></span><div><strong><%= purchases.count { |p| p.status == "refunded" } %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail"><%= t("ui.refunded_detail") %></span></div>
+    <div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.keeping") %></span><div><strong><%= purchases.count { |p| p.status == "keeping" } %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail"><%= t("ui.keeping_detail") %></span></div>
+    <div class="card rc-stat rc-stat-quiet"><span class="rc-stat-title"><%= t("ui.expired") %></span><div><strong><%= purchases.count { |p| p.status == "active" && p.days_left&.negative? } %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail"><%= t("ui.expired_detail") %></span></div>
+  </div>
+  <div class="rc-section-heading rc-history-heading"><div><h2><%= t("ui.history_all_heading") %></h2><p><%= t("ui.history_all_detail") %></p></div></div>
+  <div class="rc-filter-row" role="group" aria-label="<%= t('ui.history_filter') %>"><button type="button" class="rc-filter active" data-rc-purchase-filter-target="button" data-rc-purchase-filter-value="all" data-action="rc-purchase-filter#filter" aria-pressed="true"><%= t("ui.all") %></button><button type="button" class="rc-filter" data-rc-purchase-filter-target="button" data-rc-purchase-filter-value="refunded" data-action="rc-purchase-filter#filter" aria-pressed="false"><%= t("ui.refunded") %></button><button type="button" class="rc-filter" data-rc-purchase-filter-target="button" data-rc-purchase-filter-value="keeping" data-action="rc-purchase-filter#filter" aria-pressed="false"><%= t("ui.keeping") %></button><button type="button" class="rc-filter" data-rc-purchase-filter-target="button" data-rc-purchase-filter-value="expired" data-action="rc-purchase-filter#filter" aria-pressed="false"><%= t("ui.expired") %></button></div>
+  <% if purchases.any? %><div class="purchase-grid rc-card-grid rc-history-grid"><%= render partial: "shared/purchase_card", collection: purchases, as: :purchase %></div><p class="rc-empty-filter" data-rc-purchase-filter-target="empty" hidden><%= t("ui.history_filter_empty") %></p><% else %><div class="card rc-empty"><span class="rc-empty-icon">◷</span><h3><%= t("ui.history_empty") %></h3><p><%= t("ui.history_empty_detail") %></p></div><% end %>
 </main>

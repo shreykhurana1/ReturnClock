@@ -7,7 +7,7 @@ editing are still pending; Account Settings currently displays your email only.
 
 ## Prerequisites
 
-Use **Ruby 3.3.12**, **Rails 8.1.4**, Bundler **2.5.22**, Git, PostgreSQL
+Use **Ruby 3.3.12**, **Rails 8.1.4.1**, Bundler **2.5.22**, Git, PostgreSQL
 (verified with 18.6), and libvips. Node/npm and Redis are not required.
 Follow [macOS / Windows WSL setup](docs/local-setup.md) for packages, Ruby,
 PostgreSQL startup, and a local login role with `CREATEDB`; tests need no superuser.
@@ -28,6 +28,8 @@ bin/rails server
 
 Use the team's agreed branch until integration into `main`. Open
 <http://localhost:3000> and create an account; no seeds or default login are needed.
+Accounts without purchases see clearly labeled sample cards on Dashboard and History.
+Demo cards and totals are clearly labeled, are not saved, and disappear after the first real purchase.
 Rails uses your OS username for local PostgreSQL and the databases
 `return_clock_development` / `return_clock_test`. Keep production URLs out of your
 local `DATABASE_URL`. After pulling migrations, rerun `bundle install` and

@@ -1,15 +1,27 @@
-<article class="purchase-card">
-  <h2><%= purchase.item_name %></h2>
-  <dl>
-    <dt>Store</dt>
-    <dd><%= purchase.store_policy.store_name %></dd>
-    <dt>Price</dt>
-    <dd><%= number_to_currency(purchase.price) %></dd>
-    <dt>Return deadline</dt>
-    <dd><time datetime="<%= purchase.return_by.iso8601 %>"><%= l(purchase.return_by, format: :long) %></time></dd>
-    <dt>Days remaining</dt>
-    <dd><%= purchase.days_left %></dd>
-    <dt>Status</dt>
-    <dd><%= purchase.status.humanize %></dd>
+<% days = purchase.days_left %>
+<% expired = purchase.status == "active" && days && days < 0 %>
+<% show_days = !expired && !%w[keeping refunded].include?(purchase.status) %>
+<% urgent = purchase.status == "active" && days && days >= 0 && days <= 7 %>
+<% status_names = { "active" => t("ui.active"), "keeping" => t("ui.keeping"), "returning" => t("ui.returning"), "shipped_back" => t("ui.shipped_back"), "refund_pending" => t("ui.refund_pending"), "refunded" => t("ui.refunded") } %>
+<% status_label = expired ? t("ui.expired") : status_names.fetch(purchase.status, purchase.status.humanize) %>
+<% color = expired ? "danger" : (urgent ? "warning" : (purchase.status == "refunded" ? "success" : (purchase.status == "keeping" ? "secondary" : "blue"))) %>
+<article class="purchase-card card rc-purchase-card" data-sample="<%= !purchase.persisted? %>" data-rc-purchase-filter-target="card" data-status="<%= expired ? 'expired' : purchase.status %>" data-purchase-preview="<%= { item_name: purchase.item_name, price: purchase.price.to_s('F'), purchase_date: purchase.purchase_date.iso8601, store_policy_id: purchase.store_policy_id, store_name: purchase.store_policy.store_name, window_days: purchase.store_policy.window_days, status: purchase.status }.to_json %>">
+  <div class="rc-card-top"><span class="rc-product-symbol" aria-hidden="true">▣</span><span class="rc-chip rc-chip-<%= color %>"><%= status_label %></span></div>
+  <h2 class="rc-product-name"><%= purchase.item_name %></h2>
+  <p class="rc-product-store"><%= purchase.store_policy.store_name %></p>
+  <p class="rc-price"><%= number_to_currency(purchase.price) %></p>
+  <dl class="rc-contract-details">
+    <dt><%= t("ui.store") %></dt><dd><%= purchase.store_policy.store_name %></dd>
+    <dt><%= t("ui.price") %></dt><dd><%= number_to_currency(purchase.price) %></dd>
+    <dt><%= t("ui.return_deadline") %></dt><dd><time datetime="<%= purchase.return_by.iso8601 %>"><%= l(purchase.return_by, format: :long) %></time></dd>
+    <% if show_days %><dt><%= t("ui.days_remaining") %></dt><dd><%= days %></dd><% end %>
+    <dt><%= t("ui.status") %></dt><dd><%= status_label %></dd>
   </dl>
+  <div class="rc-purchased-on"><%= t("ui.purchased_on") %> <time datetime="<%= purchase.purchase_date.iso8601 %>"><%= l(purchase.purchase_date, format: :long) %></time></div>
+  <div class="rc-card-bottom"><% if purchase.status == "active" && !expired %><span class="rc-days <%= 'rc-days-urgent' if urgent %>"><%= t("ui.days_left", count: days) %></span><% else %><span class="rc-muted"><%= status_label %></span><% end %>
+    <%# 2. Show sample actions only when preview dialogs exist; persisted purchases retain REST actions. %>
+    <% if purchase.persisted? || purchase_preview_enabled? %>
+      <div class="rc-card-actions"><%= render "shared/purchase_actions", purchase: purchase, status_names: status_names %></div>
+    <% end %>
+  </div>
 </article>

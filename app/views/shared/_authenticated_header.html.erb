@@ -1,20 +1,26 @@
-<header class="app-header">
-  <nav aria-label="Main navigation">
-    <%= link_to "ReturnClock", dashboard_path, class: "app-brand" %>
-    <%= link_to "Dashboard", dashboard_path, aria: { current: ("page" if current_page?(dashboard_path)) } %>
-    <%= link_to "History", history_path, aria: { current: ("page" if current_page?(history_path)) } %>
-    <% if respond_to?(:new_purchase_path) %>
-      <%= link_to "Add Purchase", new_purchase_path %>
-    <% else %>
-      <%= link_to "Add Purchase", coming_soon_add_purchase_path %>
+<header class="app-header rc-topbar" role="banner">
+  <nav class="rc-topbar-inner" aria-label="<%= t('ui.main_navigation') %>">
+    <%= link_to dashboard_path, class: "app-brand rc-brand", aria: { label: "ReturnClock" } do %>
+      <span class="rc-brand-symbol" aria-hidden="true">◷</span><span>ReturnClock</span>
     <% end %>
-    <details class="profile-menu">
-      <summary aria-label="Profile menu"><span aria-hidden="true">&#128100;</span></summary>
-      <div class="profile-menu-content">
-        <p><%= Current.user.email_address %></p>
-        <p><%= link_to "Account Settings", settings_path %></p>
-        <%= button_to "Sign Out", session_path, method: :delete, class: "auth-button" %>
-      </div>
-    </details>
+    <div class="rc-topnav">
+      <%= link_to t("ui.dashboard"), dashboard_path, class: "rc-navlink #{'active' if current_page?(dashboard_path)}", aria: { current: ("page" if current_page?(dashboard_path)) } %>
+      <%= link_to t("ui.history"), history_path, class: "rc-navlink #{'active' if current_page?(history_path)}", aria: { current: ("page" if current_page?(history_path)) } %>
+    </div>
+    <div class="rc-header-actions">
+      <details class="profile-menu rc-account-menu">
+        <summary class="rc-avatar-button" aria-label="<%= t('ui.profile_menu') %>">
+          <span class="rc-avatar" aria-hidden="true"><%= Current.user.email_address.first.upcase %></span>
+          <span class="rc-account-email"><%= Current.user.email_address %></span>
+          <span class="rc-chevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="rc-dropdown">
+          <div class="rc-dropdown-label"><%= t("ui.signed_in_as") %></div>
+          <div class="rc-dropdown-email"><%= Current.user.email_address %></div>
+          <%= link_to t("ui.settings"), settings_path, class: "rc-dropdown-item" %>
+          <%= button_to t("ui.sign_out"), session_path, method: :delete, class: "rc-dropdown-item rc-logout" %>
+        </div>
+      </details>
+    </div>
   </nav>
 </header>

@@ -1,0 +1,10 @@
+<%# 1. Backend handoff: the new action must set @purchase = Current.user.purchases.build. %>
+<main class="rc-page rc-purchase-editor">
+  <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>"><%= link_to t("ui.dashboard"), dashboard_path %><span>/</span><span><%= t("ui.add") %></span></nav>
+  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.new_kicker") %></span><h1><%= t("ui.add_purchase") %></h1><p><%= t("ui.new_purchase_intro") %></p></div></div>
+  <% if @purchase %>
+    <%= render "purchases/form", purchase: @purchase %>
+  <% else %>
+    <div class="card rc-empty" role="alert"><%= t("ui.new_missing") %></div>
+  <% end %>
+</main>

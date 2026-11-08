@@ -33,7 +33,7 @@ RSpec.describe "Navigation placeholders", type: :request do
     expect(response.body).not_to include(other_user.email_address)
   end
 
-  it "links the authenticated navigation to Add Purchase and Account Settings on every page" do
+  it "keeps Account Settings in navigation and the purchase entry in the Dashboard content" do
     sign_in
     [ dashboard_path, history_path, coming_soon_add_purchase_path, settings_path ].each do |path|
       get path
@@ -43,7 +43,10 @@ RSpec.describe "Navigation placeholders", type: :request do
       else
         coming_soon_add_purchase_path
       end
-      expect(nav.at_css("a[href='#{add_purchase_path}']").text).to eq("Add Purchase")
+      expect(nav.css("a[href='#{add_purchase_path}']")).to be_empty
+      if path == dashboard_path
+        expect(response.parsed_body.at_css("main a[href='#{add_purchase_path}']").text).to include("Add Purchase")
+      end
       expect(nav.at_css("details a[href='#{settings_path}']").text).to eq("Account Settings")
       expect(nav.at_css("form[action='#{session_path}'] button").text).to eq("Sign Out")
     end

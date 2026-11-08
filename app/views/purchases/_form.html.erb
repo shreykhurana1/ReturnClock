@@ -1,0 +1,94 @@
+<%# 1. Prepare variables using only the existing Purchase and StorePolicy fields. %>
+<% policies = Current.user.store_policies.order(:store_name) %>
+<% preview = local_assigns.fetch(:preview, false) %>
+<% id_prefix = preview ? "rc-preview" : "rc" %>
+<%# 2. Purchase form: the team's PurchasesController must receive and validate these parameters. %>
+<%= form_with(model: purchase, class: "rc-purchase-form", local: true, **(preview ? { url: "#", method: :get, namespace: "rc-preview", data: { action: "submit->rc-purchase-preview#pending", turbo: false } } : {})) do |form| %>
+  <% if purchase.errors.any? %>
+    <div class="rc-form-errors" role="alert" aria-live="polite">
+      <strong><%= t("ui.form_errors") %></strong>
+      <ul>
+        <% purchase.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <section class="card rc-form-panel" aria-labelledby="<%= id_prefix %>-purchase-details">
+    <div class="rc-form-panel-head">
+      <span class="rc-step-num">01</span>
+      <div><h2 id="<%= id_prefix %>-purchase-details"><%= t("ui.purchase_details") %></h2><p><%= t("ui.purchase_details_hint") %></p></div>
+    </div>
+    <div class="rc-field-grid">
+      <div class="rc-form-field rc-field-wide">
+        <%= form.label :item_name, t("ui.item_name"), class: "form-label" %>
+        <%= form.text_field :item_name, class: "form-control", placeholder: t("ui.example_item"), required: true, maxlength: 255, autocomplete: "off" %>
+      </div>
+      <div class="rc-form-field">
+        <%= form.label :price, t("ui.item_price"), class: "form-label" %>
+        <div class="rc-input-prefix"><span aria-hidden="true">$</span><%= form.number_field :price, class: "form-control", min: "0.01", step: "0.01", placeholder: "99.99", required: true %></div>
+      </div>
+      <div class="rc-form-field">
+        <%= form.label :purchase_date, t("ui.purchase_date"), class: "form-label" %>
+        <%= form.date_field :purchase_date, class: "form-control", required: true %>
+      </div>
+    </div>
+  </section>
+
+  <section class="card rc-form-panel" aria-labelledby="<%= id_prefix %>-store-policy">
+    <div class="rc-form-panel-head">
+      <span class="rc-step-num">02</span>
+      <div><h2 id="<%= id_prefix %>-store-policy"><%= t("ui.store_policy") %></h2><p><%= t("ui.store_policy_hint") %></p></div>
+    </div>
+    <%# 3. Two policy input modes; the purchase backend must handle the separate store_policy parameters. %>
+    <div data-controller="rc-store-policy" data-rc-store-policy-default-mode-value="<%= policies.any? && params[:store_policy].blank? ? 'existing' : 'new' %>">
+      <div class="rc-policy-modes" role="group" aria-label="<%= t('ui.store_policy_mode') %>">
+        <button type="button" class="rc-policy-tab" data-rc-store-policy-target="existingButton" data-action="rc-store-policy#showExisting" aria-pressed="<%= policies.any? && params[:store_policy].blank? %>" <%= "disabled" if policies.empty? %>><%= t("ui.existing_store") %></button>
+        <button type="button" class="rc-policy-tab" data-rc-store-policy-target="newButton" data-action="rc-store-policy#showNew" aria-pressed="<%= policies.empty? || params[:store_policy].present? %>"><%= t("ui.new_store") %></button>
+      </div>
+      <div data-rc-store-policy-target="existing" <%= "hidden" if policies.empty? || params[:store_policy].present? %>>
+        <div class="rc-form-field">
+          <%= form.label :store_policy_id, t("ui.store_and_window"), class: "form-label" %>
+          <%= form.select :store_policy_id, policies.map { |policy| [t("ui.store_window", store: policy.store_name, count: policy.window_days), policy.id] }, { include_blank: t("ui.select_store") }, { class: "form-select", required: (policies.any? && params[:store_policy].blank?), disabled: (policies.empty? || params[:store_policy].present?), data: { rc_store_policy_target: "existingSelect" } } %>
+        </div>
+      </div>
+      <div data-rc-store-policy-target="new" <%= "hidden" if policies.any? && params[:store_policy].blank? %>>
+        <div class="rc-field-grid">
+          <div class="rc-form-field">
+            <%= label_tag "#{id_prefix}-store-name", t("ui.new_store_name"), class: "form-label" %>
+            <%= text_field_tag "store_policy[store_name]", params.dig(:store_policy, :store_name), id: "#{id_prefix}-store-name", class: "form-control", placeholder: t("ui.example_store"), autocomplete: "off", required: (policies.empty? || params[:store_policy].present?), disabled: (policies.any? && params[:store_policy].blank?), data: { rc_store_policy_target: "newName" } %>
+          </div>
+          <div class="rc-form-field">
+            <%= label_tag "#{id_prefix}-store-days", t("ui.window_days"), class: "form-label" %>
+            <%= number_field_tag "store_policy[window_days]", params.dig(:store_policy, :window_days), id: "#{id_prefix}-store-days", class: "form-control", min: 1, step: 1, placeholder: t("ui.example_window"), required: (policies.empty? || params[:store_policy].present?), disabled: (policies.any? && params[:store_policy].blank?), data: { rc_store_policy_target: "newDays" } %>
+          </div>
+        </div>
+        <p class="rc-field-hint"><%= t("ui.new_policy_hint") %></p>
+      </div>
+    </div>
+    <p class="rc-deadline-note"><strong><%= t("ui.deadline_label") %></strong><%= t("ui.deadline_hint") %></p>
+  </section>
+
+  <%# 4. Use Purchase::STATUSES without defining additional status values. %>
+  <% if purchase.persisted? || preview %>
+    <section class="card rc-form-panel" aria-labelledby="<%= id_prefix %>-status-heading" <%= 'data-rc-purchase-preview-target=statusSection hidden' if preview %>>
+      <div class="rc-form-panel-head"><span class="rc-step-num">03</span><div><h2 id="<%= id_prefix %>-status-heading"><%= t("ui.current_status") %></h2><p><%= t("ui.status_hint") %></p></div></div>
+      <div class="rc-form-field">
+        <%= form.label :status, t("ui.purchase_status"), class: "form-label" %>
+        <%= form.select :status, purchase_status_options(purchase.status), { include_blank: false }, { class: "form-select" } %>
+      </div>
+      <p class="rc-field-hint"><%= t("ui.current_deadline") %><%= purchase.return_by ? l(purchase.return_by, format: :long) : t("ui.calculated_later") %></p>
+    </section>
+  <% else %>
+    <%= form.hidden_field :status, value: "active" %>
+  <% end %>
+  <div class="rc-form-footer">
+    <% if preview %>
+      <button type="button" class="rc-btn rc-btn-outline" data-action="rc-purchase-preview#close"><%= t("ui.cancel") %></button>
+    <% else %>
+      <%= link_to t("ui.cancel"), dashboard_path, class: "rc-btn rc-btn-outline" %>
+    <% end %>
+    <%= form.submit(purchase.persisted? ? t("ui.save_changes") : t("ui.add"), class: "rc-btn rc-btn-primary", data: (preview ? { rc_purchase_preview_target: "submitButton" } : {})) %>
+  </div>
+<% end %>
