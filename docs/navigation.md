@@ -10,13 +10,15 @@
 | Dashboard (`/dashboard`) | Authenticated, read-only cards for upcoming active purchases and all actionable returns/refunds. |
 | History (`/history`) | Authenticated, read-only cards for expired active purchases and purchases marked keeping or refunded. |
 | Authenticated header | ReturnClock, Dashboard, History, and a profile icon/menu showing the signed-in email, Account Settings, and Sign Out. |
-| Add Purchase | Uses `new_purchase_path` when available; otherwise links to the authenticated `/coming-soon/add-purchase` placeholder. |
+| Add Purchase (`/purchases/new`) | Authenticated form using the user's own store policies. Users without a policy are directed to create one first. |
+| Create Store Policy (`/store_policies/new`) | Saves a store name and positive return window in days, then returns to Add Purchase with the new policy selected. |
 | Account Settings (`/settings`) | Authenticated placeholder showing the current email and a coming-soon message, with no update functionality. |
 
 Signup and normal login redirect to Dashboard. If an anonymous visitor first
 requests a protected page, login preserves Rails' existing return-to-page
-behavior. Both placeholder pages reuse the shared header and link back to
-Dashboard. Account changes and Change Password are not implemented.
+behavior. The old `/coming-soon/add-purchase` URL now redirects authenticated
+visitors to the real form. Account Settings remains a placeholder. All pages
+reuse the shared header. Account changes and Change Password are not implemented.
 
 ## Dashboard versus History
 
@@ -43,17 +45,18 @@ columns on large screens, two on medium screens, and one on small screens.
 
 ## Integration notes for Ryan and Jordan
 
-- Ryan: purchase creation/editing/deletion/status updates are untouched. Expose
-  a working `new_purchase_path` when Add Purchase is ready; the header will then
-  use the real form instead of the temporary placeholder. No `PurchasesController`
-  or `new_purchase_path` is defined by the placeholder work. Add owner-scoped authorization tests for each mutation.
+- Ryan: Iteration 1 now implements `new`/`create` in `PurchasesController` and
+  `StorePoliciesController`. Purchase creation permits only item name, price,
+  purchase date, and an owner-scoped policy; the model calculates the deadline.
+  Editing, deletion, and status updates remain unimplemented. Add owner-scoped
+  authorization tests when extending these controllers.
 - The read-only pages live in `DashboardController` and `HistoryController`,
-  leaving `PurchasesController` available for CRUD. Reuse or coordinate changes
+  separate from the creation controllers. Reuse or coordinate changes
   to `shared/_purchase_card.html.erb`, header navigation, and classification.
 - Jordan and the Cucumber/UI teammates: further interface decisions remain with
   the assigned teammates. The current layout implements only the stated header,
   card-grid, form, and empty-state requirements. Use the behavior below for
-  acceptance scenarios; no competing Cucumber suite has been introduced.
+  acceptance scenarios; the existing Cucumber suite includes a first-purchase flow.
 - Account updates, change password, reminders, and uploads remain unimplemented.
   Login does not advertise Forgot Password until real delivery is configured.
   Local reset controller tests remain intact; production resets stay disabled.

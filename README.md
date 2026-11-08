@@ -2,8 +2,8 @@
 
 ReturnClock is a Columbia Engineering SaaS course project that tracks purchases
 and calculates return deadlines from store policies. Authentication, read-only
-Dashboard/History, and automated tests work today. Purchase CRUD and account
-editing are still pending; Account Settings currently displays your email only.
+Dashboard/History, store-policy and purchase creation, and automated tests work
+today. Purchase editing/deletion/status updates and account editing remain pending.
 
 ## Prerequisites
 

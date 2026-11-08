@@ -1,0 +1,35 @@
+<main class="auth-page auth-form-container">
+  <h1>Add Purchase</h1>
+  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
+  <%= render "shared/form_errors", record: @purchase %>
+
+  <% if @store_policies.empty? %>
+    <p>Create a store return policy before adding your first purchase.</p>
+    <%= link_to "Create Store Policy", new_store_policy_path, class: "auth-button" %>
+  <% else %>
+    <%= form_with model: @purchase do |form| %>
+      <div class="auth-field">
+        <%= form.label :item_name, "Item Name" %>
+        <%= form.text_field :item_name, required: true %>
+      </div>
+      <div class="auth-field">
+        <%= form.label :price, "Price" %>
+        <%= form.number_field :price, min: "0.01", step: "0.01", required: true %>
+      </div>
+      <div class="auth-field">
+        <%= form.label :purchase_date, "Purchase Date" %>
+        <%= form.date_field :purchase_date, required: true %>
+      </div>
+      <div class="auth-field">
+        <%= form.label :store_policy_id, "Store Policy" %>
+        <%= form.collection_select :store_policy_id, @store_policies, :id, :store_name,
+              { prompt: "Select a store policy" }, { required: true } %>
+      </div>
+      <p><%= link_to "Create Store Policy", new_store_policy_path %></p>
+      <p class="auth-hint">The return deadline is calculated from the purchase date and store policy. Purchases past their deadline appear in History.</p>
+      <%= form.submit "Add Purchase", class: "auth-button auth-submit" %>
+    <% end %>
+  <% end %>
+
+  <p><%= link_to "Back to Dashboard", dashboard_path %></p>
+</main>

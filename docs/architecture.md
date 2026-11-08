@@ -8,11 +8,12 @@
 - Read-only Dashboard and History, with authentication and owner-scoped records.
 - Database-backed sessions using Rails' built-in authentication system.
 - User-owned store policies and purchases, with model validations and foreign keys.
+- Authenticated store-policy and purchase creation, including a first-purchase flow.
 - Automatic return deadlines, six purchase statuses, and a `days_left` calculation.
 - RSpec model/request tests and the retained Minitest suite, both run by CI.
 - Heroku configuration for one PostgreSQL database, HTTPS, and Solid services.
 
-Purchase creation/editing/deletion/status updates, Cucumber stories, final UI
+Purchase editing/deletion/status updates, further Cucumber stories, final UI
 refinements, and email reminders are pending teammate/future work. This repository is prepared for
 Heroku; this documentation does not mean an application has been deployed.
 Password-reset code is retained and tested locally but disabled in production
@@ -68,7 +69,7 @@ endpoints; the read-only tests do not prove the security of future mutation rout
 | Area | Owner/scope |
 | --- | --- |
 | Authentication, models/schema, RSpec, README, deployment preparation | Shrey / `shrey/authentication` |
-| Purchase CRUD | Teammate implementation |
+| Purchase workflow | Basic policy/purchase creation implemented; editing/deletion/status updates remain teammate work |
 | Cucumber stories | Teammate implementation |
 | UI | Teammate implementation |
 

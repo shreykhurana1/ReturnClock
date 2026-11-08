@@ -13,14 +13,19 @@ RSpec.describe "Navigation placeholders", type: :request do
       expect(response).to redirect_to(new_session_path)
     end
 
-    it "renders #{heading} with the shared header and a working Dashboard link" do
+    it "reaches #{heading} with the shared header and a working Dashboard link" do
       sign_in
       get path
+      if path == "/coming-soon/add-purchase"
+        expect(response).to redirect_to(new_purchase_path)
+        follow_redirect!
+      end
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.at_css("main h1").text).to eq(heading)
       expect(response.parsed_body.at_css("header.app-header")).to be_present
       expect(response.parsed_body.at_css("main a[href='#{dashboard_path}']").text).to eq("Back to Dashboard")
-      expect(response.parsed_body.at_css("main").text).to include("coming soon")
+      message = path == "/settings" ? "coming soon" : "Create a store return policy"
+      expect(response.parsed_body.at_css("main").text).to include(message)
       expect(response.parsed_body.css("main form")).to be_empty
     end
   end
@@ -37,6 +42,7 @@ RSpec.describe "Navigation placeholders", type: :request do
     sign_in
     [ dashboard_path, history_path, coming_soon_add_purchase_path, settings_path ].each do |path|
       get path
+      follow_redirect! if path == coming_soon_add_purchase_path
       nav = response.parsed_body.at_css("nav[aria-label='Main navigation']")
       add_purchase_path = if Rails.application.routes.url_helpers.respond_to?(:new_purchase_path)
         Rails.application.routes.url_helpers.new_purchase_path
@@ -49,7 +55,7 @@ RSpec.describe "Navigation placeholders", type: :request do
     end
   end
 
-  it "does not provide purchase creation or settings update actions" do
+  it "rejects writes to the legacy placeholder URL and settings" do
     sign_in
     expect { post coming_soon_add_purchase_path, params: { purchase: { item_name: "Should not be created" } } }
       .not_to change(Purchase, :count)
