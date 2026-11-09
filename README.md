@@ -14,7 +14,7 @@ Member 2 UNI: xw2970\
 Member 3 Name: Shrey Khurana\
 Member 3 UNI: sk5662\
 Member 4 Name: Sophia Ling\
-Member 4 UNI: sl4909\
+Member 4 UNI: sl4909
 
 
 ## Setup
