@@ -1,6 +1,7 @@
 <%= render "shared/form_errors", record: @store_policy %>
 
 <%= form_with model: @store_policy do |form| %>
+  <%= hidden_field_tag :origin, "purchase" if @from_purchase %>
   <div class="auth-field">
     <%= form.label :store_name, "Store Name" %>
     <%= form.text_field :store_name, required: true %>

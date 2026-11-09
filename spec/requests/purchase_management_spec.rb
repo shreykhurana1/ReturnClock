@@ -189,7 +189,7 @@ RSpec.describe "Purchase management", type: :request do
       expect(response).to have_http_status(:ok)
       html = response.parsed_body
       expect(html.at_css("main").text).to include("Textbook", "This cannot be undone.")
-      expect(html.at_css("a[href='#{edit_purchase_path(purchase)}']").text).to eq("Cancel")
+      expect(html.at_css("main a[href='#{dashboard_path}']").text).to eq("Cancel")
       expect(html.at_css("form[action='#{purchase_path(purchase)}'] input[name='_method']")["value"]).to eq("delete")
       expect { get purchase_path(purchase) }.not_to change(Purchase, :count)
       expect(response).to have_http_status(:not_found)

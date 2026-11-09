@@ -8,9 +8,11 @@
     <details class="profile-menu">
       <summary aria-label="Profile menu"><span aria-hidden="true">&#128100;</span></summary>
       <div class="profile-menu-content">
-        <p><%= Current.user.email_address %></p>
-        <p><%= link_to "Account Settings", settings_path %></p>
-        <%= button_to "Sign Out", session_path, method: :delete, class: "auth-button" %>
+        <p class="profile-account-label">Account</p>
+        <p class="auth-hint"><%= Current.user.email_address %></p>
+        <hr class="profile-menu-divider">
+        <p><%= link_to settings_path do %><span class="profile-settings-icon" aria-hidden="true"></span>Account Settings<% end %></p>
+        <%= button_to session_path, method: :delete, class: "auth-button" do %><span class="profile-logout-icon" aria-hidden="true"></span>Sign Out<% end %>
       </div>
     </details>
   </nav>
