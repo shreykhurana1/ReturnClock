@@ -142,6 +142,10 @@ RSpec.describe "Purchase management", type: :request do
         follow_redirect!
         expect(card_names).to include("Textbook")
         expect(response.body).to include("Purchase updated.")
+        status_select = response.parsed_body.at_css(".rc-status-mini-form select")
+        expect(status_select.css("option").map { |option| option["value"] })
+          .to contain_exactly(*(%w[active keeping refunded] + [ status ]).uniq)
+        expect(status_select.at_css("option[selected]")["value"]).to eq(status)
         get(destination == dashboard_path ? history_path : dashboard_path)
         expect(card_names).not_to include("Textbook")
       end

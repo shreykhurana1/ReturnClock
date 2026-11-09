@@ -11,9 +11,14 @@
     <div class="rc-card-more-panel">
       <% if purchase.persisted? && respond_to?(:purchase_path) %>
       <%# 2. PATCH updates submit only the existing status field. %>
+      <% status_options = %w[active keeping refunded].map { |state| [status_names.fetch(state), state] } %>
+      <%# Preserve the current workflow state so confirming without a change is safe. %>
+      <% unless status_options.any? { |_, state| state == purchase.status } %>
+        <% status_options.unshift(["Current: #{status_names.fetch(purchase.status)}", purchase.status]) %>
+      <% end %>
       <%= form_with(url: purchase_path(purchase), method: :patch, scope: :purchase, namespace: dom_id(purchase, :status), class: "rc-status-mini-form", local: true) do |form| %>
         <%= form.label :status, t("ui.update_status"), class: "form-label" %>
-        <%= form.select :status, purchase_status_options, { selected: purchase.status, include_blank: false }, { class: "form-select" } %>
+        <%= form.select :status, status_options, { selected: purchase.status, include_blank: false }, { class: "form-select" } %>
         <%= form.submit t("ui.confirm_status"), class: "rc-btn rc-btn-primary rc-btn-small" %>
       <% end %>
       <%= link_to "Delete", confirm_delete_purchase_path(purchase), class: "rc-btn rc-btn-danger rc-btn-small" %>

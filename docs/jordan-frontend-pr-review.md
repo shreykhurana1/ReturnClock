@@ -1,3 +1,18 @@
+# Latest main integration review
+
+The pending merge resolves 20 conflicting files between frontend `2207a90` and
+main `ae1b4d0`. It preserves frontend dialogs and sample editing, main's MVP
+mutation/authorization behavior, main's Rails constraint and locked dependencies,
+and team/setup README content. Referenced local documentation is retained.
+There is one added authentication regression check for the legacy purchase URL.
+Post-resolution tests pass: 240 RSpec examples, 10 Cucumber scenarios and 14
+Rails tests, plus live Chrome. See the current verification record for limits.
+The merge resolution is staged but has not been committed or pushed.
+
+---
+
+## Earlier frontend integration review
+
 # Frontend and purchase MVP review
 
 This uncommitted integration connects the frontend at `d97c6da` to Shrey's

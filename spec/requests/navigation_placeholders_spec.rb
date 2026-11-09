@@ -52,6 +52,11 @@ RSpec.describe "Navigation placeholders", type: :request do
     end
   end
 
+  it "requires authentication for the legacy purchase entry" do
+    get coming_soon_add_purchase_path
+    expect(response).to redirect_to(new_session_path)
+  end
+
   it "redirects the old purchase placeholder to the real editor" do
     sign_in
     get coming_soon_add_purchase_path

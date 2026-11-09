@@ -1,3 +1,56 @@
+# Status menu simplification - 2026-11-09
+
+More actions offers Active, Keeping and Refunded. Existing workflow records keep
+their current status as an additional selected option for safe unchanged submits.
+Expired remains deadline-derived. Models and the full edit form are unchanged.
+The purchase management/page/card suites passed 58 examples (seed 10628), including
+all six existing backend states and their card menu selections. RuboCop is clean
+across 86 files. This change is part of the pending local main integration;
+no additional commit or push has been performed.
+
+---
+
+# Latest main conflict resolution - 2026-11-09
+
+Pending local merge: frontend `2207a9007b69f94aa3c73a7eacd492edf80d0d52`
+with `origin/main` at `ae1b4d0e2c483514c1512aaa4eec484acfa743b6`.
+All 20 conflicted paths are resolved and staged. No merge commit or push of
+this resolution has been made. The earlier frontend commits remain intact.
+
+The incoming application source is identical to the integrated purchase MVP
+`044144c`; later main commits changed Gemfile, Gemfile.lock and README. The
+resolution keeps the reviewed frontend, sample editing and dialogs while retaining
+main's CRUD, ownership, validation and deadline behavior. Gemfile/lockfile now
+match main exactly, including Rails >= 8.1.4.1. No gem versions changed.
+The main README's team/setup information is retained with frontend notes.
+Linked setup/deployment/architecture/navigation documents remain available.
+The legacy purchase entry's anonymous authentication check is retained as an
+additional regression test.
+
+Post-resolution checks on the same isolated test/preview databases:
+
+| Check | Result |
+| --- | --- |
+| Bundle check | Satisfied |
+| RSpec | 240 examples, 0 failures; seed 58622 |
+| Cucumber | 10 scenarios, 120 steps passed |
+| Rails/Minitest | 14 runs, 60 assertions, no failures/errors/skips; seed 11035 |
+| RuboCop | 86 files, no offenses |
+| Brakeman | 0 errors and 0 warnings |
+| Live Chrome | Modal add/sample/edit, policy setup, 422 recovery, cancellation, Escape/focus, Dashboard/History persistence and 1440px/390px layouts passed; no uncaught JS errors |
+
+Logs: `/tmp/returnclock-main-integration-*.log`. Browser artifacts use ignored
+`tmp/shrey-integration/`. A pre-merge Git bundle is in ignored
+`tmp/main-integration/before-main.bundle`. Local PostgreSQL is version 16;
+main's documented PostgreSQL 18, remote CI, production and physical iOS/Safari
+were not tested. The preview on port 3216 uses a separate preview database.
+GitHub PR conflicts will remain visible until a separately authorized merge
+commit and push publish this resolution.
+
+---
+
+# Earlier frontend verification
+
 # Current modal title cleanup
 
 The dialog now has one visible, accessible heading: Add Purchase, Edit Purchase,

@@ -1,10 +1,11 @@
 # Frontend and purchase MVP integration
 
 Local working tree: `iteration1-frontend` in the designated submit2 checkout.
-The committed frontend is `d97c6da1e2cfc063b0e437e15fc02dc4a8aae2fc`.
-Upstream source: `shrey/iter1-purchase-mvp` at
-`044144cb6fd0fd1bba2fa6d70626aefbc996c980`, based on `9772500`.
-The integration is uncommitted; no merge commit or remote update was made.
+The original frontend is `d97c6da`; purchase integration and dialogs were committed
+and pushed as `2207a90`. The current pending merge incorporates latest main
+`ae1b4d0`. All conflicts are resolved locally; the merge commit/push are pending.
+Gemfile/lockfile match main. Frontend behavior below is preserved; see the latest
+[verification](jordan-frontend-verification.md) for actual post-resolution checks.
 
 ## Current behavior
 
@@ -30,7 +31,11 @@ Models, schema, authentication, dependency lockfile and CI are unchanged.
 - Purchase fields are `item_name`, `price`, `purchase_date`, `store_policy_id`;
   updates may also submit `status`. The backend ignores submitted owners/deadlines
   and applies the existing model's deadline calculation.
-- All six `Purchase::STATUSES` are available in the editor and card status menu.
+- The More actions status menu offers Active, Keeping and Refunded. An existing
+  workflow status remains as its current selection to avoid accidental changes;
+  the other workflow states are not offered. Expired is derived from an active
+  purchase's deadline, not a writable status. The full editor retains all six
+  backend-supported statuses.
   Status-only PATCH requests work. Keeping/refunded and expired active purchases
   return to History after update; other states return to Dashboard.
 - Cards link to Edit and a separate Delete Purchase confirmation. GET never
