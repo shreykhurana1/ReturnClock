@@ -7,14 +7,14 @@ Deployed app: [https://returnclock-a408217a60ef.herokuapp.com/](https://returncl
 
 ## Team Members
 
-Member 1 Name: Ryan Shi
-Member 1 UNI: rs4469
-Member 2 Name: Jordan Wu
-Member 2 UNI: xw2970
-Member 3 Name: Shrey Khurana
-Member 3 UNI: sk5662
-Member 4 Name: Sophia Ling
-Member 4 UNI: sl4909
+Member 1 Name: Ryan Shi\
+Member 1 UNI: rs4469\
+Member 2 Name: Jordan Wu\
+Member 2 UNI: xw2970\
+Member 3 Name: Shrey Khurana\
+Member 3 UNI: sk5662\
+Member 4 Name: Sophia Ling\
+Member 4 UNI: sl4909\
 
 
 ## Setup
