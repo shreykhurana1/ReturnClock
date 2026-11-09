@@ -21,6 +21,31 @@ Feature: Record a first purchase
     And I should see "$49.99" in the main content
     And the purchase should have a return deadline 30 days from today
 
+  Scenario Outline: Reject incomplete or invalid purchase details without adding a purchase
+    Given an account exists for "shopper@example.com" with password "Password1!"
+    And the account "shopper@example.com" has a policy named "Campus Store" with a 30-day return window
+    And I visit the landing page
+    When I follow "Sign In"
+    And I sign in with email "shopper@example.com" and password "Password1!"
+    And I follow "Add Purchase"
+    And I fill in "Item Name" with "Invalid Purchase"
+    And I fill in "Price" with "<price>"
+    And I fill in "Purchase Date" with "<purchase date>"
+    And I choose store policy "<store policy>"
+    And I press "Add Purchase"
+    Then I should see the "Add Purchase" heading
+    And I should see "<error>" in the main content
+    When I follow "Back to Dashboard"
+    Then I should not see a purchase named "Invalid Purchase"
+
+    Examples:
+      | price | purchase date | store policy          | error                              |
+      |       | 2026-11-09    | Campus Store          | Price is not a number              |
+      | 0     | 2026-11-09    | Campus Store          | Price must be greater than 0       |
+      | -5    | 2026-11-09    | Campus Store          | Price must be greater than 0       |
+      | 49.99 |               | Campus Store          | Purchase date can't be blank       |
+      | 49.99 | 2026-11-09    | Select a store policy | Store policy must exist            |
+
   Scenario Outline: Record a purchase with my current return decision
     Given an account exists for "shopper@example.com" with password "Password1!"
     And the account "shopper@example.com" has a policy named "Campus Store" with a 30-day return window

@@ -94,3 +94,22 @@ Feature: Manage purchases and saved store policies
     And I add a purchase named "New Textbook" costing "20.00" purchased today
     Then purchase "Textbook" should have a deadline 30 days from today
     And purchase "New Textbook" should have a deadline 60 days from today
+
+  Scenario: Reject invalid edits without changing the saved purchase
+    When I edit purchase "Textbook"
+    And I fill in "Item Name" with "   "
+    And I fill in "Price" with "-5"
+    And I press "Save Purchase"
+    Then I should see the "Edit Purchase" heading
+    And I should see "Item name can't be blank" in the main content
+    And I should see "Price must be greater than 0" in the main content
+    And the purchase price should be "-5"
+    And the store policy "Campus Store" should be selected
+    When I follow "Back to Dashboard"
+    Then the "Textbook" card should show "$49.99"
+    And purchase "Textbook" should have a deadline 30 days from today
+    When I edit purchase "Textbook"
+    And I save the purchase as "Corrected Textbook" costing "35.00" bought 2 days ago using "Book Shop"
+    Then I should see the "Dashboard" heading
+    And the "Corrected Textbook" card should show "$35.00"
+    And purchase "Corrected Textbook" should have a deadline 12 days from today

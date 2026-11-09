@@ -69,3 +69,8 @@ end
 Then("I should not see a purchase named {string}") do |name|
   expect(page).not_to have_selector(".purchase-card h2", exact_text: name)
 end
+
+Then("the {string} card should show {string}") do |name, text|
+  card = find(".purchase-card h2", exact_text: name).ancestor(".purchase-card")
+  expect(card).to have_text(text)
+end

@@ -11,6 +11,21 @@ Feature: Manage access to ReturnClock
     And I should see "Account created successfully!" in the main content
     And I should see "Demo preview" in the main content
 
+  Scenario: Reject signup when password confirmation does not match
+    Given I visit the landing page
+    When I follow "Create Account"
+    And I fill in "Email" with "new@example.com"
+    And I fill in "Password" with "Password1!"
+    And I fill in "Confirm Password" with "Different1!"
+    And I press "Create Account"
+    Then I should see the "Create Account" heading
+    And I should see "Passwords do not match." in the main content
+    And the "Email" field should contain "new@example.com"
+    And the "Password" field should contain ""
+    And the "Confirm Password" field should contain ""
+    When I visit the Dashboard directly
+    Then I should see the "Sign In" heading
+
   Scenario: Reject signup with an email that already has an account
     Given an account exists for "student@example.com" with password "Password1!"
     And I visit the landing page
