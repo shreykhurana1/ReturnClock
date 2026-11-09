@@ -5,7 +5,7 @@ Feature: Purchases dashboard
 
   Background:
     Given today is 2026-10-15
-    And I am logged in as "amy@example.com"
+    And I am logged in as "someone@example.com"
 
   Scenario: A card shows the details I entered
     Given I have the following purchases:

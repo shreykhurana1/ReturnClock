@@ -6,7 +6,7 @@
   <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.new_kicker") %></span><h1><%= @sample_purchase ? "Edit Sample Purchase" : t("ui.add_purchase") %></h1><p><%= t("ui.new_purchase_intro") %></p></div></div>
   <%= tag.div(flash[:notice], class: "rc-alert", role: "status") if flash[:notice] %>
   <% if @sample_purchase %>
-    <p class="rc-alert" role="note">Editing a demo template. Choose your own store policy and save to add this purchase to your account.</p>
+    <p class="rc-alert" role="note">Editing a demo template. Enter your own store and return-by date, then save to add this purchase to your account.</p>
   <% end %>
   <% if @purchase %>
     <%= render "purchases/form", purchase: @purchase %>

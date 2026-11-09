@@ -5,7 +5,7 @@ Feature: Add a purchase
 
   Background:
     Given today is 2026-10-01
-    And I am logged in as "amy@example.com"
+    And I am logged in as "someone@example.com"
 
   Scenario: Minimal — just an item name and a return-by date
     Given I am on the Add Purchase page

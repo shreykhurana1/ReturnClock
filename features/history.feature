@@ -5,7 +5,7 @@ Feature: Purchase history
 
   Background:
     Given today is 2026-12-01
-    And I am logged in as "amy@example.com"
+    And I am logged in as "someone@example.com"
     And I have the following purchases:
       | item   | return_by  | status       |
       | Scarf  | 2026-10-31 | Keeping      |

@@ -5,7 +5,7 @@ Feature: Save a store's return policy
 
   Background:
     Given today is 2026-10-01
-    And I am logged in as "amy@example.com"
+    And I am logged in as "someone@example.com"
 
   Scenario: Save a new store after adding a purchase
     When I add a purchase "Dress" from store "Zara" with a 30 day window

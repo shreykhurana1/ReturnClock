@@ -4,7 +4,7 @@ Feature: Edit a purchase
   So that I can start minimal and add more when I have the receipt
 
   Background:
-    Given I am logged in as "amy@example.com"
+    Given I am logged in as "someone@example.com"
     And I have a purchase "Textbook" from "Campus Store" with a 30 day return window
     And I have a saved store "Book Shop" with a 14 day return window
     And I am on the Dashboard

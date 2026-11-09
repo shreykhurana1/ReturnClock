@@ -82,3 +82,6 @@ git switch -c your-name/feature-name
 Commit and push your changes, then open a pull request into `main`. Wait for GitHub Actions checks to pass before merging.
 
 When working with user-specific data, use `Current.user` to scope database queries.
+
+## AI Usage
+Claude Code Sonnet 5.5 was used to write a spec for cucumber user stories, given the project proposal and schema. The proposal was then then reviewed in its entirety, given explicit changes, and re-reviewed.

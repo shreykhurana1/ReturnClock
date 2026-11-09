@@ -4,7 +4,7 @@ Feature: User settings
   So that reminders arrive when I can still act on them
 
   Background:
-    Given I am logged in as "amy@example.com"
+    Given I am logged in as "someone@example.com"
 
   Scenario: Reminder lead time defaults to 2 days
     When I open the profile menu

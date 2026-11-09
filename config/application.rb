@@ -13,6 +13,8 @@ module ReturnClock
 
     # Production disables this until a real email provider is configured.
     config.x.password_resets_enabled = true
+    # Production disables this until a real email provider is configured.
+    config.x.reminder_emails_enabled = true
 
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.

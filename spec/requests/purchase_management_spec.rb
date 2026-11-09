@@ -53,7 +53,7 @@ RSpec.describe "Purchase management", type: :request do
       end
     end
 
-    it "shows editable values, all six statuses, and only owned policies" do
+    it "shows editable values and every status without revealing another user's stores" do
       other_policy
       get edit_purchase_path(purchase)
       expect(response).to have_http_status(:ok)
@@ -61,9 +61,11 @@ RSpec.describe "Purchase management", type: :request do
       expect(html.at_css("input[name='purchase[item_name]']")["value"]).to eq("Textbook")
       expect(html.at_css("input[name='purchase[purchase_date]']")["value"]).to eq("2026-11-08")
       expect(html.css("select[name='purchase[status]'] option").map { |option| option["value"] }).to eq(Purchase::STATUSES)
-      expect(html.css("select[name='purchase[store_policy_id]'] option").map(&:text)).to include(policy.store_name)
+      expect(html.at_css("input[name='purchase[store_name]']")["value"]).to eq(policy.store_name)
+      expect(html.at_css("input[name='purchase[return_window_days]']")["value"]).to eq("30")
+      expect(html.at_css("input[name='purchase[return_by]']")["value"]).to eq("2026-12-08")
       expect(response.body).not_to include(other_policy.store_name)
-      expect(html.css("input[name='purchase[user_id]'], input[name='purchase[return_by]']")).to be_empty
+      expect(html.css("input[name='purchase[user_id]'], [name='purchase[store_policy_id]']")).to be_empty
     end
 
     it "updates item and price while preserving the deadline after a policy window edit" do
@@ -76,41 +78,39 @@ RSpec.describe "Purchase management", type: :request do
       expect(purchase.return_by).to eq(deadline)
     end
 
-    it "recalculates from a changed date using the policy's current saved window" do
+    it "moves the deadline with a changed date using the purchase's own window" do
       purchase
       policy.update!(window_days: 60)
       patch purchase_path(purchase), params: { purchase: { purchase_date: "2026-11-01" } }
       expect(response).to redirect_to(dashboard_path)
-      expect(purchase.reload.return_by).to eq(Date.new(2026, 12, 31))
+      expect(purchase.reload.return_by).to eq(Date.new(2026, 12, 1))
     end
 
-    it "recalculates when an owned replacement policy is selected" do
+    it "uses another saved store's window when the store changes and the deadline fields are cleared" do
       replacement = user.store_policies.create!(store_name: "Other Store", window_days: 14)
-      patch purchase_path(purchase), params: { purchase: { store_policy_id: replacement.id } }
+      patch purchase_path(purchase), params: { purchase: { store_name: "Other Store", return_window_days: "", return_by: "" } }
       expect(response).to redirect_to(dashboard_path)
       expect(purchase.reload.store_policy).to eq(replacement)
       expect(purchase.return_by).to eq(Date.new(2026, 11, 22))
     end
 
-    it "ignores ownership and deadline fields while applying allowed edits" do
-      deadline = purchase.return_by
-      patch purchase_path(purchase), params: { purchase: { item_name: "Updated", user_id: other_user.id, return_by: "2099-01-01" } }
+    it "ignores ownership fields and lets a submitted return-by date win" do
+      patch purchase_path(purchase), params: { purchase: { item_name: "Updated", user_id: other_user.id, return_by: "2026-12-20" } }
       expect(response).to redirect_to(dashboard_path)
       expect(purchase.reload.user).to eq(user)
-      expect(purchase.return_by).to eq(deadline)
+      expect(purchase.return_by).to eq(Date.new(2026, 12, 20))
+      expect(purchase.return_window_days).to eq(42)
       expect(purchase.item_name).to eq("Updated")
     end
 
-    it "rejects another user's policy without saving any part of the edit" do
-      original = purchase.attributes
-      patch purchase_path(purchase), params: { purchase: { item_name: "Should not persist", store_policy_id: other_policy.id } }
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store policy must exist")
-      expect(response.body).not_to include(other_policy.store_name)
-      expect(purchase.reload.attributes).to eq(original)
+    it "ignores another user's policy id" do
+      patch purchase_path(purchase), params: { purchase: { item_name: "Renamed", store_policy_id: other_policy.id } }
+      expect(response).to redirect_to(dashboard_path)
+      expect(purchase.reload.store_policy).to eq(policy)
+      expect(other_policy.purchases).to be_empty
     end
 
-    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { store_policy_id: -1 }, { status: "expired" } ].each do |invalid|
+    [ { item_name: "" }, { price: 0 }, { return_by: "2026-11-01" }, { return_window_days: -1 }, { status: "unknown" } ].each do |invalid|
       it "renders edit errors without changing the purchase for #{invalid.inspect}" do
         original = purchase.attributes
         patch purchase_path(purchase), params: { purchase: invalid }
@@ -128,14 +128,14 @@ RSpec.describe "Purchase management", type: :request do
       expect(html.at_css("input[name='purchase[item_name]']")["value"]).to eq("Updated Textbook")
       expect(html.at_css("input[name='purchase[price]']")["value"]).to eq("-5")
       expect(html.at_css("select[name='purchase[status]'] option[selected]")["value"]).to eq("returning")
-      expect(html.at_css("select[name='purchase[store_policy_id]'] option[selected]")["value"]).to eq(policy.id.to_s)
+      expect(html.at_css("input[name='purchase[store_name]']")["value"]).to eq(policy.store_name)
     end
 
     Purchase::STATUSES.each do |status|
       it "accepts #{status} and routes it to the correct page" do
         deadline = purchase.return_by
         patch purchase_path(purchase), params: { purchase: { status: status } }
-        destination = %w[keeping refunded].include?(status) ? history_path : dashboard_path
+        destination = %w[keeping refunded expired].include?(status) ? history_path : dashboard_path
         expect(response).to redirect_to(destination)
         expect(purchase.reload.status).to eq(status)
         expect(purchase.return_by).to eq(deadline)
@@ -152,7 +152,29 @@ RSpec.describe "Purchase management", type: :request do
       end
     end
 
-    %w[returning shipped_back refund_pending].each do |status|
+    %w[active returning].each do |status|
+      it "refuses to reopen an expired purchase as #{status} without a new deadline" do
+        purchase.update!(purchase_date: Date.current - 40)
+        expect(purchase.reload.status).to eq("expired")
+        patch purchase_path(purchase), params: { purchase: { status: status } }
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include(Purchase::REOPEN_MESSAGE)
+        patch purchase_path(purchase), params: { quick: 1, purchase: { status: status } }
+        expect(response).to redirect_to(history_path)
+        follow_redirect!
+        expect(response.body).to include(Purchase::REOPEN_MESSAGE)
+        expect(purchase.reload.status).to eq("expired")
+      end
+    end
+
+    it "reopens an expired purchase when its return-by date moves" do
+      purchase.update!(purchase_date: Date.current - 40)
+      patch purchase_path(purchase), params: { purchase: { return_by: (Date.current + 5).iso8601 } }
+      expect(response).to redirect_to(dashboard_path)
+      expect(purchase.reload.status).to eq("active")
+    end
+
+    %w[shipped_back refund_pending].each do |status|
       it "moves an expired #{status} purchase from History to Dashboard" do
         purchase.update!(purchase_date: Date.current - 40)
         patch purchase_path(purchase), params: { purchase: { status: status } }

@@ -3,44 +3,38 @@ class PurchasesController < ApplicationController
   before_action :set_sample_purchase, only: [ :new, :create ]
 
   def new
-    @store_policies = Current.user.store_policies.order(:store_name, :id)
     @purchase = Current.user.purchases.new(purchase_date: Date.current)
-    @purchase.store_policy = @store_policies.find_by(id: params[:store_policy_id])
     if @sample_purchase
       @purchase.assign_attributes(@sample_purchase.attributes.slice("item_name", "price", "purchase_date"))
-      @purchase.store_policy ||= @store_policies.find_by(store_name: @sample_purchase.store_policy.store_name)
     end
   end
 
   def create
-    attributes = purchase_params
-    @purchase = Current.user.purchases.new(attributes.except(:store_policy_id))
-    # Resolve the policy through its owner before associating it with the purchase.
-    @purchase.store_policy = Current.user.store_policies.find_by(id: attributes[:store_policy_id])
+    @purchase = Current.user.purchases.new(purchase_params)
 
     if @purchase.save
-      redirect_to purchase_page, notice: "Purchase added."
+      offer_to_save_store
+      redirect_to purchase_page, notice: created_notice
     else
-      @store_policies = Current.user.store_policies.order(:store_name, :id)
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    @store_policies = Current.user.store_policies.order(:store_name, :id)
   end
 
   def update
-    attributes = params.expect(purchase: [ :item_name, :price, :purchase_date, :store_policy_id, :status ])
-    @purchase.assign_attributes(attributes.except(:store_policy_id))
-    if attributes.key?(:store_policy_id)
-      @purchase.store_policy = Current.user.store_policies.find_by(id: attributes[:store_policy_id])
-    end
+    @purchase.assign_attributes(purchase_params)
 
     if @purchase.save
+      offer_to_save_store
       redirect_to purchase_page, notice: "Purchase updated.", status: :see_other
+    elsif params[:quick].present?
+      # Status changes from a card go back to that card's page with the reason.
+      alert = @purchase.errors.full_messages.to_sentence
+      @purchase.restore_attributes
+      redirect_to purchase_page, alert: alert, status: :see_other
     else
-      @store_policies = Current.user.store_policies.order(:store_name, :id)
       render :edit, status: :unprocessable_entity
     end
   end
@@ -69,15 +63,26 @@ class PurchasesController < ApplicationController
   end
 
   def purchase_page
-    if %w[keeping refunded].include?(@purchase.status) ||
-        (@purchase.status == "active" && @purchase.return_by < Date.current)
-      history_path
+    @purchase.on_dashboard? ? dashboard_path : history_path
+  end
+
+  def created_notice
+    if @purchase.status == "expired"
+      %(The return-by date has passed, so "#{@purchase.item_name}" was logged as expired.)
     else
-      dashboard_path
+      "Purchase added."
     end
   end
 
+  # Offers to remember a store's window the first time it is used.
+  def offer_to_save_store
+    return unless @purchase.store_name && @purchase.return_window_days&.positive?
+    return if @purchase.matching_store_policy
+
+    flash[:save_store] = { "store_name" => @purchase.store_name, "window_days" => @purchase.return_window_days }
+  end
+
   def purchase_params
-    params.expect(purchase: [ :item_name, :price, :purchase_date, :store_policy_id, :status ])
+    params.expect(purchase: [ :item_name, :store_name, :price, :purchase_date, :return_window_days, :return_by, :status ])
   end
 end

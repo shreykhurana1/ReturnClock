@@ -5,7 +5,7 @@ Feature: Track a return
 
   Background:
     Given today is 2026-10-15
-    And I am logged in as "amy@example.com"
+    And I am logged in as "someone@example.com"
     And I have the following purchases:
       | item   | price | return_by  |
       | Jacket | 60.00 | 2026-12-30 |

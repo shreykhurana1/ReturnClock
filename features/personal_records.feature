@@ -4,9 +4,9 @@ Feature: Find my purchases by return urgency
   So that I can focus on what still needs attention without seeing anyone else's data
 
   Scenario: Users only see their own purchases and store policies
-    Given a user exists with email "amy@example.com" and password "Password1!"
+    Given a user exists with email "someone@example.com" and password "Password1!"
     And a user exists with email "bob@example.com" and password "Password1!"
-    And the account "amy@example.com" has these purchases:
+    And the account "someone@example.com" has these purchases:
       | item         | store        | return window | days ago | status  |
       | My Textbook  | Campus Store | 30            | 1        | Active  |
       | My Kept Book | Campus Store | 30            | 2        | Keeping |
@@ -14,7 +14,7 @@ Feature: Find my purchases by return urgency
       | item         | store         | return window | days ago | status   |
       | Bob's Lamp   | Private Store | 14            | 1        | Active   |
       | Private Book | Private Store | 14            | 2        | Refunded |
-    When I am logged in as "amy@example.com"
+    When I am logged in as "someone@example.com"
     Then I should see "My Textbook" in the main content
     And I should not see "Bob's Lamp" in the main content
     When I follow "History"
@@ -30,8 +30,8 @@ Feature: Find my purchases by return urgency
     Then I should see "Add a return-by date, or a purchase date and return window" in the main content
 
   Scenario: Keep overdue refunds actionable and show upcoming deadlines in order
-    Given a user exists with email "amy@example.com" and password "Password1!"
-    And the account "amy@example.com" has these purchases:
+    Given a user exists with email "someone@example.com" and password "Password1!"
+    And the account "someone@example.com" has these purchases:
       | item               | store        | return window | days ago | status         |
       | Later Return       | Campus Store | 30            | 10       | Active         |
       | Due Today          | Campus Store | 30            | 30       | Active         |
@@ -39,7 +39,7 @@ Feature: Find my purchases by return urgency
       | Refund In Progress | Campus Store | 30            | 40       | Refund Pending |
       | Shipped Return     | Campus Store | 30            | 41       | Shipped Back   |
       | Completed Return   | Campus Store | 30            | 2        | Refunded       |
-    When I am logged in as "amy@example.com"
+    When I am logged in as "someone@example.com"
     Then the purchases should appear in this order:
       | Shipped Return     |
       | Refund In Progress |
