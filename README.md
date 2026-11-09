@@ -85,3 +85,5 @@ When working with user-specific data, use `Current.user` to scope database queri
 
 ## AI Usage
 Claude Code Sonnet 5.5 was used to write a spec for cucumber user stories, given the project proposal and schema. The proposal was then then reviewed in its entirety, given explicit changes, and re-reviewed.
+
+OpenAI, ChatGPT and Codex. https://chatgpt.com/ and https://openai.com/codex/ - Used for implementation assistance, debugging purchase status and store-policy workflows, resolving Rails and Heroku deployment issues, and supporting automated testing.
