@@ -1,70 +1,77 @@
-Feature: Manage access to ReturnClock
-  As a shopper tracking return deadlines
-  I want to create an account and sign in securely
-  So that I can access my own ReturnClock pages
+Feature: Account access
+  As a shopper
+  I want my own private account
+  So that only I can see my purchases and return deadlines
 
-  Scenario: Create an account from the public landing page
+  Scenario: Sign up with an email and password
     Given I visit the landing page
     When I follow "Create Account"
-    And I sign up with email "new@example.com" and password "Password1!"
-    Then I should see the "Dashboard" heading
+    And I sign up with email "amy@example.com" and password "Password1!"
+    Then I should be on the Dashboard
     And I should see "Account created successfully!" in the main content
     And I should see "Demo preview" in the main content
 
-  Scenario: Reject signup with an email that already has an account
-    Given an account exists for "student@example.com" with password "Password1!"
+  Scenario: Cannot sign up with an email that is already taken
+    Given a user exists with email "amy@example.com" and password "Password1!"
     And I visit the landing page
     When I follow "Create Account"
-    And I sign up with email "student@example.com" and password "Password1!"
-    Then I should see the "Create Account" heading
+    And I sign up with email "amy@example.com" and password "Password1!"
+    Then I should be on the Create Account page
     And I should see "Email address has already been taken" in the main content
-    And the "Email" field should contain "student@example.com"
+    And the "Email" field should contain "amy@example.com"
     And the "Password" field should contain ""
     And the "Confirm Password" field should contain ""
-    When I visit the Dashboard directly
-    Then I should see the "Sign In" heading
+    When I go to the Dashboard
+    Then I should be on the Sign In page
 
-  Scenario: Sign in and open my account settings from the profile menu
-    Given an account exists for "student@example.com" with password "Password1!"
+  Scenario: Cannot sign up when passwords do not match
+    Given I visit the landing page
+    When I follow "Create Account"
+    And I fill in "Email" with "amy@example.com"
+    And I fill in "Password" with "Password1!"
+    And I fill in "Confirm Password" with "Different1!"
+    And I press "Create Account"
+    Then I should be on the Create Account page
+    And I should see "Passwords do not match." in the main content
+
+  Scenario: Log in with correct credentials
+    Given a user exists with email "amy@example.com" and password "Password1!"
     And I visit the landing page
     When I follow "Sign In"
-    And I sign in with email "student@example.com" and password "Password1!"
-    Then I should see the "Dashboard" heading
+    And I log in with email "amy@example.com" and password "Password1!"
+    Then I should be on the Dashboard
     When I open the profile menu
     And I follow "Account Settings"
-    Then I should see the "Account Settings" heading
-    And I should see "student@example.com" in the main content
-    And I should see "More account settings coming soon." in the main content
+    Then I should be on the Account Settings page
+    And I should see "amy@example.com" in the main content
 
-  Scenario: Reject sign-in with an incorrect password
-    Given an account exists for "student@example.com" with password "Password1!"
+  Scenario: Log in with the wrong password
+    Given a user exists with email "amy@example.com" and password "Password1!"
     And I visit the landing page
     When I follow "Sign In"
-    And I sign in with email "student@example.com" and password "WrongPassword1!"
-    Then I should see the "Sign In" heading
+    And I log in with email "amy@example.com" and password "WrongPassword1!"
+    Then I should be on the Sign In page
     And I should see "Try another email address or password." in the main content
-    And the "Email" field should contain "student@example.com"
+    And the "Email" field should contain "amy@example.com"
     And the "Password" field should contain ""
-    When I visit the Dashboard directly
-    Then I should see the "Sign In" heading
+    When I go to the Dashboard
+    Then I should be on the Sign In page
 
-  Scenario: Sign out and lose access to the Dashboard
-    Given an account exists for "student@example.com" with password "Password1!"
-    And I visit the landing page
-    When I follow "Sign In"
-    And I sign in with email "student@example.com" and password "Password1!"
-    And I open the profile menu
-    And I sign out
-    Then I should see the "Sign In" heading
-    When I visit the Dashboard directly
-    Then I should see the "Sign In" heading
+  Scenario: Log out
+    Given I am logged in as "amy@example.com"
+    When I open the profile menu
+    And I press "Sign Out"
+    Then I should be on the Sign In page
+    When I go to the Dashboard
+    Then I should be on the Sign In page
 
-  Scenario: Sign in before accessing History and return to the requested page
-    Given an account exists for "student@example.com" with password "Password1!"
-    When I visit History directly
-    Then I should see the "Sign In" heading
-    When I sign in with email "student@example.com" and password "Password1!"
-    Then I should see the "History" heading
+  Scenario: Logged-out visitors are sent to the login page
+    Given a user exists with email "amy@example.com" and password "Password1!"
+    And I am not logged in
+    When I go to History
+    Then I should be on the Sign In page
+    When I log in with email "amy@example.com" and password "Password1!"
+    Then I should be on History
     And I should see "Demo preview" in the main content
     When I follow "Dashboard"
-    Then I should see the "Dashboard" heading
+    Then I should be on the Dashboard

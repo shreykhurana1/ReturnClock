@@ -3,22 +3,20 @@ Feature: Find my purchases by return urgency
   I want my own actionable returns on Dashboard and finished purchases in History
   So that I can focus on what still needs attention without seeing anyone else's data
 
-  Scenario: See only my purchases and store policies
-    Given an account exists for "shopper@example.com" with password "Password1!"
-    And an account exists for "other@example.com" with password "Password1!"
-    And the account "shopper@example.com" has these purchases:
+  Scenario: Users only see their own purchases and store policies
+    Given a user exists with email "amy@example.com" and password "Password1!"
+    And a user exists with email "bob@example.com" and password "Password1!"
+    And the account "amy@example.com" has these purchases:
       | item         | store        | return window | days ago | status  |
       | My Textbook  | Campus Store | 30            | 1        | Active  |
       | My Kept Book | Campus Store | 30            | 2        | Keeping |
-    And the account "other@example.com" has these purchases:
+    And the account "bob@example.com" has these purchases:
       | item         | store         | return window | days ago | status   |
-      | Private Bag  | Private Store | 14            | 1        | Active   |
+      | Bob's Lamp   | Private Store | 14            | 1        | Active   |
       | Private Book | Private Store | 14            | 2        | Refunded |
-    And I visit the landing page
-    When I follow "Sign In"
-    And I sign in with email "shopper@example.com" and password "Password1!"
+    When I am logged in as "amy@example.com"
     Then I should see "My Textbook" in the main content
-    And I should not see "Private Bag" in the main content
+    And I should not see "Bob's Lamp" in the main content
     When I follow "History"
     Then I should see "My Kept Book" in the main content
     And I should not see "Private Book" in the main content
@@ -26,12 +24,14 @@ Feature: Find my purchases by return urgency
     Then I should see "Campus Store" in the main content
     And I should not see "Private Store" in the main content
     When I follow "Add Purchase"
-    Then the available store policies should be:
-      | Campus Store |
+    And I fill in "Item Name" with "Borrowed Bag"
+    And I fill in "Store" with "Private Store"
+    And I press "Add Purchase"
+    Then I should see "Add a return-by date, or a purchase date and return window" in the main content
 
   Scenario: Keep overdue refunds actionable and show upcoming deadlines in order
-    Given an account exists for "shopper@example.com" with password "Password1!"
-    And the account "shopper@example.com" has these purchases:
+    Given a user exists with email "amy@example.com" and password "Password1!"
+    And the account "amy@example.com" has these purchases:
       | item               | store        | return window | days ago | status         |
       | Later Return       | Campus Store | 30            | 10       | Active         |
       | Due Today          | Campus Store | 30            | 30       | Active         |
@@ -39,9 +39,7 @@ Feature: Find my purchases by return urgency
       | Refund In Progress | Campus Store | 30            | 40       | Refund Pending |
       | Shipped Return     | Campus Store | 30            | 41       | Shipped Back   |
       | Completed Return   | Campus Store | 30            | 2        | Refunded       |
-    And I visit the landing page
-    When I follow "Sign In"
-    And I sign in with email "shopper@example.com" and password "Password1!"
+    When I am logged in as "amy@example.com"
     Then the purchases should appear in this order:
       | Shipped Return     |
       | Refund In Progress |
