@@ -1,0 +1,7 @@
+<main class="auth-page auth-form-container">
+  <h1>Add Purchase</h1>
+  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
+  <%= render "form" %>
+
+  <p><%= link_to "Back to Dashboard", dashboard_path %></p>
+</main>

@@ -1,5 +1,6 @@
 <main class="app-container">
   <h1>History</h1>
+  <%= tag.div(flash[:notice], role: "status") if flash[:notice] %>
   <p>Expired active purchases and purchases marked keeping or refunded.</p>
   <% if @purchases.any? %>
     <div class="purchase-grid">

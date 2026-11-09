@@ -1,0 +1,13 @@
+<%= render "shared/form_errors", record: @store_policy %>
+
+<%= form_with model: @store_policy do |form| %>
+  <div class="auth-field">
+    <%= form.label :store_name, "Store Name" %>
+    <%= form.text_field :store_name, required: true %>
+  </div>
+  <div class="auth-field">
+    <%= form.label :window_days, "Return Window (days)" %>
+    <%= form.number_field :window_days, min: 1, step: 1, required: true %>
+  </div>
+  <%= form.submit(@store_policy.persisted? ? "Save Store Policy" : "Create Store Policy", class: "auth-button auth-submit") %>
+<% end %>

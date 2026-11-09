@@ -1,0 +1,10 @@
+<% if record.errors.any? %>
+  <div class="auth-error" role="alert">
+    <p>Please correct the following:</p>
+    <ul class="auth-field-errors">
+      <% record.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>

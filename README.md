@@ -1,22 +1,53 @@
 # ReturnClock
 
-ReturnClock is a Columbia Engineering SaaS course project that tracks purchases
-and calculates return deadlines from store policies. Authentication, read-only
-Dashboard/History, and automated tests work today. Purchase CRUD and account
-editing are still pending; Account Settings currently displays your email only.
+ReturnClock is a Ruby on Rails application for tracking purchases and return deadlines. Users can create store return policies, add and manage purchases, and view upcoming returns and purchase history.
 
-## Prerequisites
 
-Use **Ruby 3.3.12**, **Rails 8.1.4**, Bundler **2.5.22**, Git, PostgreSQL
-(verified with 18.6), and libvips. Node/npm and Redis are not required.
-Follow [macOS / Windows WSL setup](docs/local-setup.md) for packages, Ruby,
-PostgreSQL startup, and a local login role with `CREATEDB`; tests need no superuser.
+## Team Members
 
-## Install and start
+Member 1 Name: Ryan Shi
+Member 1 UNI: rs4469
+Member 2 Name: Jordan Wu
+Member 2 UNI: xw2970
+Member 3 Name: Shrey Khurana
+Member 3 UNI: sk5662
+Member 4 Name: Sophia Ling
+Member 4 UNI: sl4909
 
-Run these in Terminal on macOS or Ubuntu on WSL, after PostgreSQL is ready:
 
-```sh
+## Setup
+
+**Requirements:** Ruby 3.3.12, Bundler 2.5.22, PostgreSQL 18, Git, and libvips.
+
+**macOS (Homebrew):**
+
+```bash
+brew install git rbenv ruby-build postgresql@18 vips
+brew services start postgresql@18
+export PATH="$(brew --prefix postgresql@18)/bin:$PATH"
+```
+
+**Windows (WSL Ubuntu):**
+
+Install PostgreSQL 18 using the [official instructions](https://www.postgresql.org/download/linux/ubuntu/), then install the required dependencies:
+
+```bash
+sudo apt update
+sudo apt install -y build-essential git libssl-dev libreadline-dev zlib1g-dev libyaml-dev libffi-dev libpq-dev libvips-dev
+sudo service postgresql start
+```
+
+On WSL, ensure your Linux username has a PostgreSQL role with `CREATEDB` privileges. If the role is missing:
+
+```bash
+sudo -u postgres createuser --createdb "$(whoami)"
+```
+
+Install and configure [rbenv](https://github.com/rbenv/rbenv#installation), then install Ruby 3.3.12.
+
+**Run the application:**
+
+```bash
 git clone https://github.com/shreykhurana1/ReturnClock.git
 cd ReturnClock
 gem install bundler -v 2.5.22
@@ -26,45 +57,26 @@ RAILS_ENV=test bin/rails db:prepare
 bin/rails server
 ```
 
-Use the team's agreed branch until integration into `main`. Open
-<http://localhost:3000> and create an account; no seeds or default login are needed.
-Rails uses your OS username for local PostgreSQL and the databases
-`return_clock_development` / `return_clock_test`. Keep production URLs out of your
-local `DATABASE_URL`. After pulling migrations, rerun `bundle install` and
-`bin/rails db:prepare`; preserve existing data.
+Open http://localhost:3000.
 
-## Run tests
+## Tests
 
-```sh
+```bash
 bundle exec rspec
 bin/rails test
 bundle exec cucumber
 ```
 
-The suites create and roll back their own records. GitHub CI runs all three plus
-lint/security checks. See [acceptance-test notes](features/README.md) for adding stories.
+## Contributing
 
-## Contribute
+Create a feature branch from the latest `main`, implement your changes, and run the tests before pushing.
 
-Start from the updated, integrated `main`; coordinate shared files with teammates:
-
-```sh
+```bash
 git switch main
-git pull --ff-only origin main
+git pull origin main
 git switch -c your-name/feature-name
-# Make changes and run the tests above.
-git add path/to/changed-file
-git commit -m "Describe the change"
-git push -u origin your-name/feature-name
 ```
 
-On GitHub, choose **Compare & pull request** for your branch, targeting `main`.
-Request team review and wait for CI before merging. Never commit credentials.
+Commit and push your changes, then open a pull request into `main`. Wait for GitHub Actions checks to pass before merging.
 
-## Integration notes
-
-Use **`Current.user`** in authenticated controllers and scope records through it,
-e.g. `Current.user.purchases` and `Current.user.store_policies`. Never accept an
-owner's `user_id` from a form. Controllers require authentication by default.
-See [architecture and ownership](docs/architecture.md), [navigation and team
-handoff](docs/navigation.md), and [Heroku deployment](docs/deployment.md).
+When working with user-specific data, use `Current.user` to scope database queries.

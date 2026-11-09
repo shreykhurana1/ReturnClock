@@ -55,7 +55,8 @@
   font-weight: 600;
 }
 
-.auth-field input {
+.auth-field input,
+.auth-field select {
   display: block;
   width: 100%;
   padding: 0.65rem;

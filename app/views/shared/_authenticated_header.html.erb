@@ -3,11 +3,8 @@
     <%= link_to "ReturnClock", dashboard_path, class: "app-brand" %>
     <%= link_to "Dashboard", dashboard_path, aria: { current: ("page" if current_page?(dashboard_path)) } %>
     <%= link_to "History", history_path, aria: { current: ("page" if current_page?(history_path)) } %>
-    <% if respond_to?(:new_purchase_path) %>
-      <%= link_to "Add Purchase", new_purchase_path %>
-    <% else %>
-      <%= link_to "Add Purchase", coming_soon_add_purchase_path %>
-    <% end %>
+    <%= link_to "Add Purchase", new_purchase_path %>
+    <%= link_to "Store Policies", store_policies_path, aria: { current: ("page" if current_page?(store_policies_path)) } %>
     <details class="profile-menu">
       <summary aria-label="Profile menu"><span aria-hidden="true">&#128100;</span></summary>
       <div class="profile-menu-content">

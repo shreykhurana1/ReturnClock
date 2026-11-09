@@ -12,4 +12,8 @@
     <dt>Status</dt>
     <dd><%= purchase.status.humanize %></dd>
   </dl>
+  <p>
+    <%= link_to "Edit", edit_purchase_path(purchase) %>
+    · <%= link_to "Delete", confirm_delete_purchase_path(purchase) %>
+  </p>
 </article>
