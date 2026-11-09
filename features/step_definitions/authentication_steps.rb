@@ -18,6 +18,14 @@ When("I follow {string}") do |label|
   click_link label, exact: true
 end
 
+When("I fill in {string} with {string}") do |label, value|
+  fill_in label, with: value, exact: true
+end
+
+When("I press {string}") do |label|
+  click_button label, exact: true
+end
+
 When("I sign up with email {string} and password {string}") do |email, password|
   fill_in "Email", with: email
   fill_in "Password", with: password, exact: true
