@@ -1,4 +1,7 @@
-<main class="auth-page auth-form-container">
+<% content_for :purchase_editor_page, "true" %>
+<%= turbo_frame_tag "purchase_editor", target: (turbo_frame_request? ? nil : "_top") do %>
+<main class="rc-page rc-purchase-editor">
+  <div class="card rc-form-panel">
   <h1>Create Store Policy</h1>
   <p>Save a store's return window to calculate deadlines for your purchases.</p>
 
@@ -7,4 +10,6 @@
   <p><%= link_to "Back to Add Purchase", new_purchase_path %></p>
   <p><%= link_to "Back to Store Policies", store_policies_path %></p>
   <p><%= link_to "Back to Dashboard", dashboard_path %></p>
+  </div>
 </main>
+<% end %>

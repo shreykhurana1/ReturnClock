@@ -1,30 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title><%= content_for(:title) || "Return Clock" %></title>
+    <title><%= content_for(:title) || "ReturnClock" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Return Clock">
+    <meta name="application-name" content="ReturnClock">
     <meta name="mobile-web-app-capable" content="yes">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
-
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
+    <link rel="icon" href="/icon.png?v=orange-clock" type="image/png">
+    <link rel="icon" href="/icon.svg?v=orange-clock" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icon.png?v=orange-clock">
+    <%# Pin the official Tabler Bootstrap 5 stylesheet; local styles still apply if the CDN is unavailable. %>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/core@1.6.1/dist/css/tabler.min.css">
     <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
   </head>
-
-  <body>
+  <body class="rc-body" data-controller="rc-purchase-preview">
     <%= render "shared/authenticated_header" if authenticated? %>
     <%= yield %>
+    <%= render "shared/purchase_modal" if authenticated? && !content_for?(:purchase_editor_page) %>
+    <% if authenticated? && purchase_preview_enabled? %>
+      <%= render "shared/purchase_preview" %>
+    <% end %>
   </body>
 </html>

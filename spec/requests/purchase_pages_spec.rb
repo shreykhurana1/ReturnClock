@@ -20,7 +20,7 @@ RSpec.describe "Read-only purchase pages", type: :request do
   end
 
   def card_names
-    response.parsed_body.css(".purchase-card h2").map(&:text)
+    response.parsed_body.css(".purchase-card[data-sample='false'] h2").map(&:text)
   end
 
   [ "/dashboard", "/history" ].each do |path|
@@ -145,11 +145,7 @@ RSpec.describe "Read-only purchase pages", type: :request do
       expect(nav.at_css("details.profile-menu").text).to include(user.email_address, "Sign Out")
       sign_out_form = nav.at_css("form[action='#{session_path}']")
       expect(sign_out_form.at_css("input[name='_method']")["value"]).to eq("delete")
-      if Rails.application.routes.url_helpers.respond_to?(:new_purchase_path)
-        expect(nav.at_css("a[href='#{Rails.application.routes.url_helpers.new_purchase_path}']").text).to eq("Add Purchase")
-      else
-        expect(nav.at_css("a[href='#{coming_soon_add_purchase_path}']").text).to eq("Add Purchase")
-      end
+      expect(nav.css("a").map(&:text)).not_to include("Add Purchase")
       expect(nav.at_css("a[href='#{settings_path}']").text).to eq("Account Settings")
       expect(nav.css("a").map(&:text)).not_to include("Change Password")
       expect(response.parsed_body.css("a[href='#{new_password_path}']")).to be_empty
@@ -162,13 +158,13 @@ RSpec.describe "Read-only purchase pages", type: :request do
     end
   end
 
-  it "renders clear empty states without creating purchases" do
+  it "renders a demo for empty accounts without creating purchases" do
     sign_in
     expect do
       get dashboard_path
-      expect(response.body).to include("No actionable purchases yet.")
+      expect(response.body).to include("Demo preview")
       get history_path
-      expect(response.body).to include("No purchases in History yet.")
+      expect(response.body).to include("Demo preview")
     end.not_to change(Purchase, :count)
   end
 end

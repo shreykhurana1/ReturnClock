@@ -1,0 +1,42 @@
+<div data-rc-purchase-preview-target="labels" data-add="<%= t('ui.add_purchase') %>" data-edit="<%= t('ui.edit_purchase') %>" data-save="<%= t('ui.save_changes') %>" data-delete="<%= t('ui.delete_confirm', item: '%{item}') %>"></div>
+<dialog class="rc-dialog" data-rc-purchase-preview-target="editor" aria-labelledby="rc-editor-title" data-action="click->rc-purchase-preview#backdrop close->rc-purchase-preview#restoreFocus">
+  <div class="rc-dialog-shell">
+    <div class="rc-dialog-head"><h2 id="rc-editor-title" data-rc-purchase-preview-target="editorTitle"><%= t("ui.add_purchase") %></h2><button type="button" class="rc-dialog-close" data-action="rc-purchase-preview#close" aria-label="<%= t('ui.close') %>">×</button></div>
+    <div class="rc-dialog-body">
+      <p class="rc-preview-notice"><%= t("ui.interaction_preview") %></p>
+      <div class="rc-pending-message" role="status" tabindex="-1" data-preview-message hidden><%= t("ui.backend_pending") %></div>
+      <fieldset class="rc-preview-fields" data-rc-purchase-preview-target="fields" disabled>
+        <%= render "purchases/form", purchase: Current.user.purchases.build(purchase_date: Date.current, status: "active"), preview: true %>
+      </fieldset>
+    </div>
+  </div>
+</dialog>
+<dialog class="rc-dialog rc-dialog-small" data-rc-purchase-preview-target="statusDialog" aria-labelledby="rc-preview-status-title" data-action="click->rc-purchase-preview#backdrop close->rc-purchase-preview#restoreFocus">
+  <div class="rc-dialog-shell">
+    <div class="rc-dialog-head"><h2 id="rc-preview-status-title"><%= t("ui.update_status") %></h2><button type="button" class="rc-dialog-close" data-action="rc-purchase-preview#close" aria-label="<%= t('ui.close') %>">×</button></div>
+    <div class="rc-dialog-body">
+      <p data-rc-purchase-preview-target="statusItem"></p>
+      <p class="rc-preview-notice"><%= t("ui.interaction_preview") %></p>
+      <div class="rc-pending-message" role="status" tabindex="-1" data-preview-message hidden><%= t("ui.backend_pending") %></div>
+      <form method="dialog" data-action="submit->rc-purchase-preview#pending">
+        <div class="rc-form-field"><label for="rc-preview-status" class="form-label"><%= t("ui.purchase_status") %></label>
+          <%= select_tag "purchase[status]", options_for_select(purchase_status_options), id: "rc-preview-status", class: "form-select", required: true, data: { rc_purchase_preview_target: "statusSelect" } %>
+        </div>
+        <div class="rc-form-footer"><button type="button" class="rc-btn rc-btn-outline" data-action="rc-purchase-preview#close"><%= t("ui.cancel") %></button><button type="submit" class="rc-btn rc-btn-primary"><%= t("ui.confirm_status") %></button></div>
+      </form>
+    </div>
+  </div>
+</dialog>
+<dialog class="rc-dialog rc-dialog-small" data-rc-purchase-preview-target="deleteDialog" role="alertdialog" aria-labelledby="rc-preview-delete-title" aria-describedby="rc-preview-delete-message" data-action="click->rc-purchase-preview#backdrop close->rc-purchase-preview#restoreFocus">
+  <div class="rc-dialog-shell">
+    <div class="rc-dialog-head"><h2 id="rc-preview-delete-title"><%= t("ui.delete_purchase") %></h2><button type="button" class="rc-dialog-close" data-action="rc-purchase-preview#close" aria-label="<%= t('ui.close') %>">×</button></div>
+    <div class="rc-dialog-body">
+      <p id="rc-preview-delete-message" data-rc-purchase-preview-target="deleteMessage"></p>
+      <p class="rc-preview-notice"><%= t("ui.interaction_preview") %></p>
+      <div class="rc-pending-message" role="status" tabindex="-1" data-preview-message hidden><%= t("ui.backend_pending") %></div>
+      <form method="dialog" data-action="submit->rc-purchase-preview#pending">
+        <div class="rc-form-footer"><button type="button" class="rc-btn rc-btn-outline" data-action="rc-purchase-preview#close"><%= t("ui.cancel") %></button><button type="submit" class="rc-btn rc-btn-danger"><%= t("ui.confirm_delete") %></button></div>
+      </form>
+    </div>
+  </div>
+</dialog>

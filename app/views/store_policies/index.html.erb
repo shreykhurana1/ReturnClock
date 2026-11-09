@@ -1,12 +1,13 @@
-<main class="app-container">
-  <h1>Store Policies</h1>
+<main class="rc-page">
+  <div class="rc-page-heading"><div><h1>Store Policies</h1></div></div>
   <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
   <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
-  <p><%= link_to "Create Store Policy", new_store_policy_path, class: "auth-button" %></p>
+  <p><%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary" %></p>
+  <p><%= link_to "Add Purchase", new_purchase_path, class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %></p>
   <% if @store_policies.any? %>
-    <div class="purchase-grid">
+    <div class="rc-card-grid">
       <% @store_policies.each do |store_policy| %>
-        <article class="purchase-card">
+        <article class="purchase-card card rc-form-panel">
           <h2><%= store_policy.store_name %></h2>
           <p>Return window: <%= pluralize(store_policy.window_days, "day") %></p>
           <p><%= link_to "Edit Store Policy", edit_store_policy_path(store_policy) %></p>
@@ -14,7 +15,7 @@
             <p>In use by purchases; cannot be deleted.</p>
           <% else %>
             <%= button_to "Delete Store Policy", store_policy_path(store_policy), method: :delete,
-                  class: "auth-button", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
+                  class: "rc-btn rc-btn-primary", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
           <% end %>
         </article>
       <% end %>

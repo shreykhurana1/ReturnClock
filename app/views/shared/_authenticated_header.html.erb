@@ -1,19 +1,28 @@
-<header class="app-header">
-  <nav aria-label="Main navigation">
-    <%= link_to "ReturnClock", dashboard_path, class: "app-brand" %>
-    <%= link_to "Dashboard", dashboard_path, aria: { current: ("page" if current_page?(dashboard_path)) } %>
-    <%= link_to "History", history_path, aria: { current: ("page" if current_page?(history_path)) } %>
-    <%= link_to "Add Purchase", new_purchase_path %>
-    <%= link_to "Store Policies", store_policies_path, aria: { current: ("page" if current_page?(store_policies_path)) } %>
-    <details class="profile-menu">
-      <summary aria-label="Profile menu"><span aria-hidden="true">&#128100;</span></summary>
-      <div class="profile-menu-content">
-        <p class="profile-account-label">Account</p>
-        <p class="auth-hint"><%= Current.user.email_address %></p>
-        <hr class="profile-menu-divider">
-        <p><%= link_to settings_path do %><span class="profile-settings-icon" aria-hidden="true"></span>Account Settings<% end %></p>
-        <%= button_to session_path, method: :delete, class: "auth-button" do %><span class="profile-logout-icon" aria-hidden="true"></span>Sign Out<% end %>
-      </div>
-    </details>
+<header class="app-header rc-topbar" role="banner">
+  <nav class="rc-topbar-inner" aria-label="<%= t('ui.main_navigation') %>">
+    <%= link_to dashboard_path, class: "app-brand rc-brand", aria: { label: "ReturnClock" } do %>
+      <span class="rc-brand-symbol" aria-hidden="true">◷</span><span>ReturnClock</span>
+    <% end %>
+    <div class="rc-topnav">
+      <%= link_to t("ui.dashboard"), dashboard_path, class: "rc-navlink #{'active' if current_page?(dashboard_path)}", aria: { current: ("page" if current_page?(dashboard_path)) } %>
+      <%= link_to t("ui.history"), history_path, class: "rc-navlink #{'active' if current_page?(history_path)}", aria: { current: ("page" if current_page?(history_path)) } %>
+      <%= link_to "Store Policies", store_policies_path, class: "rc-navlink #{'active' if controller_name == 'store_policies'}", aria: { current: ("page" if controller_name == "store_policies") } %>
+    </div>
+    <div class="rc-header-actions">
+      <details class="profile-menu rc-account-menu">
+        <summary class="rc-avatar-button" aria-label="<%= t('ui.profile_menu') %>">
+          <span class="rc-avatar" aria-hidden="true"><%= Current.user.email_address.first.upcase %></span>
+          <span class="rc-account-email"><%= Current.user.email_address %></span>
+          <span class="rc-chevron" aria-hidden="true">⌄</span>
+        </summary>
+        <div class="rc-dropdown profile-menu-content">
+          <p class="rc-dropdown-label profile-account-label">Account</p>
+          <p class="rc-dropdown-email auth-hint"><%= Current.user.email_address %></p>
+          <hr class="profile-menu-divider">
+          <%= link_to settings_path, class: "rc-dropdown-item" do %><span class="profile-settings-icon" aria-hidden="true"></span><%= t("ui.settings") %><% end %>
+          <%= button_to session_path, method: :delete, class: "rc-dropdown-item rc-logout" do %><span class="profile-logout-icon" aria-hidden="true"></span><%= t("ui.sign_out") %><% end %>
+        </div>
+      </details>
+    </div>
   </nav>
 </header>

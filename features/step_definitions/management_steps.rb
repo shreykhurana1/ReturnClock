@@ -27,7 +27,10 @@ When("I set purchase {string} to status {string}") do |name, status|
 end
 
 When("I ask to delete purchase {string}") do |name|
-  within(find(".purchase-card", text: name, exact_text: false)) { click_link "Delete", exact: true }
+  within(find(".purchase-card", text: name, exact_text: false)) do
+    find("summary").click
+    click_link "Delete", exact: true
+  end
 end
 
 When("I confirm purchase deletion") do
@@ -45,7 +48,7 @@ When("I choose store policy {string}") do |store|
 end
 
 Then("purchase {string} should have a deadline {int} days from today") do |name, days|
-  card = find(".purchase-card", text: /\A#{Regexp.escape(name)}\s/)
+  card = find(".purchase-card h2", exact_text: name).find(:xpath, "..")
   expect(card).to have_selector("time[datetime='#{(Date.current + days).iso8601}']")
 end
 

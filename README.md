@@ -82,3 +82,21 @@ git switch -c your-name/feature-name
 Commit and push your changes, then open a pull request into `main`. Wait for GitHub Actions checks to pass before merging.
 
 When working with user-specific data, use `Current.user` to scope database queries.
+
+## Frontend integration
+
+Add Purchase and card Edit open responsive dialogs with real backend persistence.
+The card menu offers Active, Keeping and Refunded; Expired is determined by
+the deadline. Existing workflow states remain compatible. Deletion confirmation
+and owner-scoped store-policy management are available. Empty accounts show labeled, unsaved demo cards; Edit
+opens a prefilled template and explicit save creates your own purchase. Policy
+setup stays in the dialog, and validation errors retain entered values.
+
+The dialog uses distinct Add Purchase, Edit Purchase and Edit Sample Purchase
+titles. Direct editor URLs and JavaScript-free navigation retain full-page forms.
+Account Settings remains read-only; reminders and account editing are unavailable.
+
+See [setup details](docs/local-setup.md), [architecture](docs/architecture.md),
+[navigation](docs/navigation.md), [deployment notes](docs/deployment.md),
+[frontend handoff](docs/jordan-frontend-handoff.md) and
+[verification](docs/jordan-frontend-verification.md).

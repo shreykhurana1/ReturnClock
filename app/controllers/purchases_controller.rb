@@ -1,10 +1,15 @@
 class PurchasesController < ApplicationController
   before_action :set_purchase, only: [ :edit, :update, :confirm_delete, :destroy ]
+  before_action :set_sample_purchase, only: [ :new, :create ]
 
   def new
     @store_policies = Current.user.store_policies.order(:store_name, :id)
     @purchase = Current.user.purchases.new(purchase_date: Date.current)
     @purchase.store_policy = @store_policies.find_by(id: params[:store_policy_id])
+    if @sample_purchase
+      @purchase.assign_attributes(@sample_purchase.attributes.slice("item_name", "price", "purchase_date"))
+      @purchase.store_policy ||= @store_policies.find_by(store_name: @sample_purchase.store_policy.store_name)
+    end
   end
 
   def create
@@ -51,6 +56,13 @@ class PurchasesController < ApplicationController
   end
 
   private
+
+  def set_sample_purchase
+    return if params[:sample].blank?
+
+    @sample_purchase = (helpers.sample_purchases + helpers.sample_purchases(history: true))
+      .find { |sample| sample.item_name == params[:sample] }
+  end
 
   def set_purchase
     @purchase = Current.user.purchases.find(params[:id])

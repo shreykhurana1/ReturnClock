@@ -14,7 +14,7 @@ class StorePoliciesController < ApplicationController
     @store_policy = Current.user.store_policies.new(store_policy_params)
 
     if @store_policy.save
-      destination = @from_purchase ? new_purchase_path(store_policy_id: @store_policy.id) : store_policies_path
+      destination = @from_purchase ? new_purchase_path(store_policy_id: @store_policy.id, sample: params[:sample].presence) : store_policies_path
       redirect_to destination, notice: "Store return policy created."
     else
       render :new, status: :unprocessable_entity

@@ -1,13 +1,38 @@
-<main class="auth-page auth-landing">
-  <% if notice.present? %>
-    <div class="auth-notice" role="status"><%= notice %></div>
-  <% end %>
-
-  <h1>ReturnClock</h1>
-  <p>Never miss a return window again.</p>
-
-  <div class="auth-actions">
-    <%= link_to "Create Account", sign_up_path, class: "auth-button" %>
-    <%= link_to "Sign In", new_session_path, class: "auth-button" %>
-  </div>
-</main>
+<div class="rc-landing">
+  <header class="rc-topbar">
+    <div class="rc-topbar-inner">
+      <div class="rc-brand"><span class="rc-brand-symbol" aria-hidden="true">◷</span><span>ReturnClock</span></div>
+      <div class="rc-landing-actions">
+        <%= link_to t("ui.sign_in"), new_session_path, class: "rc-btn rc-btn-quiet" %>
+        <%= link_to t("ui.create_account"), sign_up_path, class: "rc-btn rc-btn-primary" %>
+      </div>
+    </div>
+  </header>
+  <main class="rc-landing-main">
+    <% if notice.present? %><div class="rc-alert" role="status"><%= localized_flash(notice) %></div><% end %>
+    <section class="rc-hero">
+      <div class="rc-hero-copy">
+        <h1>ReturnClock</h1>
+        <span class="rc-eyebrow"><span class="rc-live-dot"></span> <%= t("ui.hero_eyebrow") %></span>
+        <div class="rc-hero-headline"><%= t("ui.hero_first") %><br><span><%= t("ui.hero_second") %></span></div>
+        <p><%= t("ui.hero_intro") %></p>
+        <div class="rc-hero-actions">
+          <%= link_to t("ui.get_started"), sign_up_path, class: "rc-btn rc-btn-primary rc-btn-lg" %>
+          <%= link_to t("ui.sign_in_existing"), new_session_path, class: "rc-btn rc-btn-outline rc-btn-lg" %>
+        </div>
+        <div class="rc-hero-foot"><span class="rc-check">✓</span> <%= t("ui.manual_entry") %></div>
+      </div>
+      <div class="rc-hero-preview" aria-label="<%= t('ui.preview_label') %>">
+        <div class="rc-preview-top"><span class="rc-preview-brand">◷ &nbsp;ReturnClock</span><span><%= t("ui.purchases") %></span><span class="rc-preview-plus"><%= t("ui.preview_add") %></span></div>
+        <div class="rc-preview-content"><div class="rc-preview-heading"><%= t("ui.preview_heading") %></div><div class="rc-preview-stats"><span><b>06</b><small><%= t("ui.active") %></small></span><span><b>02</b><small><%= t("ui.due_week") %></small></span><span><b>$ 3,286</b><small><%= t("ui.example_value") %></small></span></div>
+          <div class="rc-preview-row"><span class="rc-product-icon">◈</span><span><b><%= t("ui.headphones") %></b><small>Amazon · $899</small></span><span class="rc-chip rc-chip-warning"><%= t("ui.example_three_days") %></span></div>
+          <div class="rc-preview-row"><span class="rc-product-icon">▣</span><span><b><%= t("ui.keyboard") %></b><small>Best Buy · $599</small></span><span class="rc-chip rc-chip-success"><%= t("ui.example_eighteen_days") %></span></div>
+          <div class="rc-preview-row"><span class="rc-product-icon">▤</span><span><b><%= t("ui.lamp") %></b><small>Target · $249</small></span><span class="rc-chip rc-chip-success"><%= t("ui.example_twentyfour_days") %></span></div>
+          <div class="rc-preview-note"><%= t("ui.example_note") %></div>
+        </div>
+      </div>
+    </section>
+    <section class="rc-landing-features"><article><span class="rc-feature-icon">▦</span><h2><%= t("ui.feature_purchases") %></h2><p><%= t("ui.feature_purchases_detail") %></p></article><article><span class="rc-feature-icon">◷</span><h2><%= t("ui.feature_deadlines") %></h2><p><%= t("ui.feature_deadlines_detail") %></p></article><article><span class="rc-feature-icon">✓</span><h2><%= t("ui.feature_history") %></h2><p><%= t("ui.feature_history_detail") %></p></article></section>
+  </main>
+  <footer class="rc-landing-footer"><%= t("ui.footer") %></footer>
+</div>

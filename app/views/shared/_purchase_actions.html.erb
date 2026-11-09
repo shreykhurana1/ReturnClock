@@ -1,0 +1,31 @@
+<% if !purchase.persisted? && !purchase_preview_enabled? %>
+  <%= link_to t("ui.edit"), new_purchase_path(sample: purchase.item_name), class: "rc-card-link", data: { turbo_frame: "purchase_editor" }, aria: { label: t("ui.edit_item", item: purchase.item_name) } %>
+<% else %>
+<% if purchase.persisted? && respond_to?(:edit_purchase_path) %>
+  <%= link_to t("ui.edit"), edit_purchase_path(purchase), class: "rc-card-link", data: { turbo_frame: "purchase_editor" }, aria: { label: t("ui.edit_item", item: purchase.item_name) } %>
+<% else %>
+  <button type="button" class="rc-card-link rc-card-action-button" data-action="rc-purchase-preview#edit" aria-label="<%= t('ui.edit_item', item: purchase.item_name) %>"><%= t("ui.edit") %></button>
+<% end %>
+  <details class="rc-card-more">
+    <summary aria-label="<%= t("ui.manage_item", item: purchase.item_name) %>"><%= t("ui.more_actions") %></summary>
+    <div class="rc-card-more-panel">
+      <% if purchase.persisted? && respond_to?(:purchase_path) %>
+      <%# 2. PATCH updates submit only the existing status field. %>
+      <% status_options = %w[active keeping refunded].map { |state| [status_names.fetch(state), state] } %>
+      <%# Preserve the current workflow state so confirming without a change is safe. %>
+      <% unless status_options.any? { |_, state| state == purchase.status } %>
+        <% status_options.unshift(["Current: #{status_names.fetch(purchase.status)}", purchase.status]) %>
+      <% end %>
+      <%= form_with(url: purchase_path(purchase), method: :patch, scope: :purchase, namespace: dom_id(purchase, :status), class: "rc-status-mini-form", local: true) do |form| %>
+        <%= form.label :status, t("ui.update_status"), class: "form-label" %>
+        <%= form.select :status, status_options, { selected: purchase.status, include_blank: false }, { class: "form-select" } %>
+        <%= form.submit t("ui.confirm_status"), class: "rc-btn rc-btn-primary rc-btn-small" %>
+      <% end %>
+      <%= link_to "Delete", confirm_delete_purchase_path(purchase), class: "rc-btn rc-btn-danger rc-btn-small" %>
+      <% else %>
+        <button type="button" class="rc-dropdown-item" data-action="rc-purchase-preview#status"><%= t("ui.update_status") %></button>
+        <button type="button" class="rc-dropdown-item rc-logout" data-action="rc-purchase-preview#delete"><%= t("ui.delete_purchase") %></button>
+      <% end %>
+    </div>
+  </details>
+<% end %>

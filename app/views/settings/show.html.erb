@@ -1,6 +1,8 @@
-<main class="app-container">
-  <h1>Account Settings</h1>
-  <p>Email: <%= Current.user.email_address %></p>
-  <p>More account settings coming soon.</p>
-  <%= link_to "Back to Dashboard", dashboard_path, class: "auth-button" %>
+<main class="rc-page rc-settings">
+  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.settings_kicker") %></span><h1><%= t("ui.settings") %></h1><p><%= t("ui.settings_intro") %></p></div><%= link_to t("ui.back_dashboard"), dashboard_path, class: "rc-btn rc-btn-outline" %></div>
+  <div class="rc-settings-layout"><nav class="rc-settings-nav" aria-label="<%= t('ui.settings_navigation') %>"><a href="#account" class="active"><%= t("ui.account_details") %></a><a href="#security"><%= t("ui.account_security") %></a><a href="#coming-later"><%= t("ui.coming_later") %></a></nav><div class="rc-settings-sections">
+    <section id="account" class="card rc-setting-panel"><div class="rc-setting-head"><div><h2><%= t("ui.account_details") %></h2><p><%= t("ui.account_details_intro") %></p></div><span class="rc-tag"><%= t("ui.current_account") %></span></div><div class="rc-profile-line"><span class="rc-profile-avatar"><%= Current.user.email_address.first.upcase %></span><div><strong><%= t("ui.account_name") %></strong><span><%= Current.user.email_address %></span></div></div><div class="rc-setting-field"><label for="rc-email"><%= t("ui.email_address") %></label><input id="rc-email" class="form-control rc-input" type="email" value="<%= Current.user.email_address %>" readonly><small><%= t("ui.email_readonly") %></small></div></section>
+    <section id="security" class="card rc-setting-panel"><div class="rc-setting-head"><div><h2><%= t("ui.account_security") %></h2><p><%= t("ui.security_intro") %></p></div></div><div class="rc-security-row"><span class="rc-setting-icon" aria-hidden="true">⌑</span><div><strong><%= t("ui.change_password") %></strong><span><%= t("ui.password_pending") %></span></div><span class="rc-tag rc-tag-muted"><%= t("ui.not_available_yet") %></span></div></section>
+    <section id="coming-later" class="card rc-setting-panel"><div class="rc-setting-head"><div><h2><%= t("ui.coming_later") %></h2><p><%= t("ui.settings_pending") %></p></div><span class="rc-tag rc-tag-muted"><%= t("ui.unavailable") %></span></div><div class="rc-coming-grid"><div><span><%= t("ui.reminder_preferences") %></span><small><%= t("ui.planned") %></small></div><div><span><%= t("ui.personalization") %></span><small><%= t("ui.planned") %></small></div></div><p class="rc-setting-note"><%= t("ui.settings_note") %></p></section>
+  </div></div>
 </main>
