@@ -37,6 +37,39 @@ Feature: Manage purchases and saved store policies
     And I should not see a purchase named "Textbook"
     And I should see "Purchase deleted." in the main content
 
+  Scenario: Update my return decision directly from a purchase card
+    When I quickly update purchase "Textbook" to status "Keeping"
+    Then I should see the "History" heading
+    And purchase "Textbook" should show status "Keeping"
+    When I quickly update purchase "Textbook" to status "Returning"
+    Then I should see the "Dashboard" heading
+    And purchase "Textbook" should show status "Returning"
+    When I quickly update purchase "Textbook" to status "Shipped back"
+    Then purchase "Textbook" should show status "Shipped back"
+    When I quickly update purchase "Textbook" to status "Refund pending"
+    Then purchase "Textbook" should show status "Refund pending"
+    When I quickly update purchase "Textbook" to status "Refunded"
+    Then I should see the "History" heading
+    And purchase "Textbook" should show status "Refunded"
+    When I quickly update purchase "Textbook" to status "Active"
+    Then I should see the "Dashboard" heading
+    And purchase "Textbook" should show status "Active"
+
+  Scenario: Start a return for an expired purchase from History
+    When I edit purchase "Textbook"
+    And I save the purchase as "Textbook" costing "49.99" bought 40 days ago using "Campus Store"
+    Then I should see the "History" heading
+    And purchase "Textbook" should show status "Expired"
+    When I quickly update purchase "Textbook" to status "Returning"
+    Then I should see the "Dashboard" heading
+    And purchase "Textbook" should show status "Returning"
+    When I follow "History"
+    Then I should not see a purchase named "Textbook"
+    When I follow "Dashboard"
+    And I quickly update purchase "Textbook" to status "Active"
+    Then I should see the "History" heading
+    And purchase "Textbook" should show status "Expired"
+
   Scenario: Cancel and confirm deletion of a purchase in History
     When I set purchase "Textbook" to status "Keeping"
     Then I should see the "History" heading

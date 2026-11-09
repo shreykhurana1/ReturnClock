@@ -26,6 +26,20 @@ When("I set purchase {string} to status {string}") do |name, status|
   click_button "Save Purchase"
 end
 
+When("I quickly update purchase {string} to status {string}") do |name, status|
+  within(find(".purchase-card", text: name, exact_text: false)) do
+    find("summary").click
+    select status, from: "Update status"
+    click_button "Confirm status"
+  end
+end
+
+Then("purchase {string} should show status {string}") do |name, status|
+  within(find(".purchase-card", text: name, exact_text: false)) do
+    expect(page).to have_selector(".rc-chip", exact_text: status)
+  end
+end
+
 When("I ask to delete purchase {string}") do |name|
   within(find(".purchase-card", text: name, exact_text: false)) do
     find("summary").click
