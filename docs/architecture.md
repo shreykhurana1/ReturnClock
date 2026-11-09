@@ -12,8 +12,8 @@
 - RSpec model/request tests and the retained Minitest suite, both run by CI.
 - Heroku configuration for one PostgreSQL database, HTTPS, and Solid services.
 
-Purchase creation/editing/deletion/status updates, Cucumber stories, final UI
-refinements, and email reminders are pending teammate/future work. This repository is prepared for
+Purchase CRUD, owner-scoped store policy management and Cucumber stories are
+integrated locally from Shrey's purchase MVP. Email reminders remain future work. This repository is prepared for
 Heroku; this documentation does not mean an application has been deployed.
 Password-reset code is retained and tested locally but disabled in production
 until real email delivery is configured.
@@ -40,8 +40,7 @@ policy recalculates it. Editing a saved policy does **not** update existing
 purchase deadlines, including on unrelated purchase edits. New purchases use
 the edited window. `days_left` compares the stored deadline with `Date.current`
 and can be negative. Rails currently uses UTC; a user-specific time zone and
-inclusive/exclusive retailer policy variations are not implemented. Future
-CRUD should treat `return_by` as calculated rather than permitting arbitrary input.
+inclusive/exclusive retailer policy variations are not implemented. Purchase controllers treat `return_by` as calculated rather than permitting arbitrary input.
 
 `ApplicationController` includes the existing `Authentication` concern and
 requires login by default. Controllers obtain the signed-in user through
@@ -50,7 +49,7 @@ explicitly call `allow_unauthenticated_access`. Views can use `authenticated?`.
 On a public action, `Current.user` is available only after the session has been
 resumed (for example, by calling `authenticated?`).
 
-For future purchase/policy endpoints, scope all reads and writes to the user:
+Purchase/policy endpoints scope all reads and writes to the user:
 
 ```ruby
 purchase = Current.user.purchases.find(params[:id])
@@ -59,9 +58,9 @@ purchase = Current.user.purchases.build(permitted_params)
 ```
 
 Do not permit `user_id`, use unscoped `Purchase.find`, or return another user's
-records. Dashboard and History have two-user request authorization coverage. Add the
-same coverage when introducing purchase creation/editing/deletion/status-update
-endpoints; the read-only tests do not prove the security of future mutation routes.
+records. Dashboard, History, purchase mutations and store-policy management have
+two-user request authorization coverage. See the current
+[handoff](jordan-frontend-handoff.md) for the integrated form contracts.
 
 ## Team workflow and responsibilities
 

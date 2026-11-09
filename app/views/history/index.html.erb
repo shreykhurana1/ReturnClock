@@ -2,6 +2,7 @@
   <% sample_mode = !Current.user.purchases.exists? %>
   <% purchases = sample_mode ? sample_purchases(history: true) : @purchases %>
   <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.history_kicker") %></span><h1><%= t("ui.history") %></h1><p><%= t("ui.history_intro") %></p></div></div>
+  <%= tag.div(localized_flash(flash[:notice]), class: "rc-alert", role: "status") if flash[:notice] %>
   <%= render "shared/sample_purchases" if sample_mode %>
   <div class="rc-stat-grid">
     <div class="card rc-stat"><span class="rc-stat-title"><%= t("ui.history_total") %></span><div><strong><%= purchases.size %></strong><small><%= t("ui.purchases_unit") %></small></div><span class="rc-stat-detail"><%= t("ui.history_total_detail") %></span></div>

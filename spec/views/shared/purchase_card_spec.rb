@@ -22,10 +22,13 @@ RSpec.describe "shared/_purchase_card", type: :view do
     expect(html.css(".rc-card-actions form")).to be_empty
   end
 
-  it "removes demo action buttons once real CRUD routes replace preview dialogs" do
+  it "links demo Edit to a new purchase template without exposing mutation actions" do
     html = sample_html(previews_enabled: false)
     expect(html.at_css(".purchase-card")["data-sample"]).to eq("true")
     expect(html.at_css(".rc-product-name").text).to eq("Demo Notebook")
-    expect(html.css(".rc-card-actions, [data-action^='rc-purchase-preview#']")).to be_empty
+    link = html.at_css(".rc-card-actions a")
+    expect(link.text).to eq("Edit")
+    expect(link["href"]).to eq(new_purchase_path(sample: sample.item_name))
+    expect(html.css(".rc-card-actions form, .rc-card-actions details, [data-action^='rc-purchase-preview#']")).to be_empty
   end
 end

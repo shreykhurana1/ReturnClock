@@ -1,6 +1,6 @@
 require "rails_helper"
 
-# 1. Frontend contract tests: verify presentation and navigation without implementing purchase controllers.
+# Frontend contracts remain in place after purchase backend integration.
 RSpec.describe "Jordan iteration 1 frontend", type: :request do
   let(:password) { "Password1!" }
   let(:user) { User.create!(email_address: "jordan@example.com", password: password) }
@@ -66,13 +66,14 @@ RSpec.describe "Jordan iteration 1 frontend", type: :request do
     end
   end
 
-  it "keeps the safe no-submit placeholder until the purchase route exists" do
+  it "replaces the placeholder with an authenticated purchase editor" do
+    policy
     sign_in
     get coming_soon_add_purchase_path
-
-    expect(response).to have_http_status(:ok)
+    expect(response).to redirect_to(new_purchase_path)
+    follow_redirect!
     expect(response.parsed_body.at_css("main h1").text).to eq("Add Purchase")
-    expect(response.parsed_body.css("main form")).to be_empty
-    expect(response.parsed_body.at_css("main a[href='#{dashboard_path}']").text).to eq("Back to Dashboard")
+    expect(response.parsed_body.at_css("main form[action='#{purchases_path}']")).to be_present
+    expect(response.parsed_body.css("dialog")).to be_empty
   end
 end

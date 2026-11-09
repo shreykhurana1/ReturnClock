@@ -6,6 +6,7 @@
     <div class="rc-topnav">
       <%= link_to t("ui.dashboard"), dashboard_path, class: "rc-navlink #{'active' if current_page?(dashboard_path)}", aria: { current: ("page" if current_page?(dashboard_path)) } %>
       <%= link_to t("ui.history"), history_path, class: "rc-navlink #{'active' if current_page?(history_path)}", aria: { current: ("page" if current_page?(history_path)) } %>
+      <%= link_to "Store Policies", store_policies_path, class: "rc-navlink #{'active' if controller_name == 'store_policies'}", aria: { current: ("page" if controller_name == "store_policies") } %>
     </div>
     <div class="rc-header-actions">
       <details class="profile-menu rc-account-menu">

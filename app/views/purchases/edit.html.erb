@@ -1,3 +1,5 @@
+<% content_for :purchase_editor_page, "true" %>
+<%= turbo_frame_tag "purchase_editor" do %>
 <%# 1. Backend handoff: the edit action must load @purchase through Current.user.purchases.find(params[:id]). %>
 <main class="rc-page rc-purchase-editor">
   <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>"><%= link_to t("ui.dashboard"), dashboard_path %><span>/</span><span><%= t("ui.edit_heading") %></span></nav>
@@ -7,4 +9,6 @@
   <% else %>
     <div class="card rc-empty" role="alert"><%= t("ui.edit_missing") %></div>
   <% end %>
+  <p class="rc-editor-navigation"><%= link_to "Back to Dashboard", dashboard_path %> · <%= link_to "View History", history_path %></p>
 </main>
+<% end %>

@@ -1,0 +1,25 @@
+<main class="rc-page">
+  <div class="rc-page-heading"><div><h1>Store Policies</h1></div></div>
+  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
+  <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
+  <p><%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary" %></p>
+  <% if @store_policies.any? %>
+    <div class="rc-card-grid">
+      <% @store_policies.each do |store_policy| %>
+        <article class="purchase-card card rc-form-panel">
+          <h2><%= store_policy.store_name %></h2>
+          <p>Return window: <%= pluralize(store_policy.window_days, "day") %></p>
+          <p><%= link_to "Edit Store Policy", edit_store_policy_path(store_policy) %></p>
+          <% if store_policy.purchases.exists? %>
+            <p>In use by purchases; cannot be deleted.</p>
+          <% else %>
+            <%= button_to "Delete Store Policy", store_policy_path(store_policy), method: :delete,
+                  class: "rc-btn rc-btn-primary", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
+          <% end %>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="empty-state">No store policies yet.</p>
+  <% end %>
+</main>

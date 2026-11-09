@@ -1,0 +1,7 @@
+<dialog class="rc-dialog rc-purchase-modal" aria-labelledby="purchase-modal-title" data-controller="rc-purchase-modal" data-action="click->rc-purchase-modal#dismiss close->rc-purchase-modal#reset turbo:before-cache@document->rc-purchase-modal#close turbo:before-fetch-response@document->rc-purchase-modal#saved">
+  <div class="rc-dialog-head">
+    <h2 id="purchase-modal-title" data-rc-purchase-modal-target="title">Purchase</h2>
+    <button type="button" class="rc-dialog-close" aria-label="Close" data-action="rc-purchase-modal#close">×</button>
+  </div>
+  <%= turbo_frame_tag "purchase_editor", data: { rc_purchase_modal_target: "frame", action: "turbo:frame-load->rc-purchase-modal#open turbo:frame-missing->rc-purchase-modal#navigate" } %>
+</dialog>

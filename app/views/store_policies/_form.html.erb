@@ -1,0 +1,18 @@
+<%= render "shared/form_errors", record: @store_policy %>
+
+<%= form_with model: @store_policy, class: "rc-purchase-form" do |form| %>
+  <%= hidden_field_tag :sample, params[:sample] if params[:sample].present? %>
+  <div class="rc-field-grid">
+    <div class="rc-form-field">
+      <%= form.label :store_name, "Store Name", class: "form-label" %>
+      <%= form.text_field :store_name, required: true, class: "form-control" %>
+    </div>
+    <div class="rc-form-field">
+      <%= form.label :window_days, "Return Window (days)", class: "form-label" %>
+      <%= form.number_field :window_days, min: 1, step: 1, required: true, class: "form-control" %>
+    </div>
+  </div>
+  <div class="rc-form-footer">
+    <%= form.submit(@store_policy.persisted? ? "Save Store Policy" : "Create Store Policy", class: "rc-btn rc-btn-primary") %>
+  </div>
+<% end %>

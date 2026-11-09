@@ -7,7 +7,7 @@ RSpec.describe "Navigation placeholders", type: :request do
     post session_path, params: { email_address: user.email_address, password: "Password1!" }
   end
 
-  { "/coming-soon/add-purchase" => "Add Purchase", "/settings" => "Account Settings" }.each do |path, heading|
+  { "/settings" => "Account Settings" }.each do |path, heading|
     it "requires authentication for #{path}" do
       get path
       expect(response).to redirect_to(new_session_path)
@@ -35,7 +35,7 @@ RSpec.describe "Navigation placeholders", type: :request do
 
   it "keeps Account Settings in navigation and the purchase entry in the Dashboard content" do
     sign_in
-    [ dashboard_path, history_path, coming_soon_add_purchase_path, settings_path ].each do |path|
+    [ dashboard_path, history_path, new_purchase_path, settings_path ].each do |path|
       get path
       nav = response.parsed_body.at_css("nav[aria-label='Main navigation']")
       add_purchase_path = if Rails.application.routes.url_helpers.respond_to?(:new_purchase_path)
@@ -52,7 +52,13 @@ RSpec.describe "Navigation placeholders", type: :request do
     end
   end
 
-  it "does not provide purchase creation or settings update actions" do
+  it "redirects the old purchase placeholder to the real editor" do
+    sign_in
+    get coming_soon_add_purchase_path
+    expect(response).to redirect_to(new_purchase_path)
+  end
+
+  it "does not accept writes to the legacy purchase or read-only settings routes" do
     sign_in
     expect { post coming_soon_add_purchase_path, params: { purchase: { item_name: "Should not be created" } } }
       .not_to change(Purchase, :count)

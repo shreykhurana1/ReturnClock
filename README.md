@@ -1,9 +1,8 @@
 # ReturnClock
 
 ReturnClock is a Columbia Engineering SaaS course project that tracks purchases
-and calculates return deadlines from store policies. Authentication, read-only
-Dashboard/History, and automated tests work today. Purchase CRUD and account
-editing are still pending; Account Settings currently displays your email only.
+and calculates return deadlines from store policies. Authentication, Dashboard/History, purchase CRUD, store policy management, and
+automated tests work locally. Account Settings currently displays your email only.
 
 ## Prerequisites
 
@@ -29,7 +28,15 @@ bin/rails server
 Use the team's agreed branch until integration into `main`. Open
 <http://localhost:3000> and create an account; no seeds or default login are needed.
 Accounts without purchases see clearly labeled sample cards on Dashboard and History.
-Demo cards and totals are clearly labeled, are not saved, and disappear after the first real purchase.
+Demo cards and totals are clearly labeled, are not saved, and disappear while the
+account has real purchases. Add Purchase opens the real editor. First create a
+store policy, then select it when adding a purchase. Cards provide editing, all
+six status updates, and a separate deletion confirmation. Store Policies in the
+header opens policy management; policies used by purchases cannot be deleted.
+
+This local integration combines frontend `d97c6da` with Shrey's purchase MVP
+`044144c`. See [integration notes](docs/jordan-frontend-handoff.md) and
+[verification](docs/jordan-frontend-verification.md).
 Rails uses your OS username for local PostgreSQL and the databases
 `return_clock_development` / `return_clock_test`. Keep production URLs out of your
 local `DATABASE_URL`. After pulling migrations, rerun `bundle install` and

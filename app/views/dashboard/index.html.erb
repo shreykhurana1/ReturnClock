@@ -1,7 +1,7 @@
 <main class="rc-page rc-dashboard">
   <% sample_mode = !Current.user.purchases.exists? %>
   <% purchases = sample_mode ? sample_purchases(history: false) : @purchases %>
-  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.purchases_kicker") %></span><h1><%= t("ui.dashboard") %></h1><p><%= t("ui.dashboard_intro") %></p></div><% if respond_to?(:new_purchase_path) %><%= link_to t("ui.add_purchase_button"), new_purchase_path, class: "rc-btn rc-btn-primary" %><% else %><%= link_to t("ui.add_purchase_button"), coming_soon_add_purchase_path, class: "rc-btn rc-btn-primary", data: { action: "rc-purchase-preview#new" } %><% end %></div>
+  <div class="rc-page-heading"><div><span class="rc-kicker"><%= t("ui.purchases_kicker") %></span><h1><%= t("ui.dashboard") %></h1><p><%= t("ui.dashboard_intro") %></p></div><% if respond_to?(:new_purchase_path) %><%= link_to t("ui.add_purchase_button"), new_purchase_path, class: "rc-btn rc-btn-primary", data: { turbo_frame: "purchase_editor" } %><% else %><%= link_to t("ui.add_purchase_button"), coming_soon_add_purchase_path, class: "rc-btn rc-btn-primary", data: { action: "rc-purchase-preview#new" } %><% end %></div>
   <%= tag.div(localized_flash(flash[:notice]), class: "rc-alert", role: "status") if flash[:notice] %>
   <% active = purchases.select { |purchase| purchase.status == "active" } %>
   <%= render "shared/sample_purchases" if sample_mode %>

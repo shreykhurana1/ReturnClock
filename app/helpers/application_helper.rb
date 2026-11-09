@@ -25,14 +25,8 @@ module ApplicationHelper
     end
   end
 
-  def purchase_status_options(current_status = nil)
-    states = %w[active keeping refunded]
-    options = states.map { |state| [ t("ui.#{state}"), state ] }
-    # Keep existing legacy values without offering them as new choices.
-    if current_status.present? && !states.include?(current_status)
-      options.unshift([ t("ui.#{current_status}"), current_status, { disabled: true } ])
-    end
-    options
+  def purchase_status_options
+    Purchase::STATUSES.map { |state| [ t("ui.#{state}"), state ] }
   end
 
   def localized_flash(message)

@@ -19,8 +19,8 @@
   </dl>
   <div class="rc-purchased-on"><%= t("ui.purchased_on") %> <time datetime="<%= purchase.purchase_date.iso8601 %>"><%= l(purchase.purchase_date, format: :long) %></time></div>
   <div class="rc-card-bottom"><% if purchase.status == "active" && !expired %><span class="rc-days <%= 'rc-days-urgent' if urgent %>"><%= t("ui.days_left", count: days) %></span><% else %><span class="rc-muted"><%= status_label %></span><% end %>
-    <%# 2. Show sample actions only when preview dialogs exist; persisted purchases retain REST actions. %>
-    <% if purchase.persisted? || purchase_preview_enabled? %>
+    <%# Samples open a prefilled new purchase; only persisted records have mutation actions. %>
+    <% if purchase.persisted? || respond_to?(:new_purchase_path) || purchase_preview_enabled? %>
       <div class="rc-card-actions"><%= render "shared/purchase_actions", purchase: purchase, status_names: status_names %></div>
     <% end %>
   </div>

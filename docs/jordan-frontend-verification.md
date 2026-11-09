@@ -1,3 +1,160 @@
+# Current modal title cleanup
+
+The dialog now has one visible, accessible heading: Add Purchase, Edit Purchase,
+or Edit Sample Purchase. Full-page breadcrumbs, kicker, repeated page heading
+and footer navigation are hidden only inside the dialog. Policy setup also uses
+its own heading. Direct page navigation retains the original page layout.
+The validated sample reference is retained on failed submissions so a sample
+edit does not change back to an Add Purchase title after a 422 response.
+
+Latest checks: full RSpec 239 examples, 0 failures (seed 36477); RuboCop 86 files
+without offenses; JavaScript syntax check passed. Live Chrome passed distinct
+modal headings, absence of visible page headers in the sample modal, existing
+modal create/edit/cancel/error flows and desktop/390px layouts with no uncaught
+JavaScript errors. Evidence uses `tmp/shrey-integration/purchase_modal_browser.rb`,
+its JSON report and screenshots; logs `/tmp/returnclock-modal-titles-*.log`.
+No commit/push or iOS/Safari hardware test was performed.
+
+---
+
+# Previous modal implementation verification
+
+# Current purchase modal follow-up
+
+Add Purchase, real-card Edit and demo-template Edit open a native dialog backed
+by the existing form routes through Turbo Frames. Direct URLs and JavaScript-free
+navigation still render the full editor pages. Policy creation can run inside
+the same dialog. HTTP 422 errors remain in the dialog with entered values.
+Successful purchase responses promote their existing redirect destination to a
+full-page visit so the saved records and notices refresh. Purchase controllers,
+validation, owner scoping, models/schema and dependency versions are unchanged
+by this modal follow-up.
+
+Latest local results (2026-11-08): full RSpec 238 examples, 0 failures (seed
+36081); Cucumber 10 scenarios / 120 steps passed; Rails/Minitest 14 runs /
+60 assertions without failures, errors or skips (seed 18233). RuboCop and
+Brakeman were clean; the new JavaScript controller passed a Node syntax check.
+The existing isolated test and preview databases were used.
+
+Live Chrome/Selenium passed demo-template prefilling, Add Purchase, Cancel,
+Escape and focus restoration, policy creation inside the dialog, invalid-price
+HTTP 422 recovery, desktop/390px dialog layout, real purchase creation and
+Dashboard refresh, cancel without saving, and editing into History. No uncaught
+JavaScript or Stimulus action errors were logged. The standalone browser harness
+uses Capybara's waiting negative predicates before asserting asynchronous modal
+closure; the earlier failed immediate assertions were a harness timing issue.
+
+Evidence: ignored `tmp/shrey-integration/purchase-modal-browser-results.json`,
+`purchase_modal_browser.rb`, and `purchase-modal-1440.png` / `purchase-modal-390.png`;
+logs `/tmp/returnclock-modal-*.log`. The preview stays on port 3216. No commit,
+push, merge or deployment was performed. Physical iOS/Safari was not tested.
+
+Frame loading and fallback use the installed Turbo APIs described in the
+[official frame handbook](https://turbo.hotwired.dev/handbook/frames) and
+[event reference](https://turbo.hotwired.dev/reference/events).
+
+---
+
+# Earlier sample Edit verification (before modal presentation)
+
+# Current sample Edit follow-up
+
+Sample cards now offer Edit as a prefilled new purchase. Only known names from
+`sample_purchases` are accepted; only item name, price and purchase date are
+copied. GET does not write, another user's policy cannot be selected, and the
+sample survives separate store-policy creation. Explicit save creates an owned
+real purchase through Shrey's existing validation and derived-deadline rules.
+Saving starts active and may place the new purchase in History if its derived
+deadline has passed. Samples do not have direct status/delete mutations.
+
+Latest local results (2026-11-08): full RSpec 232 examples, 0 failures (seed
+42655); Cucumber 10 scenarios / 120 steps passed; RuboCop 85 files, no offenses;
+Brakeman 0 errors / 0 warnings. The existing dedicated test and preview databases
+below were reused; existing user records were not changed by the browser check.
+The browser registered its own new account in the preview database.
+
+Live Chrome/Selenium verified sample Edit visibility at 1440px and 390px,
+prefilled fields, template retention through policy creation, explicit save to a
+real purchase and subsequent normal editing. No uncaught JavaScript or Stimulus
+action errors were logged. Evidence: ignored
+`tmp/shrey-integration/sample-edit-browser-results.json`, screenshots and
+`sample_edit_browser.rb`; logs `/tmp/returnclock-sample-edit-*.log`.
+
+The two controller exceptions to the earlier exact-upstream comparison are the
+sample prefill in `PurchasesController#new` and retention of the sample reference
+in the policy-creation redirect. Purchase mutation rules, authorization, models,
+schema and dependencies are unchanged. The preview remains available on port
+3216. No commit or remote update was made. Physical iOS/Safari was not tested.
+
+---
+
+# Earlier integration verification (before sample Edit restoration)
+
+# Current purchase MVP integration verification
+
+Local source: frontend `d97c6da` plus Shrey purchase MVP `044144c` and frontend
+adaptations, uncommitted. See [handoff](jordan-frontend-handoff.md).
+
+## Current integration results
+
+Verified locally on 2026-11-08 in WSL Ubuntu, Ruby 3.3.12, Rails 8.1.4.1,
+Bundler 2.5.22 and PostgreSQL 16. The dedicated test database is
+`return_clock_submit2_shrey_test_20261108`; the browser uses a separate preview
+DB, `return_clock_submit2_shrey_preview_20261108`. No existing application DB
+was reset. The existing PostgreSQL service was started for these checks.
+
+| Check | Actual result |
+| --- | --- |
+| Full RSpec | 228 examples, 0 failures, seed 41180 |
+| Cucumber | 10 scenarios and 120 steps passed |
+| Rails/Minitest | 14 runs, 60 assertions, 0 failures/errors/skips, seed 7731 |
+| RuboCop | 84 files inspected, no offenses |
+| Brakeman 8.1.0 | 0 errors, 0 security warnings |
+| Policy/form checks after final spacing adjustment | 40 examples, 0 failures, seed 62213 |
+| Live Chrome 154 / Selenium | Full signup/policy/purchase/edit/status/delete flow passed; 10 page states at 1440px and 390px without overflow; no uncaught JavaScript errors |
+
+The live browser run used an isolated Chrome profile against real Rails and the
+preview database. It verified signup, non-editable demos, separate policy
+creation/preselection, real purchase creation, derived deadline, edit, History
+filtering, status-only card PATCH, policy edit without changing an existing
+deadline, delete cancellation, confirmed deletion, sample restoration and deletion
+of the now-unused policy. Existing menu state was preserved through Turbo back
+navigation; the browser script opens menus only when closed. The 20 viewport
+screenshots and final JSON report are under `tmp/shrey-integration/`. No personal
+browser session or existing user data was used.
+
+The RSpec suites cover create/edit/status/delete persistence, two-user ownership
+rejection, ignored forged owner/deadline fields, HTTP 422 input recovery, policy
+deletion protection, deadline recalculation and preservation, English pages,
+escaping, and unsaved demo isolation. The Cucumber suite uses RackTest; it is
+not JavaScript/browser coverage. No cases were skipped in the full RSpec run.
+
+The three incoming controllers and routes match Shrey's `044144c` exactly.
+Models/schema, database configuration, authentication, CI, Gemfile and the
+security-patched lockfile are unchanged. Upstream request checks are retained;
+the purchase-card helper selects persisted records to distinguish our demos.
+Acceptance steps open the card menu before Delete and find exact item headings.
+
+Logs are local under `/tmp/returnclock-shrey-*.log`. The standalone browser script,
+screenshots and JSON report are under ignored `tmp/shrey-integration/` in this
+checkout. Run Rails checks with `RAILS_ENV=test` and the dedicated test
+`DATABASE_URL`, using `rbenv exec bundle exec rspec`,
+`rbenv exec bundle exec cucumber features --publish-quiet`, and
+`rbenv exec bundle exec rake test`. Browser verification uses the separate local
+preview server and `rbenv exec bundle exec ruby tmp/shrey-integration/browser_check.rb`.
+
+Physical iOS/Safari and production deployment are not tested. Dependency and
+importmap audits were not repeated for unchanged dependency/JavaScript files;
+the fresh Brakeman result above is specific to this integration. Remote CI is
+not asserted. No commit, push, PR mutation, merge or deployment was performed.
+
+## Historical verification of the previous preview-only frontend
+
+The section below applies to the earlier committed frontend, not the integrated
+purchase CRUD source. Its preview-dialog behavior is superseded by real routes.
+
+---
+
 # Iteration 1 frontend verification record
 
 Verified locally on 2026-11-08 after applying dependency security patches.

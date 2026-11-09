@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Sample purchases for empty accounts", type: :request do
-  it "shows examples after signup with demo totals and preview actions without saving purchases" do
+  it "shows examples after signup with demo totals and editable templates without saving purchases" do
     post sign_up_path, params: { user: { email_address: "new-shopper@example.com",
       password: "Password1!", password_confirmation: "Password1!" } }
     expect(response).to redirect_to(dashboard_path)
@@ -17,6 +17,7 @@ RSpec.describe "Sample purchases for empty accounts", type: :request do
           !Rails.application.routes.url_helpers.respond_to?(route)
         end
         expect(cards.css("button[data-action='rc-purchase-preview#edit']").size).to eq(preview_enabled ? cards.size : 0)
+        expect(cards.css(".rc-card-actions a").size).to eq(cards.size)
         expect(cards.css("form")).to be_empty
         expect(html.css(".rc-empty")).to be_empty
         expect(html.css(".rc-stat strong").first.text).to eq(path == dashboard_path ? "7" : "3")
@@ -38,7 +39,7 @@ RSpec.describe "Sample purchases for empty accounts", type: :request do
     end
   end
 
-  it "keeps samples and preview actions English even with a former Chinese language parameter" do
+  it "keeps editable sample templates English even with a former Chinese language parameter" do
     user = User.create!(email_address: "sample-language@example.com", password: "Password1!")
     post session_path, params: { email_address: user.email_address, password: "Password1!" }
     get dashboard_path, params: { lang: "zh" }
@@ -46,7 +47,7 @@ RSpec.describe "Sample purchases for empty accounts", type: :request do
     expect(html.at_css(".rc-sample-notice").text).to include("Demo preview", "not saved")
     expect(html.at_css(".purchase-card h2").text).to eq("Wireless Headphones")
     expect(html.at_css(".rc-product-store").text).to eq("Campus Store")
-    expect(html.at_css(".rc-card-actions").text).to include("Edit")
+    expect(html.at_css(".rc-card-actions a").text).to eq("Edit")
     expect(html.css(".rc-language-switch")).to be_empty
     expect(html.at_css("main").text).not_to match(/\p{Han}/)
 
