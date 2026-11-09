@@ -82,3 +82,10 @@ git switch -c your-name/feature-name
 Commit and push your changes, then open a pull request into `main`. Wait for GitHub Actions checks to pass before merging.
 
 When working with user-specific data, use `Current.user` to scope database queries.
+
+
+## References
+
+[1] OpenAI, ChatGPT and Codex. https://chatgpt.com/ and https://openai.com/codex/
+
+Used for implementation assistance, debugging purchase status and store-policy workflows, resolving Rails and Heroku deployment issues, and supporting automated testing.
