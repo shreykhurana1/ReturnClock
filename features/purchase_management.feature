@@ -29,13 +29,25 @@ Feature: Manage purchases and saved store policies
     Then I should see the "Delete Purchase" heading
     And I should see "This cannot be undone." in the main content
     When I follow "Cancel"
-    And I follow "Back to Dashboard"
+    Then I should see the "Dashboard" heading
     Then I should see "Textbook" in the main content
     When I ask to delete purchase "Textbook"
     And I confirm purchase deletion
     Then I should see the "Dashboard" heading
     And I should not see a purchase named "Textbook"
     And I should see "Purchase deleted." in the main content
+
+  Scenario: Cancel and confirm deletion of a purchase in History
+    When I set purchase "Textbook" to status "Keeping"
+    Then I should see the "History" heading
+    When I ask to delete purchase "Textbook"
+    And I follow "Cancel"
+    Then I should see the "History" heading
+    And I should see "Textbook" in the main content
+    When I ask to delete purchase "Textbook"
+    And I confirm purchase deletion
+    Then I should see the "History" heading
+    And I should not see a purchase named "Textbook"
 
   Scenario: Edit a store policy without changing an existing purchase's deadline
     When I follow "Store Policies"

@@ -18,3 +18,20 @@ end
 Then("the purchase should have a return deadline {int} days from today") do |days|
   expect(page).to have_selector(".purchase-card time[datetime='#{(Date.current + days).iso8601}']")
 end
+
+When("I choose purchase status {string}") do |status|
+  select status, from: "Status"
+end
+
+Then("the purchase status {string} should be selected") do |status|
+  expect(page).to have_select("Status", selected: status)
+end
+
+Then("the purchase price should be {string}") do |price|
+  expect(BigDecimal(find_field("Price").value)).to eq(BigDecimal(price))
+end
+
+When("I correct the item name to {string}") do |name|
+  fill_in "Item Name", with: name
+  click_button "Add Purchase"
+end

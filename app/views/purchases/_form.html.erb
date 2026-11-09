@@ -2,7 +2,7 @@
 
 <% if @store_policies.empty? %>
   <p>Create a store return policy before adding your first purchase.</p>
-  <%= link_to "Create Store Policy", new_store_policy_path, class: "auth-button" %>
+  <%= link_to "Create Store Policy", new_store_policy_path(origin: "purchase"), class: "auth-button" %>
 <% else %>
   <%= form_with model: @purchase do |form| %>
     <div class="auth-field">
@@ -22,14 +22,13 @@
       <%= form.collection_select :store_policy_id, @store_policies, :id, :store_name,
             { prompt: "Select a store policy" }, { required: true } %>
     </div>
-    <% if @purchase.persisted? %>
-      <div class="auth-field">
-        <%= form.label :status, "Status" %>
-        <%= form.select :status, Purchase::STATUSES.map { |status| [ status.humanize, status ] },
-              { prompt: "Select a status" }, { required: true } %>
-      </div>
-    <% end %>
-    <p><%= link_to "Create Store Policy", new_store_policy_path %></p>
+    <div class="auth-field">
+      <%= form.label :status, "Status" %>
+      <%= form.select :status, Purchase::STATUSES.map { |status| [ status.titleize, status ] },
+            { prompt: "Select a status" }, { required: true, aria: { describedby: "purchase-status-hint" } } %>
+      <p id="purchase-status-hint" class="auth-hint">Active means you haven't decided whether to keep or return this purchase.</p>
+    </div>
+    <p><%= link_to "Create Store Policy", new_store_policy_path(origin: "purchase") %></p>
     <p class="auth-hint">The return deadline is calculated from the purchase date and store policy. Purchases past their deadline appear in History unless a return or refund is in progress.</p>
     <%= form.submit(@purchase.persisted? ? "Save Purchase" : "Add Purchase", class: "auth-button auth-submit") %>
   <% end %>
