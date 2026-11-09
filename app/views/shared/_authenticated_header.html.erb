@@ -15,11 +15,12 @@
           <span class="rc-account-email"><%= Current.user.email_address %></span>
           <span class="rc-chevron" aria-hidden="true">⌄</span>
         </summary>
-        <div class="rc-dropdown">
-          <div class="rc-dropdown-label"><%= t("ui.signed_in_as") %></div>
-          <div class="rc-dropdown-email"><%= Current.user.email_address %></div>
-          <%= link_to t("ui.settings"), settings_path, class: "rc-dropdown-item" %>
-          <%= button_to t("ui.sign_out"), session_path, method: :delete, class: "rc-dropdown-item rc-logout" %>
+        <div class="rc-dropdown profile-menu-content">
+          <p class="rc-dropdown-label profile-account-label">Account</p>
+          <p class="rc-dropdown-email auth-hint"><%= Current.user.email_address %></p>
+          <hr class="profile-menu-divider">
+          <%= link_to settings_path, class: "rc-dropdown-item" do %><span class="profile-settings-icon" aria-hidden="true"></span><%= t("ui.settings") %><% end %>
+          <%= button_to session_path, method: :delete, class: "rc-dropdown-item rc-logout" do %><span class="profile-logout-icon" aria-hidden="true"></span><%= t("ui.sign_out") %><% end %>
         </div>
       </details>
     </div>

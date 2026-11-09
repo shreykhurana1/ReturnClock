@@ -47,6 +47,10 @@ Then("I should see {string} in the main content") do |text|
   within("main") { expect(page).to have_text(text) }
 end
 
+Then("I should not see {string} in the main content") do |text|
+  within("main") { expect(page).not_to have_text(text) }
+end
+
 Then("the {string} field should contain {string}") do |label, value|
   expect(find_field(label, exact: true).value.to_s).to eq(value)
 end

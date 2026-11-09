@@ -167,6 +167,32 @@
   overflow-wrap: anywhere;
 }
 
+.profile-account-label {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.profile-menu-content .auth-hint {
+  font-size: 0.85rem;
+}
+
+.profile-menu-divider {
+  margin: 1rem 0;
+  border: 0;
+  border-top: 1px solid #ccc;
+}
+
+.profile-settings-icon::before {
+  content: "\2699";
+  margin-right: 0.35em;
+}
+
+.profile-logout-icon::before {
+  content: "\21AA";
+  margin-right: 0.35em;
+}
+
 .app-container {
   max-width: 75rem;
   margin: 2rem auto;

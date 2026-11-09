@@ -3,6 +3,7 @@
   <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
   <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
   <p><%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary" %></p>
+  <p><%= link_to "Add Purchase", new_purchase_path, class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %></p>
   <% if @store_policies.any? %>
     <div class="rc-card-grid">
       <% @store_policies.each do |store_policy| %>

@@ -26,7 +26,7 @@ module ApplicationHelper
   end
 
   def purchase_status_options
-    Purchase::STATUSES.map { |state| [ t("ui.#{state}"), state ] }
+    Purchase::STATUSES.map { |state| [ state.titleize, state ] }
   end
 
   def localized_flash(message)

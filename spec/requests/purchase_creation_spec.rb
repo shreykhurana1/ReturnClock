@@ -38,12 +38,12 @@ RSpec.describe "Purchase and store policy creation", type: :request do
     it "guides a first-time user through policy creation, selection, purchase creation, and Dashboard" do
       get new_purchase_path
       expect(response.body).to include("Create a store return policy before adding your first purchase.")
-      expect(response.parsed_body.at_css("main a[href='#{new_store_policy_path}']")).to be_present
+      expect(response.parsed_body.at_css("main a[href='#{new_store_policy_path(origin: "purchase")}']")).to be_present
 
-      get new_store_policy_path
+      get new_store_policy_path, params: { origin: "purchase" }
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.at_css("form[action='#{store_policies_path}']")).to be_present
-      post store_policies_path, params: { store_policy: { store_name: "Campus Store", window_days: 30 } }
+      post store_policies_path, params: { origin: "purchase", store_policy: { store_name: "Campus Store", window_days: 30 } }
       created_policy = user.store_policies.sole
       expect(response).to redirect_to(new_purchase_path(store_policy_id: created_policy.id))
       follow_redirect!
@@ -101,7 +101,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect do
         post store_policies_path, params: { store_policy: { store_name: other_policy.store_name, window_days: 30 } }
       end.to change(user.store_policies, :count).by(1)
-      expect(response).to redirect_to(new_purchase_path(store_policy_id: user.store_policies.sole.id))
+      expect(response).to redirect_to(store_policies_path)
     end
 
     it "shows only owned policies, ignoring another user's requested selection" do
@@ -121,7 +121,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect(response.body).not_to include(other_policy.store_name)
     end
 
-    it "ignores submitted owner, deadline, and status, using the existing model defaults and calculation" do
+    it "ignores submitted owner and deadline while accepting an allowed status" do
       other_user
       expect do
         post purchases_path, params: { purchase: attributes.merge(user_id: other_user.id, return_by: "2099-01-01", status: "refunded") }
@@ -129,11 +129,12 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       purchase = user.purchases.sole
       expect(purchase.store_policy).to eq(policy)
       expect(purchase.return_by).to eq(Date.new(2026, 12, 8))
-      expect(purchase.status).to eq("active")
+      expect(purchase.status).to eq("refunded")
+      expect(response).to redirect_to(history_path)
       expect(other_user.purchases).to be_empty
     end
 
-    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { store_policy_id: "" } ].each do |invalid_attributes|
+    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { store_policy_id: "" }, { status: "expired" } ].each do |invalid_attributes|
       it "rejects invalid purchase fields #{invalid_attributes.inspect} without saving" do
         params = attributes.merge(invalid_attributes)
         expect { post purchases_path, params: { purchase: params } }.not_to change(Purchase, :count)
@@ -172,11 +173,11 @@ RSpec.describe "Purchase and store policy creation", type: :request do
 
     it "preserves History classification for a newly entered purchase whose deadline has passed" do
       post purchases_path, params: { purchase: attributes.merge(purchase_date: "2026-09-01") }
-      expect(response).to redirect_to(dashboard_path)
+      expect(response).to redirect_to(history_path)
       follow_redirect!
-      expect(response.parsed_body.css(".purchase-card")).to be_empty
-      get history_path
       expect(response.parsed_body.at_css(".purchase-card h2").text).to eq("Textbook")
+      get dashboard_path
+      expect(response.parsed_body.css(".purchase-card")).to be_empty
     end
   end
 end

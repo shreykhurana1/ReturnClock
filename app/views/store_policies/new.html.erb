@@ -1,5 +1,5 @@
 <% content_for :purchase_editor_page, "true" %>
-<%= turbo_frame_tag "purchase_editor" do %>
+<%= turbo_frame_tag "purchase_editor", target: (turbo_frame_request? ? nil : "_top") do %>
 <main class="rc-page rc-purchase-editor">
   <div class="card rc-form-panel">
   <h1>Create Store Policy</h1>

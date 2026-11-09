@@ -19,7 +19,7 @@ class PurchasesController < ApplicationController
     @purchase.store_policy = Current.user.store_policies.find_by(id: attributes[:store_policy_id])
 
     if @purchase.save
-      redirect_to dashboard_path, notice: "Purchase added."
+      redirect_to purchase_page, notice: "Purchase added."
     else
       @store_policies = Current.user.store_policies.order(:store_name, :id)
       render :new, status: :unprocessable_entity
@@ -46,6 +46,7 @@ class PurchasesController < ApplicationController
   end
 
   def confirm_delete
+    @cancel_path = purchase_page
   end
 
   def destroy
@@ -77,6 +78,6 @@ class PurchasesController < ApplicationController
   end
 
   def purchase_params
-    params.expect(purchase: [ :item_name, :price, :purchase_date, :store_policy_id ])
+    params.expect(purchase: [ :item_name, :price, :purchase_date, :store_policy_id, :status ])
   end
 end

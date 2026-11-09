@@ -1,6 +1,7 @@
 <%= render "shared/form_errors", record: @store_policy %>
 
 <%= form_with model: @store_policy, class: "rc-purchase-form" do |form| %>
+  <%= hidden_field_tag :origin, "purchase" if @from_purchase %>
   <%= hidden_field_tag :sample, params[:sample] if params[:sample].present? %>
   <div class="rc-field-grid">
     <div class="rc-form-field">

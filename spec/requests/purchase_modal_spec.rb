@@ -20,6 +20,7 @@ RSpec.describe "Purchase editor dialog", type: :request do
       get new_purchase_path, headers: headers
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body.css("turbo-frame#purchase_editor").size).to eq(1)
+      expect(response.parsed_body.at_css("turbo-frame#purchase_editor")["target"]).to eq(headers.empty? ? "_top" : nil)
       expect(response.parsed_body.at_css("turbo-frame#purchase_editor form[action='#{purchases_path}']")).to be_present
     end
   end
@@ -39,6 +40,9 @@ RSpec.describe "Purchase editor dialog", type: :request do
   it "keeps policy setup in the same frame" do
     get new_store_policy_path(sample: "Wireless Headphones"), headers: { "Turbo-Frame" => "purchase_editor" }
     expect(response.parsed_body.at_css("turbo-frame#purchase_editor form[action='#{store_policies_path}']")).to be_present
+    expect(response.parsed_body.at_css("turbo-frame#purchase_editor")["target"]).to be_nil
+    get new_store_policy_path
+    expect(response.parsed_body.at_css("turbo-frame#purchase_editor")["target"]).to eq("_top")
   end
 
   it "saves a framed purchase and returns the Dashboard destination with its flash" do

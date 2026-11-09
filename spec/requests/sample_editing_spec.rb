@@ -27,11 +27,11 @@ RSpec.describe "Editing sample purchase templates", type: :request do
     get new_purchase_path(sample: "Wireless Headphones")
     get response.parsed_body.at_css("a[href^='/store_policies/new']")["href"]
     sample = response.parsed_body.at_css("input[name='sample']")["value"]
-    post store_policies_path, params: { sample: sample, store_policy: { store_name: "", window_days: 14 } }
+    post store_policies_path, params: { origin: "purchase", sample: sample, store_policy: { store_name: "", window_days: 14 } }
     expect(response).to have_http_status(:unprocessable_content)
     expect(response.parsed_body.at_css("input[name='sample']")["value"]).to eq(sample)
 
-    post store_policies_path, params: { sample: sample, store_policy: { store_name: "My Store", window_days: 14 } }
+    post store_policies_path, params: { origin: "purchase", sample: sample, store_policy: { store_name: "My Store", window_days: 14 } }
     follow_redirect!
     html = response.parsed_body
     expect(html.at_css("input[name='purchase[item_name]']")["value"]).to eq("Wireless Headphones")

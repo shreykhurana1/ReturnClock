@@ -1,5 +1,5 @@
 <% content_for :purchase_editor_page, "true" %>
-<%= turbo_frame_tag "purchase_editor" do %>
+<%= turbo_frame_tag "purchase_editor", target: (turbo_frame_request? ? nil : "_top") do %>
 <%# 1. Backend handoff: the edit action must load @purchase through Current.user.purchases.find(params[:id]). %>
 <main class="rc-page rc-purchase-editor">
   <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>"><%= link_to t("ui.dashboard"), dashboard_path %><span>/</span><span><%= t("ui.edit_heading") %></span></nav>

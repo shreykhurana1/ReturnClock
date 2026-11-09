@@ -14,7 +14,7 @@ RSpec.describe "purchases/_form", type: :view do
 
   it "guides an account without policies to policy creation and disables purchase submission" do
     html = form_html
-    expect(html.at_css("a[href='#{new_store_policy_path}']").text).to eq("Create Store Policy")
+    expect(html.at_css("a[href='#{new_store_policy_path(origin: "purchase")}']").text).to eq("Create Store Policy")
     expect(html.at_css("input[type='submit']")["disabled"]).to be_present
     expect(html.css("[name^='store_policy['], [name='purchase[user_id]'], [name='purchase[return_by]']")).to be_empty
   end
