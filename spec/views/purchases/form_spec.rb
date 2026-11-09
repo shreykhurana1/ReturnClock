@@ -12,21 +12,20 @@ RSpec.describe "purchases/_form", type: :view do
     Nokogiri::HTML.fragment(rendered)
   end
 
-  it "guides an account without policies to policy creation and disables purchase submission" do
+  it "lets an account without policies add a purchase with a store, window, or return-by date" do
     html = form_html
     expect(html.at_css("a[href='#{new_store_policy_path(origin: "purchase")}']").text).to eq("Create Store Policy")
-    expect(html.at_css("input[type='submit']")["disabled"]).to be_present
-    expect(html.css("[name^='store_policy['], [name='purchase[user_id]'], [name='purchase[return_by]']")).to be_empty
+    expect(html.at_css("input[type='submit']")["disabled"]).to be_nil
+    %w[store_name return_window_days return_by].each do |field|
+      expect(html.at_css("input[name='purchase[#{field}]']")).to be_present
+    end
+    expect(html.css("[name^='store_policy['], [name='purchase[user_id]'], [name='purchase[store_policy_id]']")).to be_empty
   end
 
-  it "offers only the current user's saved policies" do
-    policy = user.store_policies.create!(store_name: "Own Store", window_days: 30)
+  it "does not reveal another user's saved stores" do
     other = User.create!(email_address: "private@example.com", password: "Password1!")
     other.store_policies.create!(store_name: "Private Store", window_days: 60)
-    html = form_html
-    select = html.at_css("select[name='purchase[store_policy_id]']")
-    expect(select.css("option").map { |option| option["value"] }).to eq([ "", policy.id.to_s ])
-    expect(select["required"]).to be_present
+    form_html
     expect(rendered).not_to include("Private Store")
   end
 

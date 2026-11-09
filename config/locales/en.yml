@@ -30,6 +30,9 @@
 en:
   hello: "Hello world"
   activerecord:
+    attributes:
+      purchase:
+        return_window_days: "Return window"
     errors:
       models:
         user:

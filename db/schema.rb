@@ -10,20 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_28_200000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_09_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "purchases", force: :cascade do |t|
     t.bigint "user_id", null: false
-    t.bigint "store_policy_id", null: false
+    t.bigint "store_policy_id"
     t.string "item_name", null: false
-    t.decimal "price", precision: 10, scale: 2, null: false
-    t.date "purchase_date", null: false
+    t.decimal "price", precision: 10, scale: 2
+    t.date "purchase_date"
     t.date "return_by", null: false
     t.string "status", default: "active", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "store_name"
+    t.integer "return_window_days"
+    t.date "returned_at"
+    t.date "refunded_at"
+    t.datetime "reminded_at"
     t.index ["store_policy_id"], name: "index_purchases_on_store_policy_id"
     t.index ["user_id"], name: "index_purchases_on_user_id"
     t.check_constraint "price > 0::numeric", name: "purchases_price_positive"
@@ -214,7 +219,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_200000) do
     t.integer "window_days", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id", "store_name"], name: "index_store_policies_on_user_id_and_store_name", unique: true
+    t.index "user_id, lower((store_name)::text)", name: "index_store_policies_on_user_id_and_lower_store_name", unique: true
     t.index ["user_id"], name: "index_store_policies_on_user_id"
     t.check_constraint "window_days > 0", name: "store_policies_window_days_positive"
   end
@@ -224,6 +229,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_28_200000) do
     t.string "password_digest", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "reminder_days_before", default: 2, null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 

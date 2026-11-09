@@ -35,12 +35,12 @@ RSpec.describe "Editing sample purchase templates", type: :request do
     follow_redirect!
     html = response.parsed_body
     expect(html.at_css("input[name='purchase[item_name]']")["value"]).to eq("Wireless Headphones")
-    expect(html.at_css("select[name='purchase[store_policy_id]'] option[selected]")["value"]).to eq(user.store_policies.sole.id.to_s)
+    expect(html.at_css("input[name='purchase[store_name]']")["value"]).to be_nil
     fields = %w[item_name price purchase_date].to_h do |field|
       [ field, html.at_css("input[name='purchase[#{field}]']")["value"] ]
     end
     fields["item_name"] = "My Edited Headphones"
-    fields["store_policy_id"] = user.store_policies.sole.id
+    fields["store_name"] = "My Store"
     expect { post purchases_path, params: { purchase: fields } }.to change(user.purchases, :count).by(1)
     expect(user.purchases.sole.return_by).to eq(Date.parse(fields["purchase_date"]) + 14)
     follow_redirect!
@@ -52,9 +52,9 @@ RSpec.describe "Editing sample purchase templates", type: :request do
   it "ignores unknown samples and never selects another user's policy" do
     other = User.create!(email_address: "private-sample@example.com", password: "Password1!")
     policy = other.store_policies.create!(store_name: "Campus Store", window_days: 30)
-    get new_purchase_path(sample: "Wireless Headphones", store_policy_id: policy.id)
-    expect(response.parsed_body.css("select[name='purchase[store_policy_id]']")).to be_empty
-    expect(response.parsed_body.at_css("input[type='submit']")["disabled"]).to be_present
+    get new_purchase_path(sample: "Wireless Headphones", store_name: policy.store_name)
+    expect(response.parsed_body.at_css("input[name='purchase[store_name]']")["value"]).to be_nil
+    expect(response.body).not_to include(policy.store_name)
 
     get new_purchase_path(sample: "<script>arbitrary</script>", item_name: "Injected")
     expect(response.parsed_body.at_css("input[name='purchase[item_name]']")["value"]).to be_nil
@@ -65,7 +65,7 @@ RSpec.describe "Editing sample purchase templates", type: :request do
   it "keeps the sample editing title and entered values after validation fails" do
     policy = user.store_policies.create!(store_name: "My Store", window_days: 30)
     post purchases_path, params: { sample: "Wireless Headphones", purchase: {
-      item_name: "Changed sample", price: -1, purchase_date: Date.current, store_policy_id: policy.id
+      item_name: "Changed sample", price: -1, purchase_date: Date.current, store_name: policy.store_name
     } }
     expect(response).to have_http_status(:unprocessable_content)
     html = response.parsed_body

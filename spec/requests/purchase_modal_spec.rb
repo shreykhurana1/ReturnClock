@@ -48,7 +48,7 @@ RSpec.describe "Purchase editor dialog", type: :request do
   it "saves a framed purchase and returns the Dashboard destination with its flash" do
     expect do
       post purchases_path, headers: { "Turbo-Frame" => "purchase_editor" },
-        params: { purchase: { item_name: "Modal purchase", price: 20, purchase_date: Date.current, store_policy_id: policy.id } }
+        params: { purchase: { item_name: "Modal purchase", price: 20, purchase_date: Date.current, store_name: policy.store_name } }
     end.to change(user.purchases, :count).by(1)
     expect(response).to redirect_to(dashboard_path)
     expect(URI.parse(response.location).path).to eq(dashboard_path)
