@@ -78,17 +78,28 @@ RSpec.describe "Authentication", type: :request do
   end
 
   describe "logout and authentication protection" do
-    it "destroys only the current session and clears its cookie" do
+    it "destroys only the current session and returns to the public landing page" do
       other_session = user.sessions.create!
       post session_path, params: { email_address: user.email_address, password: password }
       current_session = user.sessions.order(:id).last
 
       expect { delete session_path }.to change(Session, :count).by(-1)
       expect(response).to have_http_status(:see_other)
-      expect(response).to redirect_to(new_session_path)
+      expect(response).to redirect_to(root_path)
       expect(cookies[:session_id]).to be_blank
       expect(Session.exists?(current_session.id)).to be(false)
       expect(Session.exists?(other_session.id)).to be(true)
+      follow_redirect!
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body.at_css("main h1").text).to eq("ReturnClock")
+      expect(response.parsed_body.css("header.app-header")).to be_empty
+      expect(response.parsed_body.at_css("a[href='#{new_session_path}']").text).to eq("Sign In")
+      expect(response.parsed_body.at_css("a[href='#{sign_up_path}']").text).to eq("Create Account")
+
+      [ dashboard_path, history_path, settings_path ].each do |path|
+        get path
+        expect(response).to redirect_to(new_session_path)
+      end
     end
 
     it "redirects an anonymous request without deleting any sessions" do

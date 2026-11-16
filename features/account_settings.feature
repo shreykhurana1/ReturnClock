@@ -33,6 +33,8 @@ Feature: Change my account password
     And the "Confirm New Password" field should contain ""
     When I open the profile menu
     And I sign out
+    Then I should see the "ReturnClock" heading
+    When I follow "Sign In"
     And I sign in with email "student@example.com" and password "Password1!"
     Then I should see the "Dashboard" heading
 

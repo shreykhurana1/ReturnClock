@@ -249,9 +249,9 @@ RSpec.describe "Account password changes", type: :request do
       original_protection.each { |controller, enabled| controller.allow_forgery_protection = enabled }
     end
 
-    it "keeps settings protected after signing out to the existing Sign In page" do
+    it "keeps settings protected after signing out to the existing landing page" do
       delete session_path
-      expect(response).to redirect_to(new_session_path)
+      expect(response).to redirect_to(root_path)
       get settings_path
       expect(response).to redirect_to(new_session_path)
     end
