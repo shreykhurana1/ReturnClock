@@ -30,7 +30,8 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
     expect(filters.select { |button| button["aria-pressed"] == "true" }.map(&:text)).to eq([ "All" ])
     cards = html.css(".purchase-card")
     expect(cards.to_h { |card| [ card.at_css("h2").text, card["data-status"] ] }).to eq(
-      "My active -1" => "expired", "My keeping -1" => "keeping", "My refunded -1" => "refunded")
+      "My active -1" => "expired", "My returning -1" => "expired", "My expired -1" => "expired",
+      "My keeping -1" => "keeping", "My refunded -1" => "refunded")
     expect(response.body).not_to include("Private purchase", "Private Store")
     cards.each do |card|
       expect(card["data-rc-purchase-filter-target"]).to eq("card")
@@ -38,11 +39,11 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
       expect(options).to eq(Purchase::STATUSES)
     end
     expired_select = html.at_css("[data-status='expired'] .rc-status-mini-form select")
-    expect(expired_select.at_css("option[selected]")["value"]).to eq("active")
+    expect(expired_select.at_css("option[selected]")["value"]).to eq("expired")
 
     get dashboard_path
     expect(response.parsed_body.css(".purchase-card").map { |card| card["data-status"] })
-      .to contain_exactly("active", "returning", "shipped_back", "refund_pending")
+      .to contain_exactly("active", "shipped_back", "refund_pending")
   end
 
   it "rejects a status-only update to another user's purchase, including forged ownership fields" do
@@ -84,7 +85,8 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
     html = response.parsed_body
     expect(html.at_css("main").text).to include("Password changes are not available", "Not available yet")
     expect(html.at_css("input[type='email'][readonly]")["value"]).to eq(user.email_address)
-    expect(html.css("main form, main input[type='password']")).to be_empty
+    expect(html.css("main input[type='password']")).to be_empty
+    expect(html.css("main form").map { |form| form["action"] }).to eq([ settings_path ])
   end
 
   it "filters current and new password parameters from request logs" do
@@ -95,11 +97,12 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
   end
 
   %i[post patch put].each do |method|
-    it "does not accept #{method} password changes through the read-only settings URL" do
+    it "does not accept #{method} password changes through the settings URL" do
       original = user.password_digest
       public_send(method, settings_path, params: { user_id: other_user.id,
         user: { current_password: "Password1!", password: "Changed1!", password_confirmation: "Changed1!" } })
-      expect(response).to have_http_status(:not_found)
+      # PATCH saves reminder settings only, so password fields are a bad request.
+      expect(response).to have_http_status(method == :patch ? :bad_request : :not_found)
       expect(user.reload.password_digest).to eq(original)
       expect(user.authenticate("Password1!")).to eq(user)
       expect(user.authenticate("Changed1!")).to be(false)

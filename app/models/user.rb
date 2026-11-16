@@ -4,7 +4,11 @@ class User < ApplicationRecord
   has_many :purchases, dependent: :destroy
   has_many :store_policies, dependent: :destroy
 
+  REMINDER_OPTIONS = { "1 day before" => 1, "2 days before" => 2, "3 days before" => 3, "1 week before" => 7 }.freeze
+
   normalizes :email_address, with: ->(e) { e.strip.downcase }
+
+  validates :reminder_days_before, inclusion: { in: REMINDER_OPTIONS.values }
 
   validates :email_address,
             presence: true,

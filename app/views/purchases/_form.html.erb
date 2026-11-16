@@ -1,5 +1,3 @@
-<%# 1. Prepare variables using only the existing Purchase and StorePolicy fields. %>
-<% policies = Current.user.store_policies.order(:store_name) %>
 <% preview = local_assigns.fetch(:preview, false) %>
 <% id_prefix = preview ? "rc-preview" : "rc" %>
 
@@ -28,11 +26,11 @@
       </div>
       <div class="rc-form-field">
         <%= form.label :price, "Price", class: "form-label" %>
-        <div class="rc-input-prefix"><span aria-hidden="true">$</span><%= form.number_field :price, class: "form-control", min: "0.01", step: "0.01", placeholder: "99.99", required: true %></div>
+        <div class="rc-input-prefix"><span aria-hidden="true">$</span><%= form.number_field :price, class: "form-control", min: "0.01", step: "0.01", placeholder: "99.99" %></div>
       </div>
       <div class="rc-form-field">
         <%= form.label :purchase_date, "Purchase Date", class: "form-label" %>
-        <%= form.date_field :purchase_date, class: "form-control", required: true %>
+        <%= form.date_field :purchase_date, class: "form-control" %>
       </div>
     </div>
   </section>
@@ -42,15 +40,20 @@
       <span class="rc-step-num">02</span>
       <div><h2 id="<%= id_prefix %>-store-policy"><%= t("ui.store_policy") %></h2><p><%= t("ui.store_policy_hint") %></p></div>
     </div>
-    <% if policies.empty? %>
-      <p>Create a store return policy before adding your first purchase.</p>
-    <% else %>
-      <div class="rc-form-field">
-        <%= form.label :store_policy_id, "Store Policy", class: "form-label" %>
-        <%= form.collection_select :store_policy_id, policies, :id, :store_name,
-              { prompt: "Select a store policy" }, { class: "form-select", required: true } %>
+    <div class="rc-field-grid">
+      <div class="rc-form-field rc-field-wide">
+        <%= form.label :store_name, "Store", class: "form-label" %>
+        <%= form.text_field :store_name, class: "form-control", maxlength: 255, autocomplete: "off" %>
       </div>
-    <% end %>
+      <div class="rc-form-field">
+        <%= form.label :return_window_days, "Return Window (days)", class: "form-label" %>
+        <%= form.number_field :return_window_days, class: "form-control", min: 0, step: 1 %>
+      </div>
+      <div class="rc-form-field">
+        <%= form.label :return_by, "Return By", class: "form-label" %>
+        <%= form.date_field :return_by, class: "form-control" %>
+      </div>
+    </div>
     <p><%= link_to "Create Store Policy", new_store_policy_path(origin: "purchase", sample: @sample_purchase&.item_name), class: "rc-card-link" %></p>
     <p class="rc-deadline-note"><strong><%= t("ui.deadline_label") %></strong><%= t("ui.deadline_hint") %></p>
   </section>
@@ -71,6 +74,6 @@
     <% else %>
       <%= link_to t("ui.cancel"), dashboard_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
     <% end %>
-    <%= form.submit(purchase.persisted? ? "Save Purchase" : "Add Purchase", class: "rc-btn rc-btn-primary", disabled: policies.empty?, data: (preview ? { rc_purchase_preview_target: "submitButton" } : {})) %>
+    <%= form.submit(purchase.persisted? ? "Save Purchase" : "Add Purchase", class: "rc-btn rc-btn-primary", data: (preview ? { rc_purchase_preview_target: "submitButton" } : {})) %>
   </div>
 <% end %>

@@ -78,7 +78,7 @@ RSpec.describe "Store policy management", type: :request do
       expect(policy.window_days).to eq(60)
       expect(purchase.reload.return_by).to eq(deadline)
       post purchases_path, params: { purchase: { item_name: "New Textbook", price: 25,
-        purchase_date: Date.current.iso8601, store_policy_id: policy.id } }
+        purchase_date: Date.current.iso8601, store_name: policy.store_name } }
       expect(response).to redirect_to(dashboard_path)
       expect(user.purchases.find_by!(item_name: "New Textbook").return_by).to eq(Date.current + 60)
     end

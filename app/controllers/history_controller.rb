@@ -1,8 +1,7 @@
 class HistoryController < ApplicationController
   def index
     purchases = Current.user.purchases
-    @purchases = purchases.where(status: %w[keeping refunded])
-      .or(purchases.where(status: "active", return_by: ...Date.current))
-      .includes(:store_policy).order(return_by: :desc, id: :desc)
+    purchases.expire_overdue!
+    @purchases = purchases.in_history.includes(:store_policy).order(return_by: :desc, item_name: :asc, id: :desc)
   end
 end

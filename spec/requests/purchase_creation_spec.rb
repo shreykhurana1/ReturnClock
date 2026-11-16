@@ -6,7 +6,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
   let(:policy) { user.store_policies.create!(store_name: "Campus Store", window_days: 30) }
   let(:other_policy) { other_user.store_policies.create!(store_name: "Private Store", window_days: 14) }
   let(:attributes) do
-    { item_name: "Textbook", price: "49.99", purchase_date: "2026-11-08", store_policy_id: policy.id }
+    { item_name: "Textbook", price: "49.99", purchase_date: "2026-11-08", store_name: policy.store_name }
   end
 
   around do |example|
@@ -35,25 +35,15 @@ RSpec.describe "Purchase and store policy creation", type: :request do
   context "when signed in" do
     before { sign_in }
 
-    it "guides a first-time user through policy creation, selection, purchase creation, and Dashboard" do
+    it "lets a first-time user add a purchase with a typed store, then save that store from the prompt" do
       get new_purchase_path
-      expect(response.body).to include("Create a store return policy before adding your first purchase.")
-      expect(response.parsed_body.at_css("main a[href='#{new_store_policy_path(origin: "purchase")}']")).to be_present
-
-      get new_store_policy_path, params: { origin: "purchase" }
-      expect(response).to have_http_status(:ok)
-      expect(response.parsed_body.at_css("form[action='#{store_policies_path}']")).to be_present
-      post store_policies_path, params: { origin: "purchase", store_policy: { store_name: "Campus Store", window_days: 30 } }
-      created_policy = user.store_policies.sole
-      expect(response).to redirect_to(new_purchase_path(store_policy_id: created_policy.id))
-      follow_redirect!
-      selected = response.parsed_body.at_css("select[name='purchase[store_policy_id]'] option[selected]")
-      expect(selected["value"]).to eq(created_policy.id.to_s)
+      expect(response.body).not_to include("Create a store return policy before adding your first purchase.")
+      expect(response.parsed_body.at_css("input[type='submit']")["disabled"]).to be_nil
       expect(response.parsed_body.at_css("input[name='purchase[purchase_date]']")["value"]).to eq("2026-11-08")
 
       expect do
         post purchases_path, params: { purchase: { item_name: "Textbook", price: "49.99",
-          purchase_date: "2026-11-08", store_policy_id: created_policy.id } }
+          purchase_date: "2026-11-08", store_name: "Campus Store", return_window_days: "30" } }
       end.to change(user.purchases, :count).by(1)
       expect(response).to redirect_to(dashboard_path)
       expect(user.purchases.sole.return_by).to eq(Date.new(2026, 12, 8))
@@ -61,6 +51,12 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       card = response.parsed_body.at_css(".purchase-card")
       expect(card.text).to include("Textbook", "Campus Store", "$49.99", "Active")
       expect(card.at_css("time")["datetime"]).to eq("2026-12-08")
+      expect(response.body).to include(%(Save store "Campus Store" with a 30 day return window?))
+
+      post store_policies_path, params: { origin: "banner", store_policy: { store_name: "Campus Store", window_days: 30 } },
+        headers: { "HTTP_REFERER" => dashboard_url }
+      expect(response).to redirect_to(dashboard_url)
+      expect(user.purchases.sole.store_policy).to eq(user.store_policies.sole)
     end
 
     it "assigns a policy to Current.user even when another owner is submitted" do
@@ -104,27 +100,26 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect(response).to redirect_to(store_policies_path)
     end
 
-    it "shows only owned policies, ignoring another user's requested selection" do
+    it "never reveals another user's stores on the new purchase form" do
       policy
       get new_purchase_path, params: { store_policy_id: other_policy.id, user_id: other_user.id }
       expect(response).to have_http_status(:ok)
-      options = response.parsed_body.css("select[name='purchase[store_policy_id]'] option")
-      expect(options.map { |option| option["value"] }).to contain_exactly("", policy.id.to_s)
       expect(response.body).not_to include(other_policy.store_name, other_user.email_address)
-      expect(response.parsed_body.css("input[name$='[user_id]']")).to be_empty
+      expect(response.parsed_body.css("input[name$='[user_id]'], [name='purchase[store_policy_id]']")).to be_empty
     end
 
-    it "offers policy creation when only another user's policies exist" do
+    it "does not fill in a window from another user's saved store" do
       other_policy
-      get new_purchase_path
-      expect(response.body).to include("Create a store return policy before adding your first purchase.")
-      expect(response.body).not_to include(other_policy.store_name)
+      params = { item_name: "Bag", purchase_date: "2026-11-08", store_name: other_policy.store_name }
+      expect { post purchases_path, params: { purchase: params } }.not_to change(Purchase, :count)
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("Add a return-by date, or a purchase date and return window")
     end
 
-    it "ignores submitted owner and deadline while accepting an allowed status" do
+    it "ignores a submitted owner while accepting an allowed status" do
       other_user
       expect do
-        post purchases_path, params: { purchase: attributes.merge(user_id: other_user.id, return_by: "2099-01-01", status: "refunded") }
+        post purchases_path, params: { purchase: attributes.merge(user_id: other_user.id, status: "refunded") }
       end.to change(user.purchases, :count).by(1)
       purchase = user.purchases.sole
       expect(purchase.store_policy).to eq(policy)
@@ -134,7 +129,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect(other_user.purchases).to be_empty
     end
 
-    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { store_policy_id: "" }, { status: "expired" } ].each do |invalid_attributes|
+    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { return_window_days: -1 }, { status: "unknown" } ].each do |invalid_attributes|
       it "rejects invalid purchase fields #{invalid_attributes.inspect} without saving" do
         params = attributes.merge(invalid_attributes)
         expect { post purchases_path, params: { purchase: params } }.not_to change(Purchase, :count)
@@ -152,23 +147,17 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect(response.body).not_to include(other_policy.store_name)
       expect(response.parsed_body.at_css("input[name='purchase[item_name]']")["value"]).to eq("Textbook")
       expect(response.parsed_body.at_css("input[name='purchase[price]']")["value"]).to eq("-1")
-      expect(response.parsed_body.at_css("select option[selected]")["value"]).to eq(policy.id.to_s)
+      expect(response.parsed_body.at_css("input[name='purchase[store_name]']")["value"]).to eq(policy.store_name)
     end
 
-    it "rejects another user's policy without revealing its name" do
-      params = attributes.merge(store_policy_id: other_policy.id)
-      expect { post purchases_path, params: { purchase: params } }.not_to change(Purchase, :count)
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store policy must exist")
-      expect(response.body).not_to include(other_policy.store_name)
-      expect(other_policy.reload.purchases).to be_empty
-    end
-
-    it "rejects a nonexistent policy without raising a foreign-key error" do
-      params = attributes.merge(store_policy_id: -1)
-      expect { post purchases_path, params: { purchase: params } }.not_to change(Purchase, :count)
-      expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store policy must exist")
+    [ :other, -1 ].each do |forged|
+      it "ignores a submitted store_policy_id (#{forged}) and links the purchase by its own store" do
+        forged_id = forged == :other ? other_policy.id : forged
+        expect { post purchases_path, params: { purchase: attributes.merge(store_policy_id: forged_id) } }
+          .to change(user.purchases, :count).by(1)
+        expect(user.purchases.sole.store_policy).to eq(policy)
+        expect(other_user.store_policies.flat_map(&:purchases)).to be_empty
+      end
     end
 
     it "preserves History classification for a newly entered purchase whose deadline has passed" do

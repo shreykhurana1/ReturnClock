@@ -95,7 +95,18 @@ RSpec.describe "Read-only purchase pages", type: :request do
     expect(card_names).to contain_exactly("Expired active", "Kept early", "Refunded early")
   end
 
-  %w[returning shipped_back refund_pending].each do |status|
+  it "keeps returning purchases on Dashboard until the deadline passes, then expires them" do
+    [ -1, 0, 1 ].each do |days|
+      create_purchase("returning #{days}", status: "returning", deadline: Date.current + days)
+    end
+    sign_in
+    get dashboard_path
+    expect(card_names).to eq([ "returning 0", "returning 1" ])
+    get history_path
+    expect(card_names).to eq([ "returning -1" ])
+  end
+
+  %w[shipped_back refund_pending].each do |status|
     it "keeps #{status} purchases actionable before, on, and after their deadlines" do
       [ -1, 0, 1 ].each do |days|
         create_purchase("#{status} #{days}", status: status, deadline: Date.current + days)

@@ -1,0 +1,2 @@
+<p><strong><%= @purchase.item_name %></strong><%= " from #{@purchase.store_name}" if @purchase.store_name %> must be returned by <%= @deadline %>.</p>
+<p><%= link_to "Open ReturnClock", dashboard_url %> to keep it, start the return, or update its status.</p>

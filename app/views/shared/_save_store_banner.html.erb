@@ -1,0 +1,8 @@
+<% offer = flash[:save_store] %>
+<% if offer %>
+  <div class="rc-alert rc-save-store-banner" role="status">
+    <p>Save store "<%= offer["store_name"] %>" with a <%= offer["window_days"] %> day return window?</p>
+    <%= button_to "Create Store Policy", store_policies_path, params: { origin: "banner", store_policy: { store_name: offer["store_name"], window_days: offer["window_days"] } }, class: "rc-btn rc-btn-primary rc-btn-small" %>
+    <%= link_to "No thanks", request.path, class: "rc-card-link" %>
+  </div>
+<% end %>
