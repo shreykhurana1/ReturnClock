@@ -14,6 +14,10 @@ When("I visit History directly") do
   visit history_path
 end
 
+When("I visit Account Settings directly") do
+  visit settings_path
+end
+
 When("I follow {string}") do |label|
   click_link label, exact: true
 end

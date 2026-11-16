@@ -73,6 +73,8 @@ Feature: Manage access to ReturnClock
     Then I should see the "Sign In" heading
     When I visit the Dashboard directly
     Then I should see the "Sign In" heading
+    When I visit Account Settings directly
+    Then I should see the "Sign In" heading
 
   Scenario: Sign in before accessing History and return to the requested page
     Given an account exists for "student@example.com" with password "Password1!"
@@ -83,3 +85,12 @@ Feature: Manage access to ReturnClock
     And I should see "Demo preview" in the main content
     When I follow "Dashboard"
     Then I should see the "Dashboard" heading
+
+  Scenario: Move between Sign In and Create Account from the public landing page
+    Given I visit the landing page
+    When I follow "Sign In"
+    Then I should see the "Sign In" heading
+    When I follow "Create Account"
+    Then I should see the "Create Account" heading
+    When I follow "Sign In"
+    Then I should see the "Sign In" heading
