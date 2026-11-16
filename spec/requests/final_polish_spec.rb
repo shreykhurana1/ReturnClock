@@ -4,7 +4,7 @@ RSpec.describe "Purchase status and navigation", type: :request do
   let(:user) { User.create!(email_address: "student@example.com", password: "Password1!") }
   let(:policy) { user.store_policies.create!(store_name: "Campus Store", window_days: 30) }
   let(:attributes) do
-    { item_name: "Textbook", price: "49.99", purchase_date: Date.current.iso8601, store_policy_id: policy.id }
+    { item_name: "Textbook", price: "49.99", purchase_date: Date.current.iso8601, store_name: policy.store_name }
   end
 
   around do |example|
@@ -15,12 +15,12 @@ RSpec.describe "Purchase status and navigation", type: :request do
     post session_path, params: { email_address: user.email_address, password: "Password1!" }
   end
 
-  it "offers all six statuses when adding a purchase, defaulting to Active with a short explanation" do
+  it "offers every status when adding a purchase, defaulting to Active with a short explanation" do
     policy
     get new_purchase_path
     select = response.parsed_body.at_css("select[name='purchase[status]']")
     expect(select.css("option").map { |option| option["value"] }).to eq(Purchase::STATUSES)
-    expect(select.css("option").map(&:text)).to eq([ "Active", "Keeping", "Returning", "Shipped Back", "Refund Pending", "Refunded" ])
+    expect(select.css("option").map(&:text)).to eq([ "Active", "Keeping", "Returning", "Shipped Back", "Refund Pending", "Refunded", "Expired" ])
     expect(select.at_css("option[selected]")["value"]).to eq("active")
     expect(response.body).to include("Active means you haven't decided whether to keep or return this purchase.")
   end
@@ -28,7 +28,7 @@ RSpec.describe "Purchase status and navigation", type: :request do
   Purchase::STATUSES.each do |status|
     it "saves #{status} during creation and shows it on the correct page" do
       post purchases_path, params: { purchase: attributes.merge(status: status) }
-      destination = %w[keeping refunded].include?(status) ? history_path : dashboard_path
+      destination = %w[keeping refunded expired].include?(status) ? history_path : dashboard_path
       expect(response).to redirect_to(destination)
       purchase = user.purchases.sole
       expect(purchase.status).to eq(status)
@@ -40,8 +40,14 @@ RSpec.describe "Purchase status and navigation", type: :request do
     end
   end
 
-  %w[returning shipped_back refund_pending].each do |status|
-    it "keeps a newly recorded expired #{status} purchase on Dashboard" do
+  it "logs a newly recorded returning purchase with a passed deadline as expired" do
+    post purchases_path, params: { purchase: attributes.merge(status: "returning", purchase_date: (Date.current - 40).iso8601) }
+    expect(response).to redirect_to(history_path)
+    expect(user.purchases.sole.status).to eq("expired")
+  end
+
+  %w[shipped_back refund_pending].each do |status|
+    it "keeps a newly recorded overdue #{status} purchase on Dashboard" do
       post purchases_path, params: { purchase: attributes.merge(status: status, purchase_date: (Date.current - 40).iso8601) }
       expect(response).to redirect_to(dashboard_path)
       follow_redirect!
@@ -61,7 +67,7 @@ RSpec.describe "Purchase status and navigation", type: :request do
     it "cancels deletion of #{status} back to the page that contains it, ignoring return URLs" do
       purchase = user.purchases.create!(attributes.merge(status: status))
       get confirm_delete_purchase_path(purchase), params: { return_to: "https://example.org/" }
-      destination = %w[keeping refunded].include?(status) ? history_path : dashboard_path
+      destination = %w[keeping refunded expired].include?(status) ? history_path : dashboard_path
       cancel = response.parsed_body.css("main a").find { |link| link.text == "Cancel" }
       expect(cancel["href"]).to eq(destination)
       expect(Purchase.exists?(purchase.id)).to be(true)
@@ -93,9 +99,9 @@ RSpec.describe "Purchase status and navigation", type: :request do
     expect(response).to have_http_status(:unprocessable_content)
     expect(response.parsed_body.at_css("input[name='origin']")["value"]).to eq("purchase")
     post store_policies_path, params: { origin: "purchase", store_policy: { store_name: "Campus Store", window_days: 30 } }
-    expect(response).to redirect_to(new_purchase_path(store_policy_id: user.store_policies.sole.id))
+    expect(response).to redirect_to(new_purchase_path)
     follow_redirect!
-    expect(response.parsed_body.at_css("select[name='purchase[store_policy_id]'] option[selected]").text).to eq("Campus Store")
+    expect(response.parsed_body.at_css("main h1").text).to eq("Add Purchase")
   end
 
   [ "https://example.org/", "//example.org/", "/settings" ].each do |origin|

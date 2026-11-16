@@ -56,8 +56,9 @@ RSpec.describe "Jordan iteration 1 frontend", type: :request do
       metrics = response.parsed_body.css(".rc-stat-grid > .card.rc-stat").to_h do |metric|
         [ metric.at_css(".rc-stat-title").text, metric.at_css("strong").text ]
       end
-      expect(metrics).to eq("Total history" => "5", "Refunded" => "2", "Keeping" => "2", "Expired" => "1")
-      expect(response.parsed_body.css(".purchase-card[data-status='expired']").size).to eq(1)
+      # Both the overdue active and the overdue returning purchase are expired.
+      expect(metrics).to eq("Total history" => "6", "Refunded" => "2", "Keeping" => "2", "Expired" => "2")
+      expect(response.parsed_body.css(".purchase-card[data-status='expired']").size).to eq(2)
       response.parsed_body.css(".purchase-card").each do |card|
         expect(card.css("dd").size).to eq(4)
         expect(card.css("dt").map(&:text)).not_to include("Days remaining")

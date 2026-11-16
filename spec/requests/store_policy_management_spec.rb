@@ -78,7 +78,7 @@ RSpec.describe "Store policy management", type: :request do
       expect(policy.window_days).to eq(60)
       expect(purchase.reload.return_by).to eq(deadline)
       post purchases_path, params: { purchase: { item_name: "New Textbook", price: 25,
-        purchase_date: Date.current.iso8601, store_policy_id: policy.id } }
+        purchase_date: Date.current.iso8601, store_name: policy.store_name } }
       expect(response).to redirect_to(dashboard_path)
       expect(user.purchases.find_by!(item_name: "New Textbook").return_by).to eq(Date.current + 60)
     end
@@ -102,9 +102,10 @@ RSpec.describe "Store policy management", type: :request do
 
     it "rejects duplicate names and preserves entered values after validation failure" do
       user.store_policies.create!(store_name: "Other Store", window_days: 14)
+      user.store_policies.create!(store_name: "Other Store", window_days: 45)
       patch store_policy_path(policy), params: { store_policy: { store_name: "Other Store", window_days: 45 } }
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store name has already been taken")
+      expect(response.body).to include("Store name already has a policy with that return window")
       html = response.parsed_body
       expect(html.at_css("input[name='store_policy[store_name]']")["value"]).to eq("Other Store")
       expect(html.at_css("input[name='store_policy[window_days]']")["value"]).to eq("45")

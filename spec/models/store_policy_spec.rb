@@ -32,11 +32,16 @@ RSpec.describe StorePolicy, type: :model do
     expect(policy.errors[:user]).to be_present
   end
 
-  it "rejects duplicate store names for the same owner" do
+  it "rejects a duplicate store name and window for the same owner" do
     policy.save!
-    duplicate = user.store_policies.build(store_name: policy.store_name, window_days: 14)
+    duplicate = user.store_policies.build(store_name: policy.store_name.upcase, window_days: policy.window_days)
     expect(duplicate).not_to be_valid
-    expect(duplicate.errors[:store_name]).to include("has already been taken")
+    expect(duplicate.errors[:store_name]).to include("already has a policy with that return window")
+  end
+
+  it "allows several windows for the same store and owner" do
+    policy.save!
+    expect(user.store_policies.create!(store_name: policy.store_name, window_days: policy.window_days + 30)).to be_persisted
   end
 
   it "allows different owners to use the same store name" do

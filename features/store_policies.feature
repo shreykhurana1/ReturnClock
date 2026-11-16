@@ -1,59 +1,120 @@
-Feature: Maintain my store return policies
-  As a shopper who buys from several stores
-  I want to save their return windows and correct mistakes
-  So that I can reuse the right policy when recording a purchase
+Feature: Save a store's return policy
+  As a shopper
+  I want ReturnClock to remember each store's return window
+  So that next time I only have to type the store name
 
-  Scenario: Create policies from management and correct a duplicate store name
-    Given an account exists for "shopper@example.com" with password "Password1!"
-    And I visit the landing page
-    When I follow "Sign In"
-    And I sign in with email "shopper@example.com" and password "Password1!"
-    And I follow "Store Policies"
+  Background:
+    Given today is 2026-10-01
+    And I am logged in as "someone@example.com"
+
+  Scenario: Save a new store after adding a purchase
+    When I add a purchase "Dress" from store "Zara" with a 30 day window
+    Then I should be on the Dashboard
+    And I should see 'Save store "Zara" with a 30 day return window?' in the main content
+    When I press "Create Store Policy"
+    Then I should see "Store return policy created." in the main content
+    When I follow "Store Policies"
+    Then the store policy "Zara" should have a 30 day return window
+    And the store policy "Zara" should be in use
+
+  Scenario: Decline saving a new store
+    When I add a purchase "Dress" from store "Zara" with a 30 day window
+    And I follow "No thanks"
+    Then I should be on the Dashboard
+    And I should not see the save-store banner
+    When I follow "Store Policies"
+    Then I should see "No store policies yet." in the main content
+
+  Scenario: A saved store fills in the window when I leave it blank
+    Given I have a saved store "Zara" with a 30 day return window
+    And I am on the Add Purchase page
+    When I fill in "Item Name" with "Skirt"
+    And I fill in "Store" with "Zara"
+    And I press "Add Purchase"
+    Then the "Skirt" card should show return date "Oct 31, 2026"
+    When I follow "Store Policies"
+    Then the store policy "Zara" should be in use
+
+  Scenario: No prompt when the store is already saved
+    Given I have a saved store "Zara" with a 30 day return window
+    When I add a purchase "Dress" from store "Zara" with a 30 day window
+    Then I should not see the save-store banner
+
+  Scenario: Store names match regardless of capitalization
+    Given I have a saved store "Zara" with a 30 day return window
+    When I add a purchase "Skirt" from store "zara" with a 30 day window
+    Then I should not see the save-store banner
+    When I follow "Store Policies"
+    And I follow "Create Store Policy"
+    And I create a store policy named "ZARA" with a 30-day return window
+    Then I should be on the Create Store Policy page
+    And I should see "Store name already has a policy with that return window" in the main content
+
+  Scenario: Create policies from the Store Policies page and correct a duplicate store name
+    Given I am on the Store Policies page
     Then I should see "No store policies yet." in the main content
     When I follow "Create Store Policy"
     And I create a store policy named "Campus Store" with a 30-day return window
-    Then I should see the "Store Policies" heading
+    Then I should be on the Store Policies page
     And I should see "Campus Store" in the main content
     When I follow "Create Store Policy"
-    And I create a store policy named "Campus Store" with a 14-day return window
-    Then I should see the "Create Store Policy" heading
-    And I should see "Store name has already been taken" in the main content
+    And I create a store policy named "Campus Store" with a 30-day return window
+    Then I should be on the Create Store Policy page
+    And I should see "Store name already has a policy with that return window" in the main content
     And the "Store Name" field should contain "Campus Store"
     When I create a store policy named "Book Shop" with a 14-day return window
-    Then I should see the "Store Policies" heading
+    Then I should be on the Store Policies page
     And I should see "Campus Store" in the main content
     And I should see "Book Shop" in the main content
 
   Scenario: Correct a missing store name and a nonpositive return window
-    Given an account exists for "shopper@example.com" with password "Password1!"
-    And I visit the landing page
-    When I follow "Sign In"
-    And I sign in with email "shopper@example.com" and password "Password1!"
-    And I follow "Store Policies"
+    When I follow "Store Policies"
     And I follow "Create Store Policy"
     And I create a store policy named "   " with a 0-day return window
-    Then I should see the "Create Store Policy" heading
+    Then I should be on the Create Store Policy page
     And I should see "Store name can't be blank" in the main content
     And I should see "Window days must be greater than 0" in the main content
     And the "Return Window (days)" field should contain "0"
     When I create a store policy named "Campus Store" with a 30-day return window
-    Then I should see the "Store Policies" heading
+    Then I should be on the Store Policies page
     And the "Campus Store" card should show "Return window: 30 days"
 
   Scenario: Save my own policy for a store another shopper already uses
-    Given an account exists for "shopper@example.com" with password "Password1!"
-    And an account exists for "other@example.com" with password "Password1!"
-    And the account "other@example.com" has a policy named "Campus Store" with a 14-day return window
-    And I visit the landing page
-    When I follow "Sign In"
-    And I sign in with email "shopper@example.com" and password "Password1!"
-    And I follow "Store Policies"
+    Given a user exists with email "other@example.com" and password "Password1!"
+    And the account "other@example.com" has these purchases:
+      | item | store        | return window | days ago | status |
+      | Mug  | Campus Store | 14            | 1        | Active |
+    When I follow "Store Policies"
     And I follow "Create Store Policy"
     And I create a store policy named "Campus Store" with a 30-day return window
-    Then I should see the "Store Policies" heading
+    Then I should be on the Store Policies page
     And the "Campus Store" card should show "Return window: 30 days"
-    When I follow "Add Purchase"
-    And I choose store policy "Campus Store"
-    And I add a purchase named "My Textbook" costing "49.99" purchased today
-    Then I should see the "Dashboard" heading
-    And purchase "My Textbook" should have a deadline 30 days from today
+    When I add a purchase "Textbook" from store "Campus Store" with a 30 day window
+    Then purchase "Textbook" should have a deadline 30 days from today
+
+  Scenario: Save a second return window for the same store
+    Given I have a saved store "Zara" with a 30 day return window
+    When I follow "Store Policies"
+    And I follow "Create Store Policy"
+    And I create a store policy named "Zara" with a 60-day return window
+    Then I should be on the Store Policies page
+    And I should see "Return window: 30 days" in the main content
+    And I should see "Return window: 60 days" in the main content
+
+  Scenario: A purchase uses the saved window it names
+    Given I have a saved store "Zara" with a 30 day return window
+    And I have a saved store "Zara" with a 60 day return window
+    When I add a purchase "Coat" from store "Zara" with a 60 day window
+    Then I should be on the Dashboard
+    And I should not see the save-store banner
+    And purchase "Coat" should have a deadline 60 days from today
+
+  Scenario: Leaving the window blank asks me to choose when a store has several
+    Given I have a saved store "Zara" with a 30 day return window
+    And I have a saved store "Zara" with a 60 day return window
+    And I am on the Add Purchase page
+    When I fill in "Item Name" with "Coat"
+    And I fill in "Store" with "Zara"
+    And I press "Add Purchase"
+    Then I should be on the Add Purchase page
+    And I should see "Zara has several saved return windows (30 and 60 days)" in the main content
