@@ -86,7 +86,7 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
     expect(html.at_css("main").text).to include("Password changes are not available", "Not available yet")
     expect(html.at_css("input[type='email'][readonly]")["value"]).to eq(user.email_address)
     expect(html.css("main input[type='password']")).to be_empty
-    expect(html.css("main form").map { |form| form["action"] }).to eq([ settings_path ])
+    expect(html.css("main form").map { |form| form["action"] }).to eq([ settings_path, settings_path ])
   end
 
   it "filters current and new password parameters from request logs" do

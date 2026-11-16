@@ -5,8 +5,9 @@
 <% counting = open && !expired %>
 <% status_names = { "active" => t("ui.active"), "keeping" => t("ui.keeping"), "returning" => t("ui.returning"), "shipped_back" => t("ui.shipped_back"), "refund_pending" => t("ui.refund_pending"), "refunded" => t("ui.refunded"), "expired" => t("ui.expired") } %>
 <% status_label = expired ? t("ui.expired") : status_names.fetch(purchase.status, purchase.status.humanize) %>
-<%# Open purchases are colored by urgency: 3 days or less, 7 days or less, then later. %>
-<% color = if expired then "danger" elsif counting then (days <= 3 ? "danger" : (days <= 7 ? "warning" : "success")) elsif awaiting then "blue" else { "refunded" => "success", "keeping" => "secondary" }.fetch(purchase.status, "blue") end %>
+<%# Open purchases are colored by urgency: within the reminder lead time, 7 days or less, then later. %>
+<% urgent_days = Current.user&.reminder_days_before || User.column_defaults["reminder_days_before"] %>
+<% color = if expired then "danger" elsif counting then (days <= urgent_days ? "danger" : (days <= 7 ? "warning" : "success")) elsif awaiting then "blue" else { "refunded" => "success", "keeping" => "secondary" }.fetch(purchase.status, "blue") end %>
 <% days_text = days.zero? ? "Due today" : t("ui.days_left", count: days) if counting %>
 <% outcome = if expired then [ "Expired on", purchase.return_by ] elsif purchase.status == "refunded" && purchase.refunded_at then [ "Refunded on", purchase.refunded_at ] elsif awaiting && purchase.returned_at then [ "Shipped back on", purchase.returned_at ] end %>
 <% quick_actions = { "active" => [ [ "Keep it", "keeping" ], [ "Return it", "returning" ] ], "returning" => [ [ "Sent it back", "shipped_back" ] ], "shipped_back" => [ [ "Refund received", "refunded" ] ], "refund_pending" => [ [ "Refund received", "refunded" ] ] } %>

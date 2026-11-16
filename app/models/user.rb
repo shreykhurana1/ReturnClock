@@ -9,6 +9,7 @@ class User < ApplicationRecord
   normalizes :email_address, with: ->(e) { e.strip.downcase }
 
   validates :reminder_days_before, inclusion: { in: REMINDER_OPTIONS.values }
+  validates :time_zone, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
 
   validates :email_address,
             presence: true,

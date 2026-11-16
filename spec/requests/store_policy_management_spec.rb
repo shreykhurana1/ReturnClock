@@ -102,9 +102,10 @@ RSpec.describe "Store policy management", type: :request do
 
     it "rejects duplicate names and preserves entered values after validation failure" do
       user.store_policies.create!(store_name: "Other Store", window_days: 14)
+      user.store_policies.create!(store_name: "Other Store", window_days: 45)
       patch store_policy_path(policy), params: { store_policy: { store_name: "Other Store", window_days: 45 } }
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store name has already been taken")
+      expect(response.body).to include("Store name already has a policy with that return window")
       html = response.parsed_body
       expect(html.at_css("input[name='store_policy[store_name]']")["value"]).to eq("Other Store")
       expect(html.at_css("input[name='store_policy[window_days]']")["value"]).to eq("45")

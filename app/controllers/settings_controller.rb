@@ -5,7 +5,7 @@ class SettingsController < ApplicationController
   end
 
   def update
-    if Current.user.update(params.expect(user: [ :reminder_days_before ]))
+    if Current.user.update(params.expect(user: [ :reminder_days_before, :time_zone ]))
       redirect_to settings_path, notice: "Settings updated.", status: :see_other
     else
       render :show, status: :unprocessable_entity
@@ -14,6 +14,8 @@ class SettingsController < ApplicationController
 
   private
     def ensure_reminder_emails_enabled
-      head :not_found unless Rails.configuration.x.reminder_emails_enabled
+      return if Rails.configuration.x.reminder_emails_enabled
+
+      head :not_found if params.dig(:user, :reminder_days_before)
     end
 end

@@ -2,9 +2,12 @@ class StorePolicy < ApplicationRecord
   belongs_to :user
   has_many :purchases, dependent: :restrict_with_error
 
+  # A store can have several policies, as long as each has its own window.
+  scope :named, ->(store_name) { where("LOWER(store_name) = ?", store_name.downcase) }
+
+  validates :store_name, presence: true
   validates :store_name,
-            presence: true,
-            uniqueness: { scope: :user_id, case_sensitive: false }
+            uniqueness: { scope: [ :user_id, :window_days ], case_sensitive: false, message: "already has a policy with that return window" }
 
   validates :window_days,
             presence: true,

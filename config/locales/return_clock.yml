@@ -95,6 +95,8 @@
       "settings_pending": "More account settings coming soon.",
       "unavailable": "Not available yet",
       "reminder_preferences": "Return reminder preferences",
+      "time_zone": "Time zone",
+      "time_zone_intro": "Return deadlines, \"days left\" and reminders follow your local date.",
       "planned": "Planned for a future iteration",
       "personalization": "Account personalization",
       "settings_note": "These features are planned and cannot be configured yet.",

@@ -37,6 +37,19 @@ RSpec.describe "Purchase management", type: :request do
       post session_path, params: { email_address: user.email_address, password: "Password1!" }
     end
 
+    it "autosaves an edit without redirecting" do
+      patch purchase_path(purchase), params: { purchase: { item_name: "Updated Textbook" }, autosave: 1 }
+      expect(response).to have_http_status(:no_content)
+      expect(purchase.reload.item_name).to eq("Updated Textbook")
+    end
+
+    it "returns the errors for an invalid autosave and keeps the saved purchase" do
+      patch purchase_path(purchase), params: { purchase: { item_name: "" }, autosave: 1 }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.parsed_body["errors"]).to include("Item name can't be blank")
+      expect(purchase.reload.item_name).to eq("Textbook")
+    end
+
     { get: %w[edit confirm_delete], patch: [ nil ], delete: [ nil ] }.each do |method, actions|
       actions.each do |action|
         it "rejects #{method} #{action} for another user's purchase" do

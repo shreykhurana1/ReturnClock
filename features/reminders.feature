@@ -74,3 +74,14 @@ Feature: Email reminders
     When the reminder job runs
     Then "someone@example.com" should receive 1 email
     And "bob@example.com" should receive no emails
+
+  Scenario: Reminders follow the shopper's time zone
+    Given "someone@example.com" is in the "Tokyo" time zone
+    And the time is 2026-12-27 16:00 UTC
+    When the reminder job runs
+    Then "someone@example.com" should receive 1 email
+
+  Scenario: Reminders wait for the shopper's own date
+    Given the time is 2026-12-27 16:00 UTC
+    When the reminder job runs
+    Then "someone@example.com" should receive no emails

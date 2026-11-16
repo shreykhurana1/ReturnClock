@@ -60,12 +60,16 @@ class Purchase < ApplicationRecord
     DASHBOARD_STATUSES.include?(status)
   end
 
-  # The saved policy for this store, matched without regard to capitalization.
+  # The saved policy for this store, matched without regard to capitalization. A store with several
+  # policies matches by return window; without a window only a store's single policy applies.
   def matching_store_policy
     return unless store_name
-    return store_policy if store_policy&.store_name&.casecmp?(store_name)
+    return store_policy if store_policy&.store_name&.casecmp?(store_name) && !(persisted? && will_save_change_to_return_window_days?)
 
-    user&.store_policies&.find_by("LOWER(store_name) = ?", store_name.downcase)
+    policies = user&.store_policies&.named(store_name)
+    return unless policies
+
+    return_window_days ? policies.find_by(window_days: return_window_days) : (policies.first if policies.one?)
   end
 
   private
@@ -120,7 +124,17 @@ class Purchase < ApplicationRecord
   end
 
   def return_by_present
-    errors.add(:base, MISSING_DEADLINE_MESSAGE) unless return_by
+    errors.add(:base, ambiguous_windows_message || MISSING_DEADLINE_MESSAGE) unless return_by
+  end
+
+  # Several saved windows and none chosen: ask rather than guess.
+  def ambiguous_windows_message
+    return unless store_name && purchase_date && !return_window_days
+
+    windows = user&.store_policies&.named(store_name)&.order(:window_days)&.pluck(:window_days)
+    return unless windows&.many?
+
+    "#{store_name} has several saved return windows (#{windows.to_sentence} days). Enter a return window or a return-by date."
   end
 
   def return_by_after_purchase_date

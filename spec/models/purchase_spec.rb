@@ -77,6 +77,30 @@ RSpec.describe Purchase, type: :model do
     expect(record.store_policy).to eq(policy)
   end
 
+  context "when a store has several saved policies" do
+    let!(:long_policy) { user.store_policies.create!(store_name: "Campus Store", window_days: 60) }
+
+    before { policy }
+
+    it "links the policy whose window the purchase names" do
+      record = user.purchases.create!(item_name: "Lamp", store_name: "campus store", return_window_days: 60, purchase_date: Date.new(2026, 1, 15))
+      expect(record.store_policy).to eq(long_policy)
+      expect(record.return_by).to eq(Date.new(2026, 3, 16))
+    end
+
+    it "asks for a window instead of guessing when none is given" do
+      record = user.purchases.build(item_name: "Lamp", store_name: "Campus Store", purchase_date: Date.new(2026, 1, 15))
+      expect(record).not_to be_valid
+      expect(record.errors[:base]).to include("Campus Store has several saved return windows (30 and 60 days). Enter a return window or a return-by date.")
+    end
+
+    it "moves a saved purchase to the policy for its new window" do
+      record = user.purchases.create!(item_name: "Lamp", store_name: "Campus Store", return_window_days: 30, purchase_date: Date.new(2026, 1, 15))
+      record.update!(return_window_days: 60)
+      expect(record.reload.store_policy).to eq(long_policy)
+    end
+  end
+
   it "rejects a return-by date before the purchase date and a negative window" do
     record = user.purchases.build(item_name: "Lamp", purchase_date: Date.new(2026, 1, 15), return_by: Date.new(2026, 1, 1))
     expect(record).not_to be_valid

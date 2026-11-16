@@ -84,12 +84,12 @@ RSpec.describe "Purchase and store policy creation", type: :request do
     it "rejects a duplicate store policy for the same user and retains the entered fields" do
       policy
       expect do
-        post store_policies_path, params: { store_policy: { store_name: policy.store_name, window_days: 14 } }
+        post store_policies_path, params: { store_policy: { store_name: policy.store_name, window_days: policy.window_days } }
       end.not_to change(StorePolicy, :count)
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store name has already been taken")
+      expect(response.body).to include("Store name already has a policy with that return window")
       expect(response.parsed_body.at_css("input[name='store_policy[store_name]']")["value"]).to eq(policy.store_name)
-      expect(response.parsed_body.at_css("input[name='store_policy[window_days]']")["value"]).to eq("14")
+      expect(response.parsed_body.at_css("input[name='store_policy[window_days]']")["value"]).to eq(policy.window_days.to_s)
     end
 
     it "allows a user to create a store policy with the same name as another user's policy" do

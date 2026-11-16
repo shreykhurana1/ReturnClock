@@ -23,6 +23,12 @@ RSpec.describe "Reminder email availability", type: :request do
       expect(user.reload.reminder_days_before).to eq(2)
     end
 
+    it "still saves a time zone" do
+      patch settings_path, params: { user: { time_zone: "Tokyo" } }
+      expect(response).to redirect_to(settings_path)
+      expect(user.reload.time_zone).to eq("Tokyo")
+    end
+
     it "still expires overdue purchases without sending mail" do
       purchase = user.purchases.create!(item_name: "Lamp", return_by: Date.current + 1)
       ActionMailer::Base.deliveries.clear

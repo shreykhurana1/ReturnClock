@@ -31,10 +31,26 @@ Feature: Purchases dashboard
     Examples:
       | return_by  | days_text   | urgency |
       | 2026-10-15 | Due today   | urgent  |
-      | 2026-10-18 | 3 days left | urgent  |
-      | 2026-10-19 | 4 days left | soon    |
+      | 2026-10-17 | 2 days left | urgent  |
+      | 2026-10-18 | 3 days left | soon    |
       | 2026-10-22 | 7 days left | soon    |
       | 2026-10-23 | 8 days left | safe    |
+
+  Scenario Outline: Urgency follows my reminder setting
+    Given "someone@example.com" wants reminders <lead> days before
+    And I have the following purchases:
+      | item | return_by   |
+      | Lamp | <return_by> |
+    When I go to the Dashboard
+    Then the "Lamp" card should show "<days_text>"
+    And the "Lamp" card should be marked "<urgency>"
+
+    Examples:
+      | lead | return_by  | days_text   | urgency |
+      | 1    | 2026-10-16 | 1 day left  | urgent  |
+      | 1    | 2026-10-17 | 2 days left | soon    |
+      | 7    | 2026-10-22 | 7 days left | urgent  |
+      | 7    | 2026-10-23 | 8 days left | safe    |
 
   Scenario: Shipped-back and refund-pending cards get their own color, no countdown, and keep their deadline order
     Given I have the following purchases:

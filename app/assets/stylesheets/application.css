@@ -367,6 +367,7 @@ body.rc-body { margin:0; background:var(--rc-bg); color:var(--rc-dark); font-fam
 .rc-field-hint,.rc-deadline-note{font-size:14px;color:#748298;line-height:1.65;margin:13px 0 0}
 .rc-deadline-note{padding:13px 15px;background:#f3f8ff;border-left:3px solid #206bc4;border-radius:6px;margin-top:21px}
 .rc-deadline-note strong{color:#41546b}
+.rc-autosave-failed{color:#b42318}
 .rc-form-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin:18px 0 25px}
 .rc-form-errors{padding:15px 18px;background:#fff3f3;border:1px solid #ffc5c5;color:#8c2e2e;border-radius:8px;font-size:15px}
 .rc-form-errors ul{margin:8px 0 0;padding-left:20px}

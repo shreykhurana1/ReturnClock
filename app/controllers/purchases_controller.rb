@@ -27,8 +27,12 @@ class PurchasesController < ApplicationController
     @purchase.assign_attributes(purchase_params)
 
     if @purchase.save
+      return head(:no_content) if params[:autosave].present?
+
       offer_to_save_store
       redirect_to purchase_page, notice: "Purchase updated.", status: :see_other
+    elsif params[:autosave].present?
+      render json: { errors: @purchase.errors.full_messages }, status: :unprocessable_entity
     elsif params[:quick].present?
       # Status changes from a card go back to that card's page with the reason.
       alert = @purchase.errors.full_messages.to_sentence

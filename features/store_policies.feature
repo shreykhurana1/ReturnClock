@@ -46,9 +46,9 @@ Feature: Save a store's return policy
     Then I should not see the save-store banner
     When I follow "Store Policies"
     And I follow "Create Store Policy"
-    And I create a store policy named "ZARA" with a 14-day return window
+    And I create a store policy named "ZARA" with a 30-day return window
     Then I should be on the Create Store Policy page
-    And I should see "Store name has already been taken" in the main content
+    And I should see "Store name already has a policy with that return window" in the main content
 
   Scenario: Create policies from the Store Policies page and correct a duplicate store name
     Given I am on the Store Policies page
@@ -58,9 +58,9 @@ Feature: Save a store's return policy
     Then I should be on the Store Policies page
     And I should see "Campus Store" in the main content
     When I follow "Create Store Policy"
-    And I create a store policy named "Campus Store" with a 14-day return window
+    And I create a store policy named "Campus Store" with a 30-day return window
     Then I should be on the Create Store Policy page
-    And I should see "Store name has already been taken" in the main content
+    And I should see "Store name already has a policy with that return window" in the main content
     And the "Store Name" field should contain "Campus Store"
     When I create a store policy named "Book Shop" with a 14-day return window
     Then I should be on the Store Policies page
@@ -91,3 +91,30 @@ Feature: Save a store's return policy
     And the "Campus Store" card should show "Return window: 30 days"
     When I add a purchase "Textbook" from store "Campus Store" with a 30 day window
     Then purchase "Textbook" should have a deadline 30 days from today
+
+  Scenario: Save a second return window for the same store
+    Given I have a saved store "Zara" with a 30 day return window
+    When I follow "Store Policies"
+    And I follow "Create Store Policy"
+    And I create a store policy named "Zara" with a 60-day return window
+    Then I should be on the Store Policies page
+    And I should see "Return window: 30 days" in the main content
+    And I should see "Return window: 60 days" in the main content
+
+  Scenario: A purchase uses the saved window it names
+    Given I have a saved store "Zara" with a 30 day return window
+    And I have a saved store "Zara" with a 60 day return window
+    When I add a purchase "Coat" from store "Zara" with a 60 day window
+    Then I should be on the Dashboard
+    And I should not see the save-store banner
+    And purchase "Coat" should have a deadline 60 days from today
+
+  Scenario: Leaving the window blank asks me to choose when a store has several
+    Given I have a saved store "Zara" with a 30 day return window
+    And I have a saved store "Zara" with a 60 day return window
+    And I am on the Add Purchase page
+    When I fill in "Item Name" with "Coat"
+    And I fill in "Store" with "Zara"
+    And I press "Add Purchase"
+    Then I should be on the Add Purchase page
+    And I should see "Zara has several saved return windows (30 and 60 days)" in the main content

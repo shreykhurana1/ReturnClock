@@ -2,6 +2,14 @@ Given(/^today is (\d{4}-\d{2}-\d{2})$/) do |date|
   travel_to Time.zone.parse(date).change(hour: 12)
 end
 
+Given(/^the time is (\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}) UTC$/) do |date, time|
+  travel_to Time.utc(*date.split("-").map(&:to_i), *time.split(":").map(&:to_i))
+end
+
+Given("{string} is in the {string} time zone") do |email, zone|
+  User.find_by!(email_address: email).update!(time_zone: zone)
+end
+
 Given("a user {string} who wants reminders {int} days before") do |email, days|
   @user = User.create!(email_address: email, password: "Password1!", password_confirmation: "Password1!",
     reminder_days_before: days)
