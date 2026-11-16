@@ -1,10 +1,20 @@
 <main class="rc-page rc-purchase-editor">
-  <div class="card rc-form-panel">
-  <h1>Delete Purchase</h1>
-  <p>Delete <strong><%= @purchase.item_name %></strong>? This cannot be undone.</p>
-  <%= button_to "Delete Purchase", purchase_path(@purchase), method: :delete, class: "rc-btn rc-btn-primary" %>
-  <p><%= link_to "Cancel", @cancel_path %></p>
-  <p><%= link_to "Back to Dashboard", dashboard_path %></p>
-  <p><%= link_to "View History", history_path %></p>
-  </div>
+  <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>">
+    <%= link_to "Dashboard", dashboard_path %>
+    <span>/</span><span>Delete Purchase</span>
+  </nav>
+  <section class="card rc-form-panel rc-delete-panel" aria-labelledby="delete-purchase-title">
+    <span class="rc-kicker">CONFIRM ACTION</span>
+    <h1 id="delete-purchase-title">Delete Purchase</h1>
+    <p class="rc-delete-warning" role="alert">Delete <strong><%= @purchase.item_name %></strong>? This cannot be undone.</p>
+    <p>This purchase and its tracking history will be removed from your account.</p>
+    <div class="rc-delete-actions">
+      <%= button_to "Delete Purchase", purchase_path(@purchase), method: :delete, class: "rc-btn rc-btn-danger" %>
+      <%= link_to "Cancel", @cancel_path, class: "rc-btn rc-btn-outline" %>
+    </div>
+    <nav class="rc-delete-links" aria-label="Other destinations">
+      <%= link_to "Back to Dashboard", dashboard_path %>
+      <%= link_to "View History", history_path %>
+    </nav>
+  </section>
 </main>

@@ -1,15 +1,26 @@
 <% content_for :purchase_editor_page, "true" %>
 <%= turbo_frame_tag "purchase_editor", target: (turbo_frame_request? ? nil : "_top") do %>
-<main class="rc-page rc-purchase-editor">
-  <div class="card rc-form-panel">
-  <h1>Create Store Policy</h1>
-  <p>Save a store's return window to calculate deadlines for your purchases.</p>
-
-  <%= render "form" %>
-
-  <p><%= link_to "Back to Add Purchase", new_purchase_path %></p>
-  <p><%= link_to "Back to Store Policies", store_policies_path %></p>
-  <p><%= link_to "Back to Dashboard", dashboard_path %></p>
-  </div>
-</main>
+  <main class="rc-page rc-purchase-editor">
+    <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>">
+      <%= link_to "Store Policies", store_policies_path, data: { turbo_frame: "_top" } %>
+      <span>/</span><span>Create</span>
+    </nav>
+    <div class="rc-page-heading">
+      <div>
+        <span class="rc-kicker">RETURN RULES</span>
+        <h1>Create Store Policy</h1>
+        <p class="rc-policy-context">Save a store's return window to calculate deadlines for your purchases.</p>
+      </div>
+    </div>
+    <div class="rc-policy-form-shell">
+      <section class="card rc-form-panel" aria-label="New store policy">
+        <%= render "form" %>
+      </section>
+      <p class="rc-editor-navigation">
+        <%= link_to "Back to Add Purchase", new_purchase_path %> ·
+        <%= link_to "Back to Store Policies", store_policies_path, data: { turbo_frame: "_top" } %> ·
+        <%= link_to "Back to Dashboard", dashboard_path, data: { turbo_frame: "_top" } %>
+      </p>
+    </div>
+  </main>
 <% end %>

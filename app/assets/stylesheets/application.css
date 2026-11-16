@@ -579,3 +579,175 @@ body.rc-body {background:#faf9f5; color:var(--rc-proposal-navy); }
 @media(max-width:720px){.rc-purchase-modal .rc-page{padding:16px}}
 
 .rc-purchase-modal .rc-breadcrumb,.rc-purchase-modal .rc-page-heading,.rc-purchase-modal h1,.rc-purchase-modal .rc-editor-navigation{display:none}
+
+
+/* =============================================================
+   Iteration 2 · Frontend polish
+   UI-only enhancements for the established orange/cream identity.
+   All additions are scoped to existing ReturnClock pages.
+   ============================================================= */
+
+.rc-body {
+  --rc-focus: #b84b0d;
+  --rc-danger: #a52c28;
+  --rc-danger-soft: #fff0ec;
+  --rc-panel: #fffdfb;
+  --rc-ink: #0c2046;
+  --rc-subtle: #59657a;
+}
+.rc-body .rc-page {width:100%}
+.rc-body .rc-page-heading {align-items:flex-start}
+.rc-body .rc-page-heading p {max-width:66ch;line-height:1.7}
+.rc-body .rc-section-heading {align-items:center}
+.rc-body .rc-section-heading p {max-width:66ch;line-height:1.65}
+.rc-body .rc-btn {font:inherit;font-size:14px;font-weight:700;min-height:42px;text-align:center}
+.rc-body .rc-btn:active {transform:translateY(0)}
+.rc-body .rc-btn:disabled {opacity:.6;cursor:not-allowed;transform:none}
+.rc-body .rc-btn-danger {background:var(--rc-danger);border-color:var(--rc-danger);color:white!important}
+.rc-body .rc-btn-danger:hover {background:#86211e;border-color:#86211e}
+.rc-body .rc-btn:focus-visible,
+.rc-body .rc-filter:focus-visible,
+.rc-body .rc-account-menu summary:focus-visible,
+.rc-body .rc-dialog-close:focus-visible,
+.rc-body .rc-settings-nav a:focus-visible {outline:3px solid var(--rc-focus);outline-offset:3px}
+.rc-body .rc-alert {border-radius:10px;line-height:1.6}
+.rc-body .rc-alert[role="alert"],.rc-body .auth-error[role="alert"] {
+  border:1px solid #e9ada6;background:var(--rc-danger-soft);color:#812620;
+  padding:12px 16px;border-radius:10px;
+}
+.rc-body .rc-section {min-width:0}
+.rc-body .rc-stat-grid {align-items:stretch}
+.rc-body .rc-stat {display:flex;flex-direction:column;justify-content:space-between;gap:6px}
+.rc-body .rc-stat>div {min-width:0}
+.rc-body .rc-stat strong {font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.rc-body .rc-stat-detail {margin-top:auto;line-height:1.5}
+.rc-body .rc-small-count {display:inline-flex;align-items:center;border:1px solid #ecdcc9;
+  padding:5px 11px;border-radius:999px;background:#fff8ef;color:#93501f;white-space:nowrap}
+.rc-body .rc-purchase-card {min-width:0}
+.rc-body .rc-product-name {line-height:1.35}
+.rc-body .rc-card-actions {display:flex;align-items:center;flex-wrap:wrap;gap:9px}
+.rc-body .rc-card-actions form {max-width:100%}
+.rc-body .rc-card-bottom {flex-wrap:wrap;row-gap:12px}
+.rc-body .rc-card-more-panel {border-radius:9px;padding:12px}
+.rc-body .rc-card-more summary {cursor:pointer}
+.rc-body .rc-contract-details {min-width:0}
+.rc-body .rc-contract-details dd {min-width:0;overflow-wrap:anywhere}
+.rc-body .rc-card-link {display:inline-flex;align-items:center;min-height:36px}
+.rc-body .rc-empty {border:1px dashed #ebcdb4!important;border-radius:14px!important;padding:48px 22px}
+.rc-body .rc-empty h3 {color:var(--rc-ink)}
+.rc-body .rc-expand summary {min-height:44px;display:flex;align-items:center;justify-content:center;gap:10px}
+.rc-body .rc-filter-row {padding-bottom:4px;gap:10px}
+.rc-body .rc-filter {font-size:14px;font-weight:650;min-height:42px;padding:9px 16px;border-radius:999px;
+  transition:background .16s,border-color .16s,color .16s}
+.rc-body .rc-filter[aria-pressed="true"] {box-shadow:0 4px 12px rgba(255,103,26,.14)}
+.rc-body .rc-empty-filter {border:1px dashed #ead0bb;background:#fff9f2;border-radius:12px;margin-top:12px}
+.rc-body .rc-settings-nav {position:sticky;top:20px}
+.rc-body .rc-settings-nav a {min-height:44px;display:flex;align-items:center}
+.rc-body .rc-setting-panel {min-width:0;border-radius:12px!important}
+.rc-body .rc-setting-head {flex-wrap:wrap}
+.rc-body .rc-setting-field {min-width:0}
+.rc-body .rc-setting-field .form-control {width:100%}
+.rc-body .rc-setting-panel .rc-purchase-form {margin-top:18px}
+.rc-body .rc-security-intro {margin:0 0 18px;padding:12px 15px;
+  border:1px solid #f0dbcc;border-radius:9px;background:#fff7ee;
+  color:#734628;font-size:14px;line-height:1.6}
+.rc-body .rc-settings .rc-form-footer {border-top:1px solid #f0e4d9;padding-top:19px}
+.rc-body .rc-settings .auth-field-errors {margin:8px 0 0;color:var(--rc-danger)}
+.rc-body .rc-settings .form-control[aria-invalid="true"] {border-color:var(--rc-danger)}
+.rc-body .rc-form-panel {min-width:0;border-radius:12px!important;padding:25px}
+.rc-body .rc-form-panel-head {margin-bottom:20px}
+.rc-body .rc-form-panel-head p {max-width:60ch}
+.rc-body .rc-purchase-form {max-width:100%}
+.rc-body .rc-form-field {min-width:0}
+.rc-body .rc-form-field .form-control,
+.rc-body .rc-form-field .form-select,
+.rc-body .rc-settings .form-control {width:100%;min-height:44px;border-radius:8px;padding:10px 12px;
+  font:inherit;font-size:15px;line-height:1.4;color:var(--rc-ink)}
+.rc-body .rc-form-field .form-control::placeholder {color:#827e83}
+.rc-body .rc-form-field .form-label {font-size:14px;font-weight:700;display:block;margin-bottom:8px}
+.rc-body .rc-form-field .form-control:focus-visible,
+.rc-body .rc-form-field .form-select:focus-visible,
+.rc-body .rc-settings .form-control:focus-visible {outline:3px solid #ffcb9e;outline-offset:2px;border-color:#dc641c}
+.rc-body .rc-field-hint {color:var(--rc-subtle);line-height:1.6}
+.rc-body .rc-form-errors {border:1px solid #e9ada6;background:var(--rc-danger-soft);
+  border-radius:10px;padding:14px 18px;margin-bottom:20px;color:#812620}
+.rc-body .rc-form-errors ul {margin:8px 0 0;padding-left:22px}
+.rc-body .rc-form-footer {display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rc-body .rc-deadline-note {padding:13px 15px;border-radius:0 9px 9px 0;line-height:1.6}
+.rc-body .rc-form-helper {margin:8px 0 0;color:var(--rc-subtle);font-size:13px;line-height:1.6}
+.rc-body .rc-form-helper a {text-decoration:underline;text-underline-offset:2px}
+.rc-body .rc-editor-navigation {margin-top:22px;line-height:1.8}
+.rc-body .rc-editor-navigation a {color:#b74e13;text-decoration:underline;text-underline-offset:3px}
+.rc-body .rc-policy-toolbar {display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:0 0 26px}
+.rc-body .rc-policy-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.rc-body .rc-policy-card {display:flex;flex-direction:column;gap:14px;padding:24px!important;min-width:0;
+  border-top:3px solid #ffb47a!important}
+.rc-body .rc-policy-card h2 {font-size:20px;line-height:1.35;margin:0;color:var(--rc-ink);overflow-wrap:anywhere}
+.rc-body .rc-policy-card-header {display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.rc-body .rc-policy-window {display:flex;align-items:baseline;gap:8px;margin:0;
+  border:1px solid #f0dfd1;background:#fff8ef;border-radius:9px;padding:12px 14px;color:#5d5360}
+.rc-body .rc-policy-window strong {font-size:25px;line-height:1.1;color:#d95816;font-variant-numeric:tabular-nums}
+.rc-body .rc-policy-actions {display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:auto}
+.rc-body .rc-policy-card .rc-policy-lock {font-size:13px;color:#6d6872;line-height:1.5;margin:0}
+.rc-body .rc-policy-form-shell {max-width:770px}
+.rc-body .rc-policy-form-shell .rc-form-panel {margin:0}
+.rc-body .rc-policy-context {margin:0 0 24px;max-width:66ch;color:var(--rc-subtle);line-height:1.65}
+.rc-body .rc-policy-help {margin-top:20px;padding:13px 15px;background:#fff7ee;border:1px solid #f0e0d0;
+  border-radius:9px;font-size:14px;color:#71533c;line-height:1.6}
+.rc-body .rc-delete-panel {max-width:680px;border-top:4px solid #b34134!important}
+.rc-body .rc-delete-panel h1 {margin:0 0 12px;color:var(--rc-ink);font-size:29px}
+.rc-body .rc-delete-warning {padding:15px 17px;border:1px solid #e7b6b0;background:var(--rc-danger-soft);
+  color:#812620;border-radius:10px;line-height:1.65}
+.rc-body .rc-delete-actions {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:24px}
+.rc-body .rc-delete-actions form {margin:0}
+.rc-body .rc-delete-links {display:flex;gap:18px;flex-wrap:wrap;margin:22px 0 0}
+.rc-body .rc-delete-links a {font-size:14px;color:#ad4d18;text-decoration:underline;text-underline-offset:3px}
+
+@media (max-width:1050px) {
+  .rc-body .rc-policy-list {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rc-body .rc-stat-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rc-body .rc-card-grid {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .rc-body .rc-settings-layout {grid-template-columns:180px minmax(0,1fr);gap:20px}
+}
+@media (max-width:720px) {
+  .rc-body .rc-topbar {height:auto;min-height:70px}
+  .rc-body .rc-topbar-inner {padding:12px 18px;gap:10px 16px;flex-wrap:wrap}
+  .rc-body .rc-brand {font-size:21px}
+  .rc-body .rc-topnav {order:3;flex:1 1 100%;margin:0;align-self:auto;
+    border-top:1px solid #f0e7de;overflow-x:auto;gap:14px;scrollbar-width:thin}
+  .rc-body .rc-navlink {min-height:44px;padding:8px 2px;white-space:nowrap;font-size:14px}
+  .rc-body .rc-navlink.active:after {left:0;right:0}
+  .rc-body .rc-header-actions {margin-left:auto}
+  .rc-body .rc-account-email {display:none}
+  .rc-body .rc-page {padding:25px 18px 70px;min-height:0}
+  .rc-body .rc-page-heading {flex-wrap:wrap;gap:15px;padding-bottom:21px}
+  .rc-body .rc-page-heading h1 {font-size:28px}
+  .rc-body .rc-page-heading>.rc-btn {width:100%}
+  .rc-body .rc-stat-grid {margin-bottom:30px}
+  .rc-body .rc-settings-layout {grid-template-columns:minmax(0,1fr);gap:14px}
+  .rc-body .rc-settings-nav {position:static;display:flex;gap:8px;overflow-x:auto;
+    padding:0 0 10px;border-bottom:1px solid #ebdfd3}
+  .rc-body .rc-settings-nav a {white-space:nowrap;border-left:0;border-bottom:3px solid transparent;
+    border-radius:7px 7px 0 0;font-size:14px;padding:9px 12px}
+  .rc-body .rc-settings-nav a.active,.rc-body .rc-settings-nav a:hover {border-left:0;border-bottom-color:#ff671a}
+  .rc-body .rc-setting-panel {padding:20px}
+  .rc-body .rc-form-panel {padding:20px}
+  .rc-body .rc-dialog .rc-form-panel {padding:16px}
+  .rc-body .rc-purchase-modal .rc-page {padding:16px}
+}
+@media (max-width:560px) {
+  .rc-body .rc-stat-grid,.rc-body .rc-card-grid,.rc-body .rc-policy-list {grid-template-columns:minmax(0,1fr)}
+  .rc-body .rc-stat {min-height:120px}
+  .rc-body .rc-stat strong {font-size:28px}
+  .rc-body .rc-card-actions {width:100%;justify-content:flex-start}
+  .rc-body .rc-card-bottom {align-items:flex-start}
+  .rc-body .rc-policy-actions>.rc-btn,.rc-body .rc-policy-actions form {flex:1 1 auto}
+  .rc-body .rc-form-footer>.rc-btn {flex:1 1 auto}
+  .rc-body .rc-delete-actions .rc-btn {min-width:130px}
+  .rc-body .rc-filter-row {gap:7px}
+  .rc-body .rc-filter {padding:8px 12px}
+  .rc-body .rc-contract-details {grid-template-columns:110px minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce) {
+  .rc-body .rc-filter,.rc-body .rc-purchase-card {transition:none}
+}
