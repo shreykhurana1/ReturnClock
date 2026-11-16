@@ -79,12 +79,13 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
     original_protection.each { |controller, enabled| controller.allow_forgery_protection = enabled }
   end
 
-  it "keeps password changes unavailable in Account Settings" do
+  it "offers authenticated password changes while keeping email read-only" do
     get settings_path
     html = response.parsed_body
-    expect(html.at_css("main").text).to include("Password changes are not available", "Not available yet")
+    expect(html.at_css("main").text).to include("Changing your password signs you out on all devices.")
     expect(html.at_css("input[type='email'][readonly]")["value"]).to eq(user.email_address)
-    expect(html.css("main form, main input[type='password']")).to be_empty
+    expect(html.css("main form").map { |form| form["action"] }).to eq([ settings_password_path ])
+    expect(html.css("main input[type='password']").length).to eq(3)
   end
 
   it "filters current and new password parameters from request logs" do

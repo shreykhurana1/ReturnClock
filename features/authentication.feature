@@ -63,15 +63,19 @@ Feature: Manage access to ReturnClock
     When I visit the Dashboard directly
     Then I should see the "Sign In" heading
 
-  Scenario: Sign out and lose access to the Dashboard
+  Scenario: Sign out to the landing page and lose access to authenticated pages
     Given an account exists for "student@example.com" with password "Password1!"
     And I visit the landing page
     When I follow "Sign In"
     And I sign in with email "student@example.com" and password "Password1!"
     And I open the profile menu
     And I sign out
-    Then I should see the "Sign In" heading
+    Then I should see the "ReturnClock" heading
     When I visit the Dashboard directly
+    Then I should see the "Sign In" heading
+    When I visit History directly
+    Then I should see the "Sign In" heading
+    When I visit Account Settings directly
     Then I should see the "Sign In" heading
 
   Scenario: Sign in before accessing History and return to the requested page
@@ -83,3 +87,12 @@ Feature: Manage access to ReturnClock
     And I should see "Demo preview" in the main content
     When I follow "Dashboard"
     Then I should see the "Dashboard" heading
+
+  Scenario: Move between Sign In and Create Account from the public landing page
+    Given I visit the landing page
+    When I follow "Sign In"
+    Then I should see the "Sign In" heading
+    When I follow "Create Account"
+    Then I should see the "Create Account" heading
+    When I follow "Sign In"
+    Then I should see the "Sign In" heading

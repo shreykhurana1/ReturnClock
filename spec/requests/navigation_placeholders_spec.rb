@@ -21,7 +21,7 @@ RSpec.describe "Navigation placeholders", type: :request do
       expect(response.parsed_body.at_css("header.app-header")).to be_present
       expect(response.parsed_body.at_css("main a[href='#{dashboard_path}']").text).to eq("Back to Dashboard")
       expect(response.parsed_body.at_css("main").text).to include("coming soon")
-      expect(response.parsed_body.css("main form")).to be_empty
+      expect(response.parsed_body.css("main form").map { |form| form["action"] }).to eq([ settings_password_path ])
     end
   end
 
