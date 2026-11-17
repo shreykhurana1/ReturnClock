@@ -13,7 +13,6 @@
     <nav class="rc-settings-nav" aria-label="<%= t('ui.settings_navigation') %>" data-controller="rc-settings-navigation" data-action="click->rc-settings-navigation#activate">
       <a href="#account" class="active"><%= t("ui.account_details") %></a>
       <a href="#security"><%= t("ui.account_security") %></a>
-      <a href="#coming-later"><%= t("ui.coming_later") %></a>
     </nav>
     <div class="rc-settings-sections">
       <section id="account" class="card rc-setting-panel" aria-labelledby="rc-account-heading">
@@ -48,20 +47,6 @@
         <%= render "settings/password_form", user: @user || Current.user %>
       </section>
 
-      <section id="coming-later" class="card rc-setting-panel" aria-labelledby="rc-future-heading">
-        <div class="rc-setting-head">
-          <div>
-            <h2 id="rc-future-heading"><%= t("ui.coming_later") %></h2>
-            <p><%= t("ui.settings_pending") %></p>
-          </div>
-          <span class="rc-tag rc-tag-muted"><%= t("ui.unavailable") %></span>
-        </div>
-        <div class="rc-coming-grid">
-          <div><span><%= t("ui.reminder_preferences") %></span><small><%= t("ui.planned") %></small></div>
-          <div><span><%= t("ui.personalization") %></span><small><%= t("ui.planned") %></small></div>
-        </div>
-        <p class="rc-setting-note"><%= t("ui.settings_note") %></p>
-      </section>
     </div>
   </div>
 </main>

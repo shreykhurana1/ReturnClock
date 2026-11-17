@@ -46,7 +46,8 @@ RSpec.describe "Sample purchases for empty accounts", type: :request do
     html = response.parsed_body
     expect(html.at_css(".rc-sample-notice").text).to include("Demo preview", "not saved")
     expect(html.at_css(".purchase-card h2").text).to eq("Wireless Headphones")
-    expect(html.at_css(".rc-product-store").text).to eq("Campus Store")
+    expect(html.at_css(".rc-contract-details dd").text).to eq("Campus Store")
+    expect(html.css(".rc-product-store")).to be_empty
     expect(html.at_css(".rc-card-actions a").text).to eq("Edit")
     expect(html.css(".rc-language-switch")).to be_empty
     expect(html.at_css("main").text).not_to match(/\p{Han}/)

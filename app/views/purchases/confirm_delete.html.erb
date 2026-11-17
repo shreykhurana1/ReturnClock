@@ -1,3 +1,5 @@
+<% content_for :purchase_editor_page, "true" %>
+<%= turbo_frame_tag "purchase_editor", target: (turbo_frame_request? ? nil : "_top") do %>
 <main class="rc-page rc-purchase-editor">
   <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>">
     <span>Purchases</span>
@@ -9,12 +11,13 @@
     <p class="rc-delete-warning" role="alert">Delete <strong><%= @purchase.item_name %></strong>? This cannot be undone.</p>
     <p>This purchase and its tracking history will be removed from your account.</p>
     <div class="rc-delete-actions">
-      <%= button_to "Delete Purchase", purchase_path(@purchase), method: :delete, class: "rc-btn rc-btn-danger" %>
-      <%= link_to "Cancel", @cancel_path, class: "rc-btn rc-btn-outline" %>
+      <%= button_to "Delete Purchase", purchase_path(@purchase), method: :delete, class: "rc-btn rc-btn-danger", form: { data: { modal_save: true } } %>
+      <%= link_to "Cancel", @cancel_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
     </div>
-    <nav class="rc-delete-links" aria-label="Other destinations">
+    <nav class="rc-delete-links rc-editor-navigation" aria-label="Other destinations">
       <%= link_to "Back to Dashboard", dashboard_path %>
       <%= link_to "View History", history_path %>
     </nav>
   </section>
 </main>
+<% end %>

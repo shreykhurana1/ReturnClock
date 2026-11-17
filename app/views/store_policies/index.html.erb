@@ -5,14 +5,13 @@
       <h1>Store Policies</h1>
       <p>Keep each store's return window in one place so ReturnClock can calculate purchase deadlines.</p>
     </div>
-    <%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary" %>
+    <%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary", data: { turbo_frame: "purchase_editor" } %>
   </div>
 
   <%= tag.div(flash[:notice], class: "rc-alert", role: "status") if flash[:notice] %>
   <%= tag.div(flash[:alert], class: "rc-alert", role: "alert") if flash[:alert] %>
 
   <div class="rc-policy-toolbar">
-    <%= link_to "Add Purchase", new_purchase_path, class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %>
     <span class="rc-small-count"><%= pluralize(@store_policies.size, "saved policy") %></span>
   </div>
 
@@ -23,19 +22,21 @@
           <article class="purchase-card card rc-policy-card">
             <div class="rc-policy-card-header">
               <h2><%= store_policy.store_name %></h2>
-              <span class="rc-tag">Saved</span>
             </div>
             <p class="rc-policy-window">
-              <strong><%= store_policy.window_days %></strong>
-              <span>Return window: <%= pluralize(store_policy.window_days, "day") %></span>
+              <span>Return window</span>
+              <strong><%= pluralize(store_policy.window_days, "day") %></strong>
             </p>
             <div class="rc-policy-actions">
-              <%= link_to "Edit Store Policy", edit_store_policy_path(store_policy), class: "rc-btn rc-btn-outline" %>
+              <%= link_to "Edit", edit_store_policy_path(store_policy), class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %>
               <% if store_policy.purchases.exists? %>
-                <p class="rc-policy-lock">In use by purchases; cannot be deleted.</p>
+                <span class="rc-policy-delete-hint" tabindex="0" aria-label="Delete unavailable" aria-describedby="<%= dom_id(store_policy, :delete_lock) %>" data-controller="rc-tooltip" data-action="mouseenter->rc-tooltip#show mouseleave->rc-tooltip#hide focusin->rc-tooltip#show focusout->rc-tooltip#hide keydown.esc->rc-tooltip#hide">
+                  <%= button_tag "Delete", type: "button", class: "rc-btn rc-btn-outline rc-btn-danger", disabled: true %>
+                  <span class="rc-policy-delete-tooltip" id="<%= dom_id(store_policy, :delete_lock) %>" role="tooltip" data-rc-tooltip-target="tooltip" hidden>In use by purchases; cannot be deleted.</span>
+                </span>
               <% else %>
-                <%= button_to "Delete Store Policy", store_policy_path(store_policy), method: :delete,
-                      class: "rc-btn rc-btn-danger", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
+                <%= button_to "Delete", store_policy_path(store_policy), method: :delete,
+                      class: "rc-btn rc-btn-outline rc-btn-danger", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
               <% end %>
             </div>
           </article>

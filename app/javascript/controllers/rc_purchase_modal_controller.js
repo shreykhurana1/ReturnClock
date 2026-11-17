@@ -43,7 +43,7 @@ export default class extends Controller {
 
   saved(event) {
     const response = event.detail.fetchResponse.response
-    if (response.ok && response.redirected && event.target.matches("form") && event.target.querySelector("[name='purchase[item_name]']")) {
+    if (response.ok && response.redirected && event.target.matches("form") && (event.target.querySelector("[name='purchase[item_name]']") || event.target.dataset.modalSave === "true")) {
       event.preventDefault()
       this.close()
       window.location.assign(response.url)

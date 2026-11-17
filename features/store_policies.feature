@@ -38,7 +38,7 @@ Feature: Maintain my store return policies
     And the "Return Window (days)" field should contain "0"
     When I create a store policy named "Campus Store" with a 30-day return window
     Then I should see the "Store Policies" heading
-    And the "Campus Store" card should show "Return window: 30 days"
+    And the "Campus Store" card should show "30 days"
 
   Scenario: Save my own policy for a store another shopper already uses
     Given an account exists for "shopper@example.com" with password "Password1!"
@@ -51,8 +51,9 @@ Feature: Maintain my store return policies
     And I follow "Create Store Policy"
     And I create a store policy named "Campus Store" with a 30-day return window
     Then I should see the "Store Policies" heading
-    And the "Campus Store" card should show "Return window: 30 days"
-    When I follow "Add Purchase"
+    And the "Campus Store" card should show "30 days"
+    When I follow "Dashboard"
+    And I follow "Add Purchase"
     And I choose store policy "Campus Store"
     And I add a purchase named "My Textbook" costing "49.99" purchased today
     Then I should see the "Dashboard" heading

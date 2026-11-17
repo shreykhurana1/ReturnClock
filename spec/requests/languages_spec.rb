@@ -41,13 +41,13 @@ RSpec.describe "English-only presentation", type: :request do
       expect(cards.size).to eq(2)
       cards.each do |card|
         expect(card.at_css(".rc-chip").text).to eq(labels.first)
-        expect(card.css("dd").last.text).to eq(labels.first)
+        expect(card.css("dt").map(&:text)).not_to include("Status")
       end
       get history_path, params: { lang: lang }
       card = response.parsed_body.at_css(".purchase-card")
       expect(card.at_css(".rc-chip").text).to eq(labels.last)
-      expect(card.css("dd").last.text).to eq(labels.last)
-      expect(card.at_css(".rc-card-bottom > .rc-muted").text).to eq(labels.last)
+      expect(card.css("dt").map(&:text)).not_to include("Status")
+      expect(card.css(".rc-card-bottom > .rc-muted, .rc-days")).to be_empty
     end
   end
 end

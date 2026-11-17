@@ -10,7 +10,7 @@ RSpec.describe "Jordan iteration 1 frontend", type: :request do
     post session_path, params: { email_address: user.email_address, password: password }
   end
 
-  it "keeps the purchase card field contract and shows the purchase date separately" do
+  it "shows the purchase date before the return deadline in the card details" do
     purchase = user.purchases.create!(item_name: "Notebook", price: "59.99",
       purchase_date: Date.current, store_policy: policy, status: "active")
     sign_in
@@ -18,7 +18,8 @@ RSpec.describe "Jordan iteration 1 frontend", type: :request do
 
     card = response.parsed_body.at_css(".purchase-card")
     expect(card.at_css("h2").text).to eq("Notebook")
-    expect(card.css("dd").size).to eq(5)
+    expect(card.css("dd").size).to eq(4)
+    expect(card.css("dt").map(&:text)).to eq([ "Store", "Purchased on", "Return deadline", "Days remaining" ])
     expect(card.css("time[datetime='#{purchase.purchase_date.iso8601}']")).not_to be_empty
     expect(card.css("time[datetime='#{purchase.return_by.iso8601}']")).not_to be_empty
   end
@@ -59,7 +60,7 @@ RSpec.describe "Jordan iteration 1 frontend", type: :request do
       expect(metrics).to eq("Total history" => "5", "Refunded" => "2", "Keeping" => "2", "Expired" => "1")
       expect(response.parsed_body.css(".purchase-card[data-status='expired']").size).to eq(1)
       response.parsed_body.css(".purchase-card").each do |card|
-        expect(card.css("dd").size).to eq(4)
+        expect(card.css("dd").size).to eq(3)
         expect(card.css("dt").map(&:text)).not_to include("Days remaining")
         expect(card.css(".rc-days")).to be_empty
       end

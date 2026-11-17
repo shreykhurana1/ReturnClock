@@ -45,6 +45,39 @@ RSpec.describe "Purchase editor dialog", type: :request do
     expect(response.parsed_body.at_css("turbo-frame#purchase_editor")["target"]).to eq("_top")
   end
 
+  it "serves standalone and framed delete confirmations without deleting on GET" do
+    purchase = user.purchases.create!(item_name: "Notebook", price: 20, purchase_date: Date.current, store_policy: policy)
+    [ {}, { "Turbo-Frame" => "purchase_editor" } ].each do |headers|
+      expect { get confirm_delete_purchase_path(purchase), headers: headers }.not_to change(Purchase, :count)
+      expect(response).to have_http_status(:ok)
+      html = response.parsed_body
+      expect(html.css("turbo-frame#purchase_editor").size).to eq(1)
+      frame = html.at_css("turbo-frame#purchase_editor")
+      expect(frame["target"]).to eq(headers.empty? ? "_top" : nil)
+      expect(frame.at_css("[role='alert']").text).to include("Notebook", "This cannot be undone.")
+      expect(frame.at_css("form[action='#{purchase_path(purchase)}']")["data-modal-save"]).to eq("true")
+      expect(frame.at_css("form input[name='_method']")["value"]).to eq("delete")
+      expect(frame.at_css("a[data-modal-dismiss][href='#{dashboard_path}']").text).to eq("Cancel")
+    end
+  end
+
+  (Purchase::STATUSES + [ "expired" ]).each do |state|
+    it "returns to the correct list after confirming deletion of #{state} in the dialog" do
+      purchase = user.purchases.create!(item_name: "Delete #{state}", price: 20, store_policy: policy,
+        status: state == "expired" ? "active" : state, purchase_date: state == "expired" ? Date.current - 40 : Date.current)
+      destination = %w[keeping refunded expired].include?(state) ? history_path : dashboard_path
+      get confirm_delete_purchase_path(purchase), headers: { "Turbo-Frame" => "purchase_editor" }
+      expect(response.parsed_body.at_css("a[data-modal-dismiss]")["href"]).to eq(destination)
+      expect do
+        delete purchase_path(purchase), headers: { "Turbo-Frame" => "purchase_editor" }
+      end.to change(user.purchases, :count).by(-1)
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to(destination)
+      follow_redirect!
+      expect(response.body).to include("Purchase deleted.")
+    end
+  end
+
   it "saves a framed purchase and returns the Dashboard destination with its flash" do
     expect do
       post purchases_path, headers: { "Turbo-Frame" => "purchase_editor" },

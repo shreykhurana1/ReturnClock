@@ -1,3 +1,5 @@
+<% content_for :purchase_editor_page, "true" %>
+<%= turbo_frame_tag "purchase_editor", target: (turbo_frame_request? ? nil : "_top") do %>
 <main class="rc-page rc-purchase-editor">
   <nav class="rc-breadcrumb" aria-label="<%= t('ui.breadcrumbs') %>">
     <%= link_to "Store Policies", store_policies_path %>
@@ -7,7 +9,6 @@
     <div>
       <span class="rc-kicker">RETURN RULES</span>
       <h1>Edit Store Policy</h1>
-      <p class="rc-policy-context">Existing purchase deadlines stay unchanged. Changing a purchase's date or selected policy uses the current return window.</p>
     </div>
   </div>
   <div class="rc-policy-form-shell">
@@ -17,3 +18,4 @@
     <p class="rc-editor-navigation"><%= link_to "Back to Store Policies", store_policies_path %></p>
   </div>
 </main>
+<% end %>

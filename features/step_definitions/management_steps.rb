@@ -42,7 +42,6 @@ end
 
 When("I ask to delete purchase {string}") do |name|
   within(find(".purchase-card", text: name, exact_text: false)) do
-    find("summary").click
     click_link "Delete", exact: true
   end
 end
@@ -52,9 +51,16 @@ When("I confirm purchase deletion") do
 end
 
 When("I change policy {string} to a {int}-day return window") do |name, days|
-  within(find(".purchase-card", text: name, exact_text: false)) { click_link "Edit Store Policy" }
+  within(find(".purchase-card", text: name, exact_text: false)) { click_link "Edit" }
   fill_in "Return Window (days)", with: days
   click_button "Save Store Policy"
+end
+
+Then("the {string} policy should explain why deletion is disabled") do |name|
+  within(find(".purchase-card", text: name, exact_text: false)) do
+    expect(find(".rc-policy-delete-hint [role='tooltip']", visible: :all).text(:all)).to eq("In use by purchases; cannot be deleted.")
+    expect(page).to have_button("Delete", disabled: true)
+  end
 end
 
 When("I choose store policy {string}") do |store|

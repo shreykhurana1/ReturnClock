@@ -132,8 +132,8 @@ RSpec.describe "Read-only purchase pages", type: :request do
     get dashboard_path
     card = response.parsed_body.at_css(".purchase-card")
     expect(card.at_css("h2").text).to eq("Textbook")
-    expect(card.css("dd").map(&:text)).to eq([ "Campus Store", "$49.99", "October 30, 2026", "2", "Active" ])
-    expect(card.at_css("time")["datetime"]).to eq("2026-10-30")
+    expect(card.css("dd").map(&:text)).to eq([ "Campus Store", "September 30, 2026", "October 30, 2026", "2" ])
+    expect(card.css("time").map { |time| time["datetime"] }).to eq([ "2026-09-30", "2026-10-30" ])
   end
 
   [ "/dashboard", "/history" ].each do |path|

@@ -1,6 +1,6 @@
 <%= render "shared/form_errors", record: @store_policy %>
 
-<%= form_with model: @store_policy, class: "rc-purchase-form" do |form| %>
+<%= form_with model: @store_policy, class: "rc-purchase-form", data: { modal_save: !@from_purchase } do |form| %>
   <%= hidden_field_tag :origin, "purchase" if @from_purchase %>
   <%= hidden_field_tag :sample, params[:sample] if params[:sample].present? %>
 
@@ -18,7 +18,13 @@
   </div>
 
   <p class="rc-policy-help">ReturnClock uses this return window to calculate a purchase's deadline. Always check the actual store policy for exceptions.</p>
+  <% if @store_policy.persisted? %>
+    <p class="rc-policy-help">Existing purchase deadlines stay unchanged. Changing a purchase's date or selected policy uses the current return window.</p>
+  <% end %>
   <div class="rc-form-footer">
+    <% unless @from_purchase %>
+      <%= link_to t("ui.cancel"), store_policies_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
+    <% end %>
     <%= form.submit(@store_policy.persisted? ? "Save Store Policy" : "Create Store Policy", class: "rc-btn rc-btn-primary") %>
   </div>
 <% end %>
