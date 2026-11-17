@@ -190,6 +190,30 @@ RSpec.describe "Store policy management", type: :request do
       expect(policy.reload.store_name).to eq("Campus Store")
     end
 
+    it "shows a useful creation error when another request wins the uniqueness race" do
+      policy
+      # A racing request can insert after validation succeeds. Keep the other validations enabled.
+      validator = StorePolicy.validators_on(:store_name).find { |item| item.kind == :uniqueness }
+      allow(validator).to receive(:validate_each)
+      expect do
+        post store_policies_path, params: { store_policy: { store_name: "CAMPUS STORE", window_days: 30 } }
+      end.not_to change(StorePolicy, :count)
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("already has a policy with that return window")
+      expect(response.parsed_body.at_css("input[name='store_policy[store_name]']")["value"]).to eq("CAMPUS STORE")
+    end
+
+    it "preserves the saved policy and reports a database uniqueness race during editing" do
+      policy
+      editing = user.store_policies.create!(store_name: "Book Shop", window_days: 14)
+      validator = StorePolicy.validators_on(:store_name).find { |item| item.kind == :uniqueness }
+      allow(validator).to receive(:validate_each)
+      patch store_policy_path(editing), params: { store_policy: { store_name: "CAMPUS STORE", window_days: 30 } }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("already has a policy with that return window")
+      expect(editing.reload).to have_attributes(store_name: "Book Shop", window_days: 14)
+    end
+
     it "deletes an unused policy while preserving other users' policies" do
       policy
       other_policy

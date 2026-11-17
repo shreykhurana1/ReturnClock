@@ -767,3 +767,7 @@ body.rc-body {background:#faf9f5; color:var(--rc-proposal-navy); }
 }
 .rc-outcome{margin:10px 0 0;font-size:14px;color:#596b7e}
 .rc-quick-action{margin:0}
+.rc-body .rc-quick-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}
+.rc-body .rc-quick-actions .rc-quick-action{flex:1 1 120px}
+.rc-body .rc-quick-actions .rc-btn{width:100%;white-space:normal;min-height:44px}
+.rc-body .rc-card-actions .rc-status-trigger{white-space:normal}

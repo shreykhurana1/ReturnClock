@@ -25,6 +25,24 @@ RSpec.describe "Deadline alert settings", type: :request do
     patch settings_path, params: { user: { reminder_days_before: 5 } }
     expect(response).to have_http_status(:unprocessable_content)
     expect(user.reload.reminder_days_before).to eq(2)
+    html = response.parsed_body
+    expect(html.at_css("#alerts [role='alert']").text).to include("Choose an alert preference")
+    expect(html.at_css("#alerts select")["aria-invalid"]).to eq("true")
+    expect(html.at_css("#security [role='alert']")).to be_nil
+  end
+
+  it "requires authentication before changing preferences" do
+    delete session_path
+    patch settings_path, params: { user: { reminder_days_before: 7 } }
+    expect(response).to redirect_to(new_session_path)
+    expect(user.reload.reminder_days_before).to eq(2)
+  end
+
+  it "changes only the current user's preference despite submitted ownership fields" do
+    other = User.create!(email_address: "other@example.com", password: "Password1!")
+    patch settings_path, params: { id: other.id, user_id: other.id, user: { id: other.id, reminder_days_before: 7 } }
+    expect(user.reload.reminder_days_before).to eq(7)
+    expect(other.reload.reminder_days_before).to eq(2)
   end
 
   it "ignores other user fields" do

@@ -55,6 +55,20 @@ Feature: Manage purchases and saved store policies
     Then I should see the "Dashboard" heading
     And purchase "Textbook" should show status "Active"
 
+  Scenario: Track a return and refund using the card's quick-action buttons
+    When I choose "Return it" for purchase "Textbook"
+    Then I should see the "Dashboard" heading
+    And purchase "Textbook" should show status "Returning"
+    When I choose "Sent it back" for purchase "Textbook"
+    Then purchase "Textbook" should show status "Shipped back"
+    And purchase "Textbook" should show "Shipped back on" dated today
+    When I choose "Refund received" for purchase "Textbook"
+    Then I should see the "History" heading
+    And purchase "Textbook" should show status "Refunded"
+    And purchase "Textbook" should show "Refunded on" dated today
+    When I follow "Dashboard"
+    Then I should not see a purchase named "Textbook"
+
   Scenario: Start a return for an expired purchase from History
     When I edit purchase "Textbook"
     And I save the purchase as "Textbook" costing "49.99" bought 40 days ago using "Campus Store"

@@ -53,8 +53,19 @@ class Purchase < ApplicationRecord
   def record_status_dates
     return unless will_save_change_to_status?
 
-    self.returned_at ||= Date.current if %w[shipped_back refund_pending].include?(status)
-    self.refunded_at = Date.current if status == "refunded"
+    case status
+    when "active", "keeping", "returning"
+      self.returned_at = nil
+      self.refunded_at = nil
+    when "shipped_back"
+      self.returned_at = Date.current
+      self.refunded_at = nil
+    when "refund_pending"
+      # Preserve a known shipment date, but do not invent one for a directly recorded refund.
+      self.refunded_at = nil
+    when "refunded"
+      self.refunded_at = Date.current
+    end
   end
 
   def deadline_needs_calculation?
