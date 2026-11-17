@@ -25,7 +25,8 @@ Feature: Find my purchases by return urgency
     When I follow "Store Policies"
     Then I should see "Campus Store" in the main content
     And I should not see "Private Store" in the main content
-    When I follow "Add Purchase"
+    When I follow "Dashboard"
+    And I follow "Add Purchase"
     Then the available store policies should be:
       | Campus Store |
 

@@ -55,6 +55,7 @@ RSpec.describe "Account password changes", type: :request do
       { current_password: "Current Password", password: "New Password", password_confirmation: "Confirm New Password" }.each do |field, label|
         input = form.at_css("input[name='user[#{field}]']")
         expect(input["type"]).to eq("password")
+        expect(input.parent["class"]).to include("rc-field-wide")
         expect(input["autocomplete"]).to eq(field == :current_password ? "current-password" : "new-password")
         expect(form.at_css("label[for='#{input['id']}']").text).to eq(label)
       end

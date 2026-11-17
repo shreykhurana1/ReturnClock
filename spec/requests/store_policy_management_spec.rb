@@ -48,8 +48,18 @@ RSpec.describe "Store policy management", type: :request do
       expect(response.body).to include("Campus Store", "30 days")
       expect(response.body).not_to include("Private Store")
       html = response.parsed_body
+      window = html.at_css(".rc-policy-window")
+      expect(window.at_css("span").text).to eq("Return window")
+      expect(window.at_css("strong").text).to eq("30 days")
+      expect(window.text.scan(/\b30\b/).size).to eq(1)
       expect(html.at_css("main a[href='#{new_store_policy_path}']").text).to eq("Create Store Policy")
-      expect(html.at_css("a[href='#{edit_store_policy_path(policy)}']").text).to eq("Edit Store Policy")
+      expect(html.at_css("main a[href='#{new_store_policy_path}']")["data-turbo-frame"]).to eq("purchase_editor")
+      expect(html.css("main a[href='#{new_purchase_path}']")).to be_empty
+      expect(html.at_css("a[href='#{edit_store_policy_path(policy)}']").text).to eq("Edit")
+      expect(html.at_css("form[action='#{store_policy_path(policy)}'] button").text).to eq("Delete")
+      expect(html.at_css("form[action='#{store_policy_path(policy)}'] button")["class"]).to include("rc-btn-outline")
+      expect(html.at_css("a[href='#{edit_store_policy_path(policy)}']")["data-turbo-frame"]).to eq("purchase_editor")
+      expect(html.css("dialog.rc-purchase-modal turbo-frame#purchase_editor").size).to eq(1)
       expect(html.at_css("header a[href='#{store_policies_path}']").text).to eq("Store Policies")
     end
 
@@ -68,6 +78,75 @@ RSpec.describe "Store policy management", type: :request do
       expect(html.at_css("input[name='store_policy[store_name]']")["value"]).to eq("Campus Store")
       expect(html.at_css("input[name='store_policy[window_days]']")["value"]).to eq("30")
       expect(html.css("input[name='store_policy[user_id]']")).to be_empty
+    end
+
+    it "opens policy creation in the shared dialog with cancel and list-refresh behavior" do
+      get new_store_policy_path, headers: { "Turbo-Frame" => "purchase_editor" }
+      expect(response).to have_http_status(:ok)
+      frame = response.parsed_body.at_css("turbo-frame#purchase_editor")
+      expect(frame.at_css("h1").text).to eq("Create Store Policy")
+      expect(frame.at_css("form")["data-modal-save"]).to eq("true")
+      expect(frame.at_css("a[data-modal-dismiss][href='#{store_policies_path}']")).to be_present
+
+      get new_store_policy_path, params: { origin: "purchase" }, headers: { "Turbo-Frame" => "purchase_editor" }
+      expect(response.parsed_body.at_css("turbo-frame#purchase_editor form")["data-modal-save"]).to eq("false")
+    end
+
+    it "keeps invalid policy creation and entered values in the dialog" do
+      expect do
+        post store_policies_path, headers: { "Turbo-Frame" => "purchase_editor" },
+          params: { store_policy: { store_name: "New Store", window_days: 0 } }
+      end.not_to change(StorePolicy, :count)
+      expect(response).to have_http_status(:unprocessable_content)
+      frame = response.parsed_body.at_css("turbo-frame#purchase_editor")
+      expect(frame.at_css("[role='alert']").text).to include("Please correct")
+      expect(frame.at_css("input[name='store_policy[store_name]']")["value"]).to eq("New Store")
+      expect(frame.at_css("form")["data-modal-save"]).to eq("true")
+    end
+
+    it "saves a policy from the dialog and returns to the policy list" do
+      expect do
+        post store_policies_path, headers: { "Turbo-Frame" => "purchase_editor" },
+          params: { store_policy: { store_name: "New Store", window_days: 30 } }
+      end.to change(user.store_policies, :count).by(1)
+      expect(response).to redirect_to(store_policies_path)
+      follow_redirect!
+      expect(response.body).to include("New Store", "Store return policy created.")
+    end
+
+    it "serves standalone and framed policy editors without duplicate frame IDs" do
+      [ {}, { "Turbo-Frame" => "purchase_editor" } ].each do |headers|
+        get edit_store_policy_path(policy), headers: headers
+        expect(response).to have_http_status(:ok)
+        html = response.parsed_body
+        expect(html.css("turbo-frame#purchase_editor").size).to eq(1)
+        frame = html.at_css("turbo-frame#purchase_editor")
+        expect(frame["target"]).to eq(headers.empty? ? "_top" : nil)
+        expect(frame.at_css("form[action='#{store_policy_path(policy)}']")["data-modal-save"]).to eq("true")
+        expect(frame.at_css("a[data-modal-dismiss][href='#{store_policies_path}']")).to be_present
+      end
+    end
+
+    it "keeps invalid policy edits and entered values in the dialog frame" do
+      original = policy.attributes
+      patch store_policy_path(policy), headers: { "Turbo-Frame" => "purchase_editor" },
+        params: { store_policy: { store_name: "Still editing", window_days: 0 } }
+      expect(response).to have_http_status(:unprocessable_content)
+      frame = response.parsed_body.at_css("turbo-frame#purchase_editor")
+      expect(frame.at_css("[role='alert']").text).to include("Please correct")
+      expect(frame.at_css("input[name='store_policy[store_name]']")["value"]).to eq("Still editing")
+      expect(frame.at_css("input[name='store_policy[window_days]']")["value"]).to eq("0")
+      expect(policy.reload.attributes).to eq(original)
+    end
+
+    it "saves framed policy edits and returns the updated policy list" do
+      patch store_policy_path(policy), headers: { "Turbo-Frame" => "purchase_editor" },
+        params: { store_policy: { store_name: "Updated Store", window_days: 45 } }
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to(store_policies_path)
+      follow_redirect!
+      expect(response.body).to include("Updated Store", "45 days", "Store policy updated.")
+      expect(policy.reload.window_days).to eq(45)
     end
 
     it "updates a policy without changing existing deadlines, while new purchases use its new window" do
@@ -126,7 +205,15 @@ RSpec.describe "Store policy management", type: :request do
       expect(purchase.reload.store_policy).to eq(policy)
       follow_redirect!
       expect(response.parsed_body.at_css("[role='alert']").text).to include("dependent purchases")
-      expect(response.body).to include("In use by purchases; cannot be deleted.")
+      hint = response.parsed_body.at_css(".rc-policy-delete-hint")
+      expect(hint["title"]).to be_nil
+      expect(hint["tabindex"]).to eq("0")
+      tooltip = hint.at_css("[role='tooltip']")
+      expect(tooltip.text).to eq("In use by purchases; cannot be deleted.")
+      expect(tooltip.key?("hidden")).to be(true)
+      expect(hint["aria-describedby"]).to eq(tooltip["id"])
+      expect(hint["data-action"]).to include("mouseenter->rc-tooltip#show", "focusin->rc-tooltip#show", "keydown.esc->rc-tooltip#hide")
+      expect(response.parsed_body.at_css(".rc-policy-actions button[disabled]").text).to eq("Delete")
       expect(response.parsed_body.css("main form[action='#{store_policy_path(policy)}']")).to be_empty
     end
   end

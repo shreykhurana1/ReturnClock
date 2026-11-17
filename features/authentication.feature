@@ -49,7 +49,7 @@ Feature: Manage access to ReturnClock
     And I follow "Account Settings"
     Then I should see the "Account Settings" heading
     And I should see "student@example.com" in the main content
-    And I should see "More account settings coming soon." in the main content
+    And I should not see "More account settings coming soon." in the main content
 
   Scenario: Reject sign-in with an incorrect password
     Given an account exists for "student@example.com" with password "Password1!"

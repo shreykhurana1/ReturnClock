@@ -85,7 +85,7 @@ Feature: Manage purchases and saved store policies
   Scenario: Edit a store policy without changing an existing purchase's deadline
     When I follow "Store Policies"
     Then I should see the "Store Policies" heading
-    And I should see "In use by purchases; cannot be deleted." in the main content
+    And the "Campus Store" policy should explain why deletion is disabled
     When I change policy "Campus Store" to a 60-day return window
     And I follow "Dashboard"
     Then purchase "Textbook" should have a deadline 30 days from today

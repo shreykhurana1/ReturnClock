@@ -20,7 +20,8 @@ RSpec.describe "Navigation placeholders", type: :request do
       expect(response.parsed_body.at_css("main h1").text).to eq(heading)
       expect(response.parsed_body.at_css("header.app-header")).to be_present
       expect(response.parsed_body.at_css("main a[href='#{dashboard_path}']").text).to eq("Back to Dashboard")
-      expect(response.parsed_body.at_css("main").text).to include("coming soon")
+      expect(response.parsed_body.css("#coming-later, a[href='#coming-later']")).to be_empty
+      expect(response.parsed_body.at_css("main").text).not_to include("Coming later", "More account settings coming soon.", "Not available yet", "Return reminder preferences", "Account personalization", "Planned for a future iteration", "These features are planned and cannot be configured yet.")
       expect(response.parsed_body.css("main form").map { |form| form["action"] }).to eq([ settings_password_path ])
     end
   end

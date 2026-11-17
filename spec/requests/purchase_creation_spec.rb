@@ -60,7 +60,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       follow_redirect!
       card = response.parsed_body.at_css(".purchase-card")
       expect(card.text).to include("Textbook", "Campus Store", "$49.99", "Active")
-      expect(card.at_css("time")["datetime"]).to eq("2026-12-08")
+      expect(card.at_css("time[datetime='2026-12-08']")).to be_present
     end
 
     it "assigns a policy to Current.user even when another owner is submitted" do

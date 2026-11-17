@@ -1,26 +1,53 @@
-<main class="rc-page">
-  <div class="rc-page-heading"><div><h1>Store Policies</h1></div></div>
-  <%= tag.div(flash[:notice], class: "auth-notice", role: "status") if flash[:notice] %>
-  <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
-  <p><%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary" %></p>
-  <p><%= link_to "Add Purchase", new_purchase_path, class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %></p>
-  <% if @store_policies.any? %>
-    <div class="rc-card-grid">
-      <% @store_policies.each do |store_policy| %>
-        <article class="purchase-card card rc-form-panel">
-          <h2><%= store_policy.store_name %></h2>
-          <p>Return window: <%= pluralize(store_policy.window_days, "day") %></p>
-          <p><%= link_to "Edit Store Policy", edit_store_policy_path(store_policy) %></p>
-          <% if store_policy.purchases.exists? %>
-            <p>In use by purchases; cannot be deleted.</p>
-          <% else %>
-            <%= button_to "Delete Store Policy", store_policy_path(store_policy), method: :delete,
-                  class: "rc-btn rc-btn-primary", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
-          <% end %>
-        </article>
-      <% end %>
+<main class="rc-page rc-store-policies">
+  <div class="rc-page-heading">
+    <div>
+      <span class="rc-kicker">YOUR RETURN RULES</span>
+      <h1>Store Policies</h1>
+      <p>Keep each store's return window in one place so ReturnClock can calculate purchase deadlines.</p>
     </div>
+    <%= link_to "Create Store Policy", new_store_policy_path, class: "rc-btn rc-btn-primary", data: { turbo_frame: "purchase_editor" } %>
+  </div>
+
+  <%= tag.div(flash[:notice], class: "rc-alert", role: "status") if flash[:notice] %>
+  <%= tag.div(flash[:alert], class: "rc-alert", role: "alert") if flash[:alert] %>
+
+  <div class="rc-policy-toolbar">
+    <span class="rc-small-count"><%= pluralize(@store_policies.size, "saved policy") %></span>
+  </div>
+
+  <% if @store_policies.any? %>
+    <section aria-label="Saved store return policies">
+      <div class="rc-policy-list">
+        <% @store_policies.each do |store_policy| %>
+          <article class="purchase-card card rc-policy-card">
+            <div class="rc-policy-card-header">
+              <h2><%= store_policy.store_name %></h2>
+            </div>
+            <p class="rc-policy-window">
+              <span>Return window</span>
+              <strong><%= pluralize(store_policy.window_days, "day") %></strong>
+            </p>
+            <div class="rc-policy-actions">
+              <%= link_to "Edit", edit_store_policy_path(store_policy), class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %>
+              <% if store_policy.purchases.exists? %>
+                <span class="rc-policy-delete-hint" tabindex="0" aria-label="Delete unavailable" aria-describedby="<%= dom_id(store_policy, :delete_lock) %>" data-controller="rc-tooltip" data-action="mouseenter->rc-tooltip#show mouseleave->rc-tooltip#hide focusin->rc-tooltip#show focusout->rc-tooltip#hide keydown.esc->rc-tooltip#hide">
+                  <%= button_tag "Delete", type: "button", class: "rc-btn rc-btn-outline rc-btn-danger", disabled: true %>
+                  <span class="rc-policy-delete-tooltip" id="<%= dom_id(store_policy, :delete_lock) %>" role="tooltip" data-rc-tooltip-target="tooltip" hidden>In use by purchases; cannot be deleted.</span>
+                </span>
+              <% else %>
+                <%= button_to "Delete", store_policy_path(store_policy), method: :delete,
+                      class: "rc-btn rc-btn-outline rc-btn-danger", form: { data: { turbo_confirm: "Delete this store policy?" } } %>
+              <% end %>
+            </div>
+          </article>
+        <% end %>
+      </div>
+    </section>
   <% else %>
-    <p class="empty-state">No store policies yet.</p>
+    <div class="card rc-empty">
+      <span class="rc-empty-icon" aria-hidden="true">◷</span>
+      <h2>No store policies yet.</h2>
+      <p>Create your first store policy to start tracking return deadlines.</p>
+    </div>
   <% end %>
 </main>

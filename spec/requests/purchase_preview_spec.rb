@@ -17,7 +17,13 @@ RSpec.describe "Integrated purchase interactions", type: :request do
     expect(html.at_css("main a[href='#{new_purchase_path}']")).to be_present
     expect(card.at_css("a[href='#{edit_purchase_path(purchase)}']")).to be_present
     expect(card.at_css("a[href='#{confirm_delete_purchase_path(purchase)}']")).to be_present
+    expect(card.at_css("a[href='#{confirm_delete_purchase_path(purchase)}']")["data-turbo-frame"]).to eq("purchase_editor")
     expect(card.at_css("form[action='#{purchase_path(purchase)}'] input[name='_method']")["value"]).to eq("patch")
+    actions = card.at_css(".rc-card-actions")
+    expect(actions.xpath("./a").map(&:text)).to eq([ "Edit", "Delete" ])
+    expect(actions.at_css("details > summary").text).to eq("Update status")
+    expect(actions.css(".rc-card-more-panel a")).to be_empty
+    expect(actions.at_css("details")["data-action"]).to eq("click@document->rc-card-more#dismiss")
     expect(html.css("dialog[open], [data-action^='rc-purchase-preview#']")).to be_empty
   end
 

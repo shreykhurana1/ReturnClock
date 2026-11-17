@@ -1,4 +1,7 @@
 class DashboardController < ApplicationController
+  # Modal saves reuse this full-page response, including its header and tracked assets.
+  layout "application"
+
   def index
     purchases = Current.user.purchases
     @purchases = purchases.where(status: "active", return_by: Date.current..)

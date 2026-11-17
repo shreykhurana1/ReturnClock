@@ -1,4 +1,6 @@
 class HistoryController < ApplicationController
+  layout "application"
+
   def index
     purchases = Current.user.purchases
     @purchases = purchases.where(status: %w[keeping refunded])
