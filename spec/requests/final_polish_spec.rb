@@ -95,7 +95,7 @@ RSpec.describe "Purchase status and navigation", type: :request do
     post store_policies_path, params: { origin: "purchase", store_policy: { store_name: "Campus Store", window_days: 30 } }
     expect(response).to redirect_to(new_purchase_path(store_policy_id: user.store_policies.sole.id))
     follow_redirect!
-    expect(response.parsed_body.at_css("select[name='purchase[store_policy_id]'] option[selected]").text).to eq("Campus Store")
+    expect(response.parsed_body.at_css("select[name='purchase[store_policy_id]'] option[selected]").text).to eq("Campus Store — 30 days")
   end
 
   [ "https://example.org/", "//example.org/", "/settings" ].each do |origin|

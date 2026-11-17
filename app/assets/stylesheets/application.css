@@ -765,3 +765,5 @@ body.rc-body {background:#faf9f5; color:var(--rc-proposal-navy); }
 @media (prefers-reduced-motion: reduce) {
   .rc-body .rc-filter,.rc-body .rc-purchase-card {transition:none}
 }
+.rc-outcome{margin:10px 0 0;font-size:14px;color:#596b7e}
+.rc-quick-action{margin:0}

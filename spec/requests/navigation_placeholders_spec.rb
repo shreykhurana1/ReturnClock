@@ -22,7 +22,7 @@ RSpec.describe "Navigation placeholders", type: :request do
       expect(response.parsed_body.at_css("main a[href='#{dashboard_path}']").text).to eq("Back to Dashboard")
       expect(response.parsed_body.css("#coming-later, a[href='#coming-later']")).to be_empty
       expect(response.parsed_body.at_css("main").text).not_to include("Coming later", "More account settings coming soon.", "Not available yet", "Return reminder preferences", "Account personalization", "Planned for a future iteration", "These features are planned and cannot be configured yet.")
-      expect(response.parsed_body.css("main form").map { |form| form["action"] }).to eq([ settings_password_path ])
+      expect(response.parsed_body.css("main form").map { |form| form["action"] }).to eq([ settings_path, settings_password_path ])
     end
   end
 
@@ -64,7 +64,7 @@ RSpec.describe "Navigation placeholders", type: :request do
     expect(response).to redirect_to(new_purchase_path)
   end
 
-  it "does not accept writes to the legacy purchase or read-only settings routes" do
+  it "does not accept writes to the legacy purchase route or settings fields other than the alert lead time" do
     sign_in
     expect { post coming_soon_add_purchase_path, params: { purchase: { item_name: "Should not be created" } } }
       .not_to change(Purchase, :count)
@@ -72,6 +72,6 @@ RSpec.describe "Navigation placeholders", type: :request do
 
     expect { patch settings_path, params: { user: { email_address: "changed@example.com" } } }
       .not_to change { user.reload.email_address }
-    expect(response).to have_http_status(:not_found)
+    expect(response).to have_http_status(:bad_request)
   end
 end

@@ -33,7 +33,7 @@ RSpec.describe "shared/_purchase_card", type: :view do
     end
   end
 
-  { -1 => "danger", 0 => "warning", 2 => "warning", 7 => "warning", 8 => "success" }.each do |days, color|
+  { -1 => "danger", 0 => "danger", 2 => "danger", 3 => "warning", 7 => "warning", 8 => "success" }.each do |days, color|
     it "uses #{color} for an active purchase with #{days} days left" do
       sample.return_by = Date.current + days
       html = sample_html(previews_enabled: false)

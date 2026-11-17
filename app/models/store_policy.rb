@@ -2,9 +2,10 @@ class StorePolicy < ApplicationRecord
   belongs_to :user
   has_many :purchases, dependent: :restrict_with_error
 
+  # A store can have several policies, as long as each has its own window.
+  validates :store_name, presence: true
   validates :store_name,
-            presence: true,
-            uniqueness: { scope: :user_id }
+            uniqueness: { scope: [ :user_id, :window_days ], case_sensitive: false, message: "already has a policy with that return window" }
 
   validates :window_days,
             presence: true,
@@ -14,6 +15,11 @@ class StorePolicy < ApplicationRecord
             }
 
   validate :owner_cannot_change_with_purchases, on: :update
+
+  # Distinguishes a store's policies in lists, e.g. "Zara — 30 days".
+  def label
+    "#{store_name} — #{window_days} #{"day".pluralize(window_days)}"
+  end
 
   private
 

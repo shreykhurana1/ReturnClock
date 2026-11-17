@@ -5,7 +5,7 @@ class StorePoliciesController < ApplicationController
   before_action :set_creation_context, only: [ :new, :create ]
 
   def index
-    @store_policies = Current.user.store_policies.order(:store_name, :id)
+    @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
   end
 
   def new

@@ -104,7 +104,7 @@ Feature: Manage purchases and saved store policies
     And I should see "Item name can't be blank" in the main content
     And I should see "Price must be greater than 0" in the main content
     And the purchase price should be "-5"
-    And the store policy "Campus Store" should be selected
+    And the store policy "Campus Store — 30 days" should be selected
     When I follow "Back to Dashboard"
     Then the "Textbook" card should show "$49.99"
     And purchase "Textbook" should have a deadline 30 days from today

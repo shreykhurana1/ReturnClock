@@ -56,7 +56,7 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
       fill_in "Return Window (days)", with: "30"
       click_button "Create Store Policy"
       assert_selector "[role='status']", text: "Store return policy created."
-      assert_select "Store Policy", selected: "Campus Store"
+      assert_select "Store Policy", selected: "Campus Store — 30 days"
       fill_in "Item Name", with: "Notebook"
       fill_in "Price", with: "10.00"
       fill_in "Purchase Date", with: Date.current
@@ -108,6 +108,53 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     assert_selector ".rc-settings-nav a[href='#security'][aria-current='location'].active"
     page.go_forward
     assert_selector ".rc-settings-nav a[href='#account'][aria-current='location'].active"
+  end
+
+  test "card quick actions walk a purchase through the return and move it to history" do
+    policy = @user.store_policies.create!(store_name: "Campus Store", window_days: 30)
+    @user.purchases.create!(store_policy: policy, item_name: "Boots", price: 80, purchase_date: Date.current - 5)
+    visit dashboard_path
+
+    within(".purchase-card", text: "Boots") { click_button "Return it" }
+    assert_notice "Purchase updated."
+    within(".purchase-card", text: "Boots") do
+      assert_selector ".rc-chip", text: "Returning"
+      assert_no_button "Keep it"
+      click_button "Sent it back"
+    end
+    assert_notice "Purchase updated."
+    within(".purchase-card", text: "Boots") do
+      assert_selector ".rc-outcome", text: "Shipped back on"
+      click_button "Refund received"
+    end
+    assert_notice "Purchase updated."
+    assert_current_path history_path
+    within(".purchase-card", text: "Boots") do
+      assert_selector ".rc-chip", text: "Refunded"
+      assert_selector ".rc-outcome", text: "Refunded on"
+      assert_no_button "Refund received"
+    end
+  end
+
+  test "changing the alert lead time in Settings recolours the dashboard card" do
+    policy = @user.store_policies.create!(store_name: "Campus Store", window_days: 30)
+    @user.purchases.create!(store_policy: policy, item_name: "Lamp", price: 20, purchase_date: Date.current - 25)
+    visit dashboard_path
+    assert_selector ".purchase-card .rc-chip-warning", text: "Active"
+
+    visit settings_path
+    within(".rc-settings-nav") do
+      click_link "Deadline alerts"
+      assert_selector "a[href='#alerts'][aria-current='location'].active"
+    end
+    assert_select "Alert me", selected: "2 days before"
+    select "1 week before", from: "Alert me"
+    click_button "Save settings"
+    assert_selector "main [role='status']", text: "Settings updated."
+    assert_select "Alert me", selected: "1 week before"
+
+    visit dashboard_path
+    assert_selector ".purchase-card .rc-chip-danger", text: "Active"
   end
 
   private

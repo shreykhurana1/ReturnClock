@@ -7,11 +7,13 @@
     </div>
     <%= link_to t("ui.back_dashboard"), dashboard_path, class: "rc-btn rc-btn-outline" %>
   </div>
+  <%= tag.div(flash[:notice], class: "rc-alert", role: "status") if flash[:notice] %>
   <%= tag.div(flash[:alert], class: "rc-alert", role: "alert") if flash[:alert] %>
 
   <div class="rc-settings-layout">
     <nav class="rc-settings-nav" aria-label="<%= t('ui.settings_navigation') %>" data-controller="rc-settings-navigation" data-action="click->rc-settings-navigation#activate hashchange@window->rc-settings-navigation#sync">
       <a href="#account" class="active"><%= t("ui.account_details") %></a>
+      <a href="#alerts"><%= t("ui.deadline_alerts") %></a>
       <a href="#security"><%= t("ui.account_security") %></a>
     </nav>
     <div class="rc-settings-sections">
@@ -35,6 +37,20 @@
           <input id="rc-email" class="form-control rc-input" type="email" value="<%= Current.user.email_address %>" readonly>
           <small><%= t("ui.email_readonly") %></small>
         </div>
+      </section>
+
+      <section id="alerts" class="card rc-setting-panel" aria-labelledby="rc-alerts-heading">
+        <div class="rc-setting-head">
+          <div>
+            <h2 id="rc-alerts-heading"><%= t("ui.deadline_alerts") %></h2>
+            <p><%= Rails.configuration.x.reminder_emails_enabled ? t("ui.deadline_alerts_intro_email") : t("ui.deadline_alerts_intro") %></p>
+          </div>
+        </div>
+        <%= form_with model: Current.user, url: settings_path, method: :patch, class: "rc-setting-field" do |form| %>
+          <%= form.label :reminder_days_before, t("ui.alert_me") %>
+          <%= form.select :reminder_days_before, User::REMINDER_OPTIONS, {}, class: "form-select" %>
+          <%= form.submit t("ui.save_settings"), class: "rc-btn rc-btn-primary rc-btn-small" %>
+        <% end %>
       </section>
 
       <section id="security" class="card rc-setting-panel" aria-labelledby="rc-security-heading">

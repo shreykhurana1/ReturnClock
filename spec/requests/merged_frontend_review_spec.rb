@@ -84,7 +84,7 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
     html = response.parsed_body
     expect(html.at_css("main").text).to include("Changing your password signs you out on all devices.")
     expect(html.at_css("input[type='email'][readonly]")["value"]).to eq(user.email_address)
-    expect(html.css("main form").map { |form| form["action"] }).to eq([ settings_password_path ])
+    expect(html.css("main form").map { |form| form["action"] }).to eq([ settings_path, settings_password_path ])
     expect(html.css("main input[type='password']").length).to eq(3)
   end
 
@@ -96,11 +96,12 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
   end
 
   %i[post patch put].each do |method|
-    it "does not accept #{method} password changes through the read-only settings URL" do
+    it "does not accept #{method} password changes through the settings URL" do
       original = user.password_digest
       public_send(method, settings_path, params: { user_id: other_user.id,
         user: { current_password: "Password1!", password: "Changed1!", password_confirmation: "Changed1!" } })
-      expect(response).to have_http_status(:not_found)
+      # Settings accepts only the alert lead time, so PATCH rejects these fields and POST/PUT have no route.
+      expect(response).to have_http_status(method == :patch ? :bad_request : :not_found)
       expect(user.reload.password_digest).to eq(original)
       expect(user.authenticate("Password1!")).to eq(user)
       expect(user.authenticate("Changed1!")).to be(false)

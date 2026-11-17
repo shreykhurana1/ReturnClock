@@ -10,6 +10,7 @@
     </div>
   </div>
   <%= tag.div(localized_flash(flash[:notice]), class: "rc-alert", role: "status") if flash[:notice] %>
+  <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
   <%= render "shared/sample_purchases" if sample_mode %>
 
   <div class="rc-stat-grid" role="group" aria-label="History overview">

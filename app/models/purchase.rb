@@ -8,9 +8,18 @@ class Purchase < ApplicationRecord
     refunded
   ].freeze
 
+  # Statuses that still have a return decision to make before the deadline.
+  OPEN_STATUSES = %w[active returning].freeze
+
+  # Days before the deadline when an active purchase turns urgent (unless the user picks their own
+  # lead time), then merely soon.
+  URGENT_DAYS = 2
+  SOON_DAYS = 7
+
   belongs_to :user
   belongs_to :store_policy
 
+  before_save :record_status_dates
   before_validation :calculate_return_by,
                     if: :deadline_needs_calculation?
 
@@ -28,7 +37,25 @@ class Purchase < ApplicationRecord
     (return_by - Date.current).to_i
   end
 
+  # How pressing an active purchase's deadline is; nil once it is decided or overdue.
+  def urgency(urgent_days = user&.reminder_days_before || URGENT_DAYS)
+    return unless status == "active" && days_left && days_left >= 0
+
+    if days_left <= urgent_days then :urgent
+    elsif days_left <= SOON_DAYS then :soon
+    else :later
+    end
+  end
+
   private
+
+  # Remembers when a return was sent and when the refund arrived.
+  def record_status_dates
+    return unless will_save_change_to_status?
+
+    self.returned_at ||= Date.current if %w[shipped_back refund_pending].include?(status)
+    self.refunded_at = Date.current if status == "refunded"
+  end
 
   def deadline_needs_calculation?
     new_record? ||

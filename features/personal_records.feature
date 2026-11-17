@@ -28,7 +28,7 @@ Feature: Find my purchases by return urgency
     When I follow "Dashboard"
     And I follow "Add Purchase"
     Then the available store policies should be:
-      | Campus Store |
+      | Campus Store — 30 days |
 
   Scenario: Keep overdue refunds actionable and show upcoming deadlines in order
     Given an account exists for "shopper@example.com" with password "Password1!"

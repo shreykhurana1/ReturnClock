@@ -3,7 +3,7 @@ class PurchasesController < ApplicationController
   before_action :set_sample_purchase, only: [ :new, :create ]
 
   def new
-    @store_policies = Current.user.store_policies.order(:store_name, :id)
+    @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
     @purchase = Current.user.purchases.new(purchase_date: Date.current)
     @purchase.store_policy = @store_policies.find_by(id: params[:store_policy_id])
     if @sample_purchase
@@ -21,13 +21,13 @@ class PurchasesController < ApplicationController
     if @purchase.save
       redirect_to purchase_page, notice: "Purchase added."
     else
-      @store_policies = Current.user.store_policies.order(:store_name, :id)
+      @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
       render :new, status: :unprocessable_entity
     end
   end
 
   def edit
-    @store_policies = Current.user.store_policies.order(:store_name, :id)
+    @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
   end
 
   def update
@@ -39,8 +39,13 @@ class PurchasesController < ApplicationController
 
     if @purchase.save
       redirect_to purchase_page, notice: "Purchase updated.", status: :see_other
+    elsif params[:quick].present?
+      # Status changes from a card go back to that card's page with the reason.
+      alert = @purchase.errors.full_messages.to_sentence
+      @purchase.restore_attributes
+      redirect_to purchase_page, alert: alert, status: :see_other
     else
-      @store_policies = Current.user.store_policies.order(:store_name, :id)
+      @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
       render :edit, status: :unprocessable_entity
     end
   end

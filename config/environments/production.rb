@@ -55,6 +55,7 @@ Rails.application.configure do
 
   # Keep the built-in flow unavailable until email delivery is configured.
   config.x.password_resets_enabled = false
+  config.x.reminder_emails_enabled = false
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

@@ -1,5 +1,5 @@
 <%# 1. Prepare variables using only the existing Purchase and StorePolicy fields. %>
-<% policies = Current.user.store_policies.order(:store_name) %>
+<% policies = Current.user.store_policies.order(:store_name, :window_days, :id) %>
 <% preview = local_assigns.fetch(:preview, false) %>
 <% id_prefix = preview ? "rc-preview" : "rc" %>
 
@@ -48,7 +48,7 @@
     <% else %>
       <div class="rc-form-field">
         <%= form.label :store_policy_id, "Store Policy", class: "form-label" %>
-        <%= form.collection_select :store_policy_id, policies, :id, :store_name,
+        <%= form.collection_select :store_policy_id, policies, :id, :label,
               { prompt: "Select a store policy" }, { class: "form-select", required: true } %>
         <p class="rc-form-helper">Select the store whose return window applies to this purchase.</p>
       </div>
