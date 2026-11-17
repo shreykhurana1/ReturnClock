@@ -3,6 +3,10 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
+    this.sync()
+  }
+
+  sync() {
     this.highlight(window.location.hash || "#account")
   }
 

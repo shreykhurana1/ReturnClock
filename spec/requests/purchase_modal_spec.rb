@@ -6,6 +6,23 @@ RSpec.describe "Purchase editor dialog", type: :request do
 
   before { post session_path, params: { email_address: user.email_address, password: "Password1!" } }
 
+  it "returns full-page destinations for modal redirects so Turbo can render without another GET" do
+    [ dashboard_path, history_path, store_policies_path ].each do |path|
+      get path, headers: { "Turbo-Frame" => "purchase_editor" }
+      expect(response).to have_http_status(:ok)
+      html = response.parsed_body
+      expect(html.at_css("head link[rel='stylesheet'][data-turbo-track='reload']")).to be_present
+      expect(html.at_css("head script[type='importmap']")).to be_present
+      expect(html.css("header.app-header").size).to eq(1)
+      expect(html.css("dialog.rc-purchase-modal turbo-frame#purchase_editor").size).to eq(1)
+    end
+    [ new_store_policy_path, edit_store_policy_path(policy) ].each do |path|
+      get path
+      expect(response.parsed_body.at_css("header.app-header")).to be_present
+      expect(response.parsed_body.at_css("head link[rel='stylesheet'][data-turbo-track='reload']")).to be_present
+    end
+  end
+
   it "targets the shared dialog from Add Purchase and sample Edit" do
     get dashboard_path
     html = response.parsed_body

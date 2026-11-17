@@ -33,7 +33,7 @@ RSpec.describe "shared/_purchase_card", type: :view do
     end
   end
 
-  { -1 => "danger", 0 => "success", 2 => "success", 7 => "success", 8 => "success" }.each do |days, color|
+  { -1 => "danger", 0 => "warning", 2 => "warning", 7 => "warning", 8 => "success" }.each do |days, color|
     it "uses #{color} for an active purchase with #{days} days left" do
       sample.return_by = Date.current + days
       html = sample_html(previews_enabled: false)
@@ -42,7 +42,21 @@ RSpec.describe "shared/_purchase_card", type: :view do
       expect(html.css(".rc-days")).to be_empty
       expect(html.css(".rc-contract-details dd").map(&:text)).to include(days.to_s) if days >= 0
       expect(html.css(".rc-card-bottom > .rc-days")).to be_empty
-      expect(html.css(".rc-days-urgent, .rc-chip-warning")).to be_empty
+      expect(html.at_css(".rc-chip").text).to eq(days < 0 ? "Expired" : "Active")
+      expect(html.at_css(".purchase-card")["data-status"]).to eq(days < 0 ? "expired" : "active")
+    end
+  end
+
+  %w[returning shipped_back refund_pending keeping refunded].each do |status|
+    it "keeps #{status} styling when its original deadline is today or overdue" do
+      sample.status = status
+      [ 0, -1 ].each do |days|
+        sample.return_by = Date.current + days
+        html = sample_html(previews_enabled: false)
+        expect(html.css(".rc-chip-warning, .rc-chip-danger")).to be_empty
+        expect(html.at_css(".rc-chip").text).to eq(I18n.t("ui.#{status}"))
+        expect(html.at_css(".purchase-card")["data-status"]).to eq(status)
+      end
     end
   end
 

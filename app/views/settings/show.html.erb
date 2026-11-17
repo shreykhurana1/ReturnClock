@@ -10,7 +10,7 @@
   <%= tag.div(flash[:alert], class: "rc-alert", role: "alert") if flash[:alert] %>
 
   <div class="rc-settings-layout">
-    <nav class="rc-settings-nav" aria-label="<%= t('ui.settings_navigation') %>" data-controller="rc-settings-navigation" data-action="click->rc-settings-navigation#activate">
+    <nav class="rc-settings-nav" aria-label="<%= t('ui.settings_navigation') %>" data-controller="rc-settings-navigation" data-action="click->rc-settings-navigation#activate hashchange@window->rc-settings-navigation#sync">
       <a href="#account" class="active"><%= t("ui.account_details") %></a>
       <a href="#security"><%= t("ui.account_security") %></a>
     </nav>

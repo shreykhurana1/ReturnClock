@@ -728,8 +728,8 @@ body.rc-body {background:#faf9f5; color:var(--rc-proposal-navy); }
   .rc-body .rc-topbar {height:auto;min-height:70px}
   .rc-body .rc-topbar-inner {padding:12px 18px;gap:10px 16px;flex-wrap:wrap}
   .rc-body .rc-brand {font-size:21px}
-  .rc-body .rc-topnav {order:3;flex:1 1 100%;margin:0;align-self:auto;
-    border-top:1px solid #f0e7de;overflow-x:auto;gap:14px;scrollbar-width:thin}
+  .rc-body .rc-topnav {order:3;flex:1 1 100%;margin:0;align-self:auto;height:auto;min-height:45px;
+    border-top:1px solid #f0e7de;overflow-x:auto;overflow-y:hidden;gap:14px;scrollbar-width:thin}
   .rc-body .rc-navlink {min-height:44px;padding:8px 2px;white-space:nowrap;font-size:14px}
   .rc-body .rc-navlink.active:after {left:0;right:0}
   .rc-body .rc-header-actions {margin-left:auto}

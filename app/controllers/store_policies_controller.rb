@@ -1,4 +1,6 @@
 class StorePoliciesController < ApplicationController
+  layout "application"
+
   before_action :set_store_policy, only: [ :edit, :update, :destroy ]
   before_action :set_creation_context, only: [ :new, :create ]
 

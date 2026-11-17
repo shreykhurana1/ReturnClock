@@ -1,10 +1,11 @@
 <% days = purchase.days_left %>
 <% expired = purchase.status == "active" && days && days < 0 %>
 <% show_days = !expired && !%w[keeping refunded].include?(purchase.status) %>
+<% urgent = purchase.status == "active" && days && days.between?(0, 7) %>
 <% status_names = { "active" => t("ui.active"), "keeping" => t("ui.keeping"), "returning" => t("ui.returning"), "shipped_back" => t("ui.shipped_back"), "refund_pending" => t("ui.refund_pending"), "refunded" => t("ui.refunded") } %>
 <% status_label = expired ? t("ui.expired") : status_names.fetch(purchase.status, purchase.status.humanize) %>
 <% status_colors = { "active" => "success", "keeping" => "secondary", "returning" => "orange", "shipped_back" => "purple", "refund_pending" => "amber", "refunded" => "teal" } %>
-<% color = expired ? "danger" : status_colors.fetch(purchase.status, "secondary") %>
+<% color = expired ? "danger" : (urgent ? "warning" : status_colors.fetch(purchase.status, "secondary")) %>
 <article class="purchase-card card rc-purchase-card" data-sample="<%= !purchase.persisted? %>" data-rc-purchase-filter-target="card" data-status="<%= expired ? 'expired' : purchase.status %>" data-purchase-preview="<%= { item_name: purchase.item_name, price: purchase.price.to_s('F'), purchase_date: purchase.purchase_date.iso8601, store_policy_id: purchase.store_policy_id, store_name: purchase.store_policy.store_name, window_days: purchase.store_policy.window_days, status: purchase.status }.to_json %>">
   <div class="rc-card-top">
     <span class="rc-chip rc-chip-<%= color %>"><%= status_label %></span>

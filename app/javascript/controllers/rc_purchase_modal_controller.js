@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import { Turbo } from "@hotwired/turbo-rails"
 
 export default class extends Controller {
   static targets = ["frame", "title"]
@@ -38,15 +39,21 @@ export default class extends Controller {
   navigate(event) {
     event.preventDefault()
     this.close()
-    event.detail.visit(event.detail.response.url)
+    event.detail.visit(event.detail.response)
   }
 
-  saved(event) {
+  async saved(event) {
     const response = event.detail.fetchResponse.response
     if (response.ok && response.redirected && event.target.matches("form") && (event.target.querySelector("[name='purchase[item_name]']") || event.target.dataset.modalSave === "true")) {
       event.preventDefault()
+      // Reuse the followed redirect's HTML: another GET would consume its flash notice.
+      const responseHTML = await event.detail.fetchResponse.responseHTML
       this.close()
-      window.location.assign(response.url)
+      Turbo.cache.clear()
+      Turbo.visit(response.url, {
+        shouldCacheSnapshot: false,
+        response: { statusCode: response.status, redirected: response.redirected, responseHTML }
+      })
     }
   }
 }
