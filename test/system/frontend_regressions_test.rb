@@ -204,5 +204,7 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
   def assert_notice(message)
     assert_selector "main [role='status']", text: message
     assert_no_selector "dialog[open]"
+    # The notice can be visible before Turbo finishes the visit and restores scrolling.
+    assert_no_selector "html[aria-busy='true']", wait: 5
   end
 end
