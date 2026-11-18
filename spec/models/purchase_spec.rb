@@ -68,6 +68,35 @@ RSpec.describe Purchase, type: :model do
     expect(purchase.reload.return_by).to eq(Date.new(2028, 3, 29))
   end
 
+  { -1 => nil, 0 => :urgent, 2 => :urgent, 3 => :soon, 7 => :soon, 8 => :later }.each do |days, urgency|
+    it "is #{urgency.inspect} for an active purchase with #{days} days left" do
+      purchase.return_by = Date.current + days
+      expect(purchase.urgency).to eq(urgency)
+    end
+  end
+
+  it "uses the owner's reminder lead time for the urgent tier" do
+    purchase.return_by = Date.current + 5
+    expect(purchase.urgency).to eq(:soon)
+    user.update_column(:reminder_days_before, 7)
+    expect(purchase.urgency).to eq(:urgent)
+  end
+
+  it "records when a return was sent and when the refund arrived" do
+    purchase.save!
+    purchase.update!(status: "shipped_back")
+    expect(purchase.reload.returned_at).to eq(Date.current)
+    expect(purchase.refunded_at).to be_nil
+    purchase.update!(status: "refunded")
+    expect(purchase.reload.refunded_at).to eq(Date.current)
+  end
+
+  it "has no urgency once the purchase is decided" do
+    purchase.status = "keeping"
+    purchase.return_by = Date.current + 1
+    expect(purchase.urgency).to be_nil
+  end
+
   it "recalculates when the purchase date changes" do
     purchase.save!
     purchase.update!(purchase_date: Date.new(2026, 12, 20))

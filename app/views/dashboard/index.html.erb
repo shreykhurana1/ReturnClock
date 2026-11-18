@@ -17,6 +17,7 @@
   </div>
 
   <%= tag.div(localized_flash(flash[:notice]), class: "rc-alert", role: "status") if flash[:notice] %>
+  <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
   <%= render "shared/sample_purchases" if sample_mode %>
 
   <div class="rc-stat-grid" role="group" aria-label="Purchase overview">
@@ -31,9 +32,9 @@
       <span class="rc-stat-detail rc-text-orange"><%= t("ui.needs_attention") %></span>
     </div>
     <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.tracked_value") %></span>
-      <div><strong><%= number_to_currency(purchases.sum(&:price)) %></strong></div>
-      <span class="rc-stat-detail"><%= t("ui.tracked_value_detail") %></span>
+      <span class="rc-stat-title"><%= t("ui.money_at_risk") %></span>
+      <div><strong><%= number_to_currency(purchases.select { |purchase| Purchase::OPEN_STATUSES.include?(purchase.status) }.sum(&:price)) %></strong></div>
+      <span class="rc-stat-detail"><%= t("ui.money_at_risk_detail") %></span>
     </div>
     <div class="card rc-stat rc-stat-quiet">
       <span class="rc-stat-title"><%= t("ui.savings") %></span>

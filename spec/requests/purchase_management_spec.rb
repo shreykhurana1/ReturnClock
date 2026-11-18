@@ -61,7 +61,7 @@ RSpec.describe "Purchase management", type: :request do
       expect(html.at_css("input[name='purchase[item_name]']")["value"]).to eq("Textbook")
       expect(html.at_css("input[name='purchase[purchase_date]']")["value"]).to eq("2026-11-08")
       expect(html.css("select[name='purchase[status]'] option").map { |option| option["value"] }).to eq(Purchase::STATUSES)
-      expect(html.css("select[name='purchase[store_policy_id]'] option").map(&:text)).to include(policy.store_name)
+      expect(html.css("select[name='purchase[store_policy_id]'] option").map(&:text)).to include(policy.label)
       expect(response.body).not_to include(other_policy.store_name)
       expect(html.css("input[name='purchase[user_id]'], input[name='purchase[return_by]']")).to be_empty
     end

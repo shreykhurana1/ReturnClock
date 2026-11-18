@@ -12,7 +12,7 @@ Feature: Record a first purchase
     Then I should see "Create a store return policy before adding your first purchase." in the main content
     When I follow "Create Store Policy"
     And I create a store policy named "Campus Store" with a 30-day return window
-    Then the store policy "Campus Store" should be selected
+    Then the store policy "Campus Store — 30 days" should be selected
     And the purchase status "Active" should be selected
     When I add a purchase named "Textbook" costing "49.99" purchased today
     Then I should see the "Dashboard" heading
@@ -80,7 +80,7 @@ Feature: Record a first purchase
     And I add a purchase named "   " costing "49.99" purchased today
     Then I should see the "Add Purchase" heading
     And I should see "Item name can't be blank" in the main content
-    And the store policy "Campus Store" should be selected
+    And the store policy "Campus Store — 30 days" should be selected
     And the purchase status "Keeping" should be selected
     And the purchase price should be "49.99"
     When I correct the item name to "Textbook"

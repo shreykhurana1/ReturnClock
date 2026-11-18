@@ -237,7 +237,7 @@ RSpec.describe "Account password changes", type: :request do
       end
       original_protection.each_key { |controller| controller.allow_forgery_protection = true }
       get settings_path
-      token = response.parsed_body.at_css("main form input[name='authenticity_token']")["value"]
+      token = response.parsed_body.at_css("main form[action='#{settings_password_path}'] input[name='authenticity_token']")["value"]
       digest = user.password_digest
       change_password
       expect(response).to have_http_status(:unprocessable_content)

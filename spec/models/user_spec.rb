@@ -3,6 +3,15 @@ require "rails_helper"
 RSpec.describe User, type: :model do
   let(:user) { User.new(email_address: "student@example.com", password: "Password1!", password_confirmation: "Password1!") }
 
+  it "defaults the reminder lead time to 2 days and only allows the offered options" do
+    expect(user.reminder_days_before).to eq(2)
+    user.reminder_days_before = 5
+    expect(user).not_to be_valid
+    expect(user.errors[:reminder_days_before]).to be_present
+    user.reminder_days_before = 7
+    expect(user).to be_valid
+  end
+
   it "saves a user and authenticates the hashed password" do
     user.save!
     expect(user.reload.authenticate("Password1!")).to eq(user)

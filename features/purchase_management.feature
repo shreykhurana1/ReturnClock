@@ -55,6 +55,20 @@ Feature: Manage purchases and saved store policies
     Then I should see the "Dashboard" heading
     And purchase "Textbook" should show status "Active"
 
+  Scenario: Track a return and refund using the card's quick-action buttons
+    When I choose "Return it" for purchase "Textbook"
+    Then I should see the "Dashboard" heading
+    And purchase "Textbook" should show status "Returning"
+    When I choose "Sent it back" for purchase "Textbook"
+    Then purchase "Textbook" should show status "Shipped back"
+    And purchase "Textbook" should show "Shipped back on" dated today
+    When I choose "Refund received" for purchase "Textbook"
+    Then I should see the "History" heading
+    And purchase "Textbook" should show status "Refunded"
+    And purchase "Textbook" should show "Refunded on" dated today
+    When I follow "Dashboard"
+    Then I should not see a purchase named "Textbook"
+
   Scenario: Start a return for an expired purchase from History
     When I edit purchase "Textbook"
     And I save the purchase as "Textbook" costing "49.99" bought 40 days ago using "Campus Store"
@@ -104,7 +118,7 @@ Feature: Manage purchases and saved store policies
     And I should see "Item name can't be blank" in the main content
     And I should see "Price must be greater than 0" in the main content
     And the purchase price should be "-5"
-    And the store policy "Campus Store" should be selected
+    And the store policy "Campus Store — 30 days" should be selected
     When I follow "Back to Dashboard"
     Then the "Textbook" card should show "$49.99"
     And purchase "Textbook" should have a deadline 30 days from today

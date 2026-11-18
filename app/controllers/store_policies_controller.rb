@@ -3,9 +3,10 @@ class StorePoliciesController < ApplicationController
 
   before_action :set_store_policy, only: [ :edit, :update, :destroy ]
   before_action :set_creation_context, only: [ :new, :create ]
+  rescue_from ActiveRecord::RecordNotUnique, with: :duplicate_policy
 
   def index
-    @store_policies = Current.user.store_policies.order(:store_name, :id)
+    @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
   end
 
   def new
@@ -43,6 +44,12 @@ class StorePoliciesController < ApplicationController
   end
 
   private
+
+  # The database also catches duplicates when two valid submissions race.
+  def duplicate_policy
+    @store_policy.errors.add(:store_name, "already has a policy with that return window")
+    render @store_policy.persisted? ? :edit : :new, status: :unprocessable_entity
+  end
 
   def set_creation_context
     @from_purchase = params[:origin] == "purchase"

@@ -15,10 +15,10 @@ Feature: Maintain my store return policies
     Then I should see the "Store Policies" heading
     And I should see "Campus Store" in the main content
     When I follow "Create Store Policy"
-    And I create a store policy named "Campus Store" with a 14-day return window
+    And I create a store policy named "campus store" with a 30-day return window
     Then I should see the "Create Store Policy" heading
-    And I should see "Store name has already been taken" in the main content
-    And the "Store Name" field should contain "Campus Store"
+    And I should see "Store name already has a policy with that return window" in the main content
+    And the "Store Name" field should contain "campus store"
     When I create a store policy named "Book Shop" with a 14-day return window
     Then I should see the "Store Policies" heading
     And I should see "Campus Store" in the main content
@@ -58,3 +58,26 @@ Feature: Maintain my store return policies
     And I add a purchase named "My Textbook" costing "49.99" purchased today
     Then I should see the "Dashboard" heading
     And purchase "My Textbook" should have a deadline 30 days from today
+
+  Scenario: Save a second return window for the same store
+    Given an account exists for "shopper@example.com" with password "Password1!"
+    And I visit the landing page
+    When I follow "Sign In"
+    And I sign in with email "shopper@example.com" and password "Password1!"
+    And I follow "Store Policies"
+    And I follow "Create Store Policy"
+    And I create a store policy named "Zara" with a 30-day return window
+    And I follow "Create Store Policy"
+    And I create a store policy named "Zara" with a 60-day return window
+    Then I should see the "Store Policies" heading
+    And I should see "30 days" in the main content
+    And I should see "60 days" in the main content
+    When I follow "Dashboard"
+    And I follow "Add Purchase"
+    And I choose store policy "Zara — 60 days"
+    And I add a purchase named "Coat" costing "80.00" purchased today
+    Then purchase "Coat" should have a deadline 60 days from today
+    When I edit purchase "Coat"
+    Then the store policy "Zara — 60 days" should be selected
+    When I save the purchase as "Coat" costing "80.00" bought 0 days ago using "Zara — 30 days"
+    Then purchase "Coat" should have a deadline 30 days from today

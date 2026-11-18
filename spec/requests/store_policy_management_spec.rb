@@ -179,15 +179,39 @@ RSpec.describe "Store policy management", type: :request do
       end
     end
 
-    it "rejects duplicate names and preserves entered values after validation failure" do
+    it "rejects a duplicate name and window and preserves entered values after validation failure" do
       user.store_policies.create!(store_name: "Other Store", window_days: 14)
-      patch store_policy_path(policy), params: { store_policy: { store_name: "Other Store", window_days: 45 } }
+      patch store_policy_path(policy), params: { store_policy: { store_name: "other store", window_days: 14 } }
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Store name has already been taken")
+      expect(response.body).to include("Store name already has a policy with that return window")
       html = response.parsed_body
-      expect(html.at_css("input[name='store_policy[store_name]']")["value"]).to eq("Other Store")
-      expect(html.at_css("input[name='store_policy[window_days]']")["value"]).to eq("45")
+      expect(html.at_css("input[name='store_policy[store_name]']")["value"]).to eq("other store")
+      expect(html.at_css("input[name='store_policy[window_days]']")["value"]).to eq("14")
       expect(policy.reload.store_name).to eq("Campus Store")
+    end
+
+    it "shows a useful creation error when another request wins the uniqueness race" do
+      policy
+      # A racing request can insert after validation succeeds. Keep the other validations enabled.
+      validator = StorePolicy.validators_on(:store_name).find { |item| item.kind == :uniqueness }
+      allow(validator).to receive(:validate_each)
+      expect do
+        post store_policies_path, params: { store_policy: { store_name: "CAMPUS STORE", window_days: 30 } }
+      end.not_to change(StorePolicy, :count)
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("already has a policy with that return window")
+      expect(response.parsed_body.at_css("input[name='store_policy[store_name]']")["value"]).to eq("CAMPUS STORE")
+    end
+
+    it "preserves the saved policy and reports a database uniqueness race during editing" do
+      policy
+      editing = user.store_policies.create!(store_name: "Book Shop", window_days: 14)
+      validator = StorePolicy.validators_on(:store_name).find { |item| item.kind == :uniqueness }
+      allow(validator).to receive(:validate_each)
+      patch store_policy_path(editing), params: { store_policy: { store_name: "CAMPUS STORE", window_days: 30 } }
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(response.body).to include("already has a policy with that return window")
+      expect(editing.reload).to have_attributes(store_name: "Book Shop", window_days: 14)
     end
 
     it "deletes an unused policy while preserving other users' policies" do
