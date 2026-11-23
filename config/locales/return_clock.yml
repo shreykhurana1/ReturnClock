@@ -41,7 +41,7 @@
       "tracked_value": "Tracked purchase value",
       "tracked_value_detail": "Total price of purchases shown",
       "money_at_risk": "Money at risk",
-      "money_at_risk_detail": "Active and returning items you can still send back",
+      "money_at_risk_detail": "Active and returning purchases on Dashboard, including overdue returns",
       "deadline_alerts": "Deadline alerts",
       "deadline_alerts_intro": "Purchase cards turn red this long before a return-by date.",
       "deadline_alerts_intro_email": "Purchase cards turn red, and we email you once, this long before a return-by date.",

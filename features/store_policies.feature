@@ -77,3 +77,7 @@ Feature: Maintain my store return policies
     And I choose store policy "Zara — 60 days"
     And I add a purchase named "Coat" costing "80.00" purchased today
     Then purchase "Coat" should have a deadline 60 days from today
+    When I edit purchase "Coat"
+    Then the store policy "Zara — 60 days" should be selected
+    When I save the purchase as "Coat" costing "80.00" bought 0 days ago using "Zara — 30 days"
+    Then purchase "Coat" should have a deadline 30 days from today

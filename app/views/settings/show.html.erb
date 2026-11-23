@@ -48,7 +48,13 @@
         </div>
         <%= form_with model: Current.user, url: settings_path, method: :patch, class: "rc-setting-field" do |form| %>
           <%= form.label :reminder_days_before, t("ui.alert_me") %>
-          <%= form.select :reminder_days_before, User::REMINDER_OPTIONS, {}, class: "form-select" %>
+          <%= form.select :reminder_days_before, User::REMINDER_OPTIONS, {}, class: "form-select",
+                aria: { invalid: Current.user.errors[:reminder_days_before].any?, describedby: ("alert-preference-errors" if Current.user.errors[:reminder_days_before].any?) } %>
+          <% if Current.user.errors[:reminder_days_before].any? %>
+            <ul id="alert-preference-errors" class="auth-field-errors" role="alert">
+              <li>Choose an alert preference from the available options.</li>
+            </ul>
+          <% end %>
           <%= form.submit t("ui.save_settings"), class: "rc-btn rc-btn-primary rc-btn-small" %>
         <% end %>
       </section>

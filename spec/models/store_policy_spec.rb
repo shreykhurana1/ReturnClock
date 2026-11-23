@@ -41,7 +41,7 @@ RSpec.describe StorePolicy, type: :model do
 
   it "allows several return windows for the same store" do
     policy.save!
-    expect(user.store_policies.create!(store_name: policy.store_name, window_days: 14)).to be_persisted
+    expect(user.store_policies.create!(store_name: policy.store_name.upcase, window_days: 14)).to be_persisted
   end
 
   it "labels a policy with its window so a store's policies can be told apart" do
@@ -52,7 +52,7 @@ RSpec.describe StorePolicy, type: :model do
   it "allows different owners to use the same store name" do
     policy.save!
     other = User.create!(email_address: "other@example.com", password: "Password1!")
-    expect(other.store_policies.create!(store_name: policy.store_name, window_days: 14)).to be_persisted
+    expect(other.store_policies.create!(store_name: policy.store_name.upcase, window_days: policy.window_days)).to be_persisted
   end
 
   it "prevents deleting a policy that still has purchases" do

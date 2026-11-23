@@ -157,10 +157,54 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     assert_selector ".purchase-card .rc-chip-danger", text: "Active"
   end
 
+  test "real purchase quick actions fit narrow cards without overlapping or clipped labels" do
+    policy = @user.store_policies.create!(store_name: "Campus Store", window_days: 30)
+    %w[active returning shipped_back refund_pending].each do |status|
+      @user.purchases.create!(store_policy: policy, item_name: "Layout #{status}", price: 80,
+        purchase_date: Date.current - 5, status: status)
+    end
+    visit dashboard_path
+    assert_selector ".purchase-card[data-sample='false']", count: 4
+    [ 320, 390, 720, 1400 ].each do |width|
+      page.current_window.resize_to(width, 1000)
+      problems = page.evaluate_script(<<~JS)
+        Array.from(document.querySelectorAll('.purchase-card')).flatMap(card => {
+          const bounds = card.getBoundingClientRect()
+          const controls = Array.from(card.querySelectorAll('.rc-card-actions .rc-btn'))
+            .filter(control => control.checkVisibility())
+          const issues = []
+          controls.forEach((control, index) => {
+            const rect = control.getBoundingClientRect()
+            const label = control.textContent.trim()
+            if (rect.left < bounds.left - 1 || rect.right > bounds.right + 1 || control.scrollWidth > control.clientWidth + 1) {
+              issues.push(`${card.dataset.status}: clipped ${label}`)
+            }
+            controls.slice(index + 1).forEach(other => {
+              const next = other.getBoundingClientRect()
+              if (Math.min(rect.right, next.right) - Math.max(rect.left, next.left) > 1 &&
+                  Math.min(rect.bottom, next.bottom) - Math.max(rect.top, next.top) > 1) {
+                issues.push(`${card.dataset.status}: overlapping ${label} and ${other.textContent.trim()}`)
+              }
+            })
+          })
+          return issues
+        })
+      JS
+      assert_empty problems, "Action layout at #{width}px: #{problems.join(', ')}"
+      assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+    end
+    within(".purchase-card", text: "Layout active") { click_button "Keep it" }
+    assert_notice "Purchase updated."
+    assert_current_path history_path
+    assert_selector ".purchase-card .rc-chip", text: "Keeping"
+  end
+
   private
 
   def assert_notice(message)
     assert_selector "main [role='status']", text: message
     assert_no_selector "dialog[open]"
+    # The notice can be visible before Turbo finishes the visit and restores scrolling.
+    assert_no_selector "html[aria-busy='true']", wait: 5
   end
 end

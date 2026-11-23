@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -217,7 +217,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_130000) do
     t.integer "window_days", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["user_id", "store_name", "window_days"], name: "index_store_policies_on_user_store_and_window", unique: true
+    t.index "user_id, lower((store_name)::text), window_days", name: "index_store_policies_on_user_lower_store_and_window", unique: true
     t.index ["user_id"], name: "index_store_policies_on_user_id"
     t.check_constraint "window_days > 0", name: "store_policies_window_days_positive"
   end

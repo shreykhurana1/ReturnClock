@@ -64,4 +64,12 @@ RSpec.describe "Card quick actions and dashboard totals", type: :request do
     expect(stats).to include("Money at risk", "$50.00", "Amount saved")
     expect(stats).not_to include("Tracked purchase value")
   end
+
+  it "describes overdue returns included in Money at risk without changing classification" do
+    add_purchase(status: "returning", price: 30, purchase_date: Date.current - 40)
+    get dashboard_path
+    metric = response.parsed_body.css(".rc-stat").find { |stat| stat.text.include?("Money at risk") }
+    expect(metric.at_css("strong").text).to eq("$30.00")
+    expect(metric.text).to include("including overdue returns")
+  end
 end
