@@ -26,10 +26,12 @@
     <%# Samples open a prefilled new purchase; only persisted records have mutation actions. %>
     <% if purchase.persisted? || respond_to?(:new_purchase_path) || purchase_preview_enabled? %>
       <div class="rc-card-actions">
-        <% if purchase.persisted? && respond_to?(:purchase_path) && !expired %>
-          <% quick_actions.fetch(purchase.status, []).each do |label, status| %>
-            <%= button_to label, purchase_path(purchase), method: :patch, params: { purchase: { status: status }, quick: 1 }, class: "rc-btn rc-btn-outline rc-btn-small", form_class: "rc-quick-action" %>
-          <% end %>
+        <% if purchase.persisted? && respond_to?(:purchase_path) && !expired && quick_actions.key?(purchase.status) %>
+          <div class="rc-quick-actions">
+            <% quick_actions.fetch(purchase.status).each do |label, status| %>
+              <%= button_to label, purchase_path(purchase), method: :patch, params: { purchase: { status: status }, quick: 1 }, class: "rc-btn rc-btn-outline rc-btn-small", form_class: "rc-quick-action" %>
+            <% end %>
+          </div>
         <% end %>
         <%= render "shared/purchase_actions", purchase: purchase, status_names: status_names %>
       </div>
