@@ -51,15 +51,21 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
   test "first policy stays in the purchase modal and management saves refresh the policy list" do
     click_link "Add Purchase", exact: true
     within("dialog[open]") do
-      click_link "Create Store Policy", exact: true
-      fill_in "Store Name", with: "Campus Store"
+      fill_in "Item Name", with: "Notebook"
+      fill_in "Price", with: "10.00"
+      fill_in "Purchase Date", with: Date.current - 3
+      select "Returning", from: "Status"
+      click_button "Create Store Policy", exact: true
+      fill_in "Store Name", with: "   "
       fill_in "Return Window (days)", with: "30"
+      click_button "Create Store Policy"
+      assert_selector "[role='alert']", text: "Store name can't be blank"
+      assert_field "Return Window (days)", with: "30"
+      fill_in "Store Name", with: "Campus Store"
       click_button "Create Store Policy"
       assert_selector "[role='status']", text: "Store return policy created."
       assert_select "Store Policy", selected: "Campus Store — 30 days"
-      fill_in "Item Name", with: "Notebook"
-      fill_in "Price", with: "10.00"
-      fill_in "Purchase Date", with: Date.current
+      assert_purchase_fields "Notebook", "10.00", Date.current - 3, "Returning"
       click_button "Add Purchase"
     end
     assert_notice "Purchase added."
@@ -84,6 +90,42 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     assert_notice "Store policy updated. Existing purchase deadlines are unchanged."
     assert_current_path store_policies_path
     assert_selector ".rc-policy-card h2", text: "Updated Book Shop"
+  end
+
+  test "standalone mobile purchase keeps edited sample values through policy errors and returning without saving" do
+    page.current_window.resize_to(390, 844)
+    visit new_purchase_path(sample: "Wireless Headphones")
+    assert_no_selector "dialog"
+    fill_in "Item Name", with: "My edited headphones"
+    fill_in "Price", with: "29.95"
+    fill_in "Purchase Date", with: Date.current - 2
+    select "Keeping", from: "Status"
+    click_button "Create Store Policy", exact: true
+    fill_in "Store Name", with: "   "
+    fill_in "Return Window (days)", with: "14"
+    click_button "Create Store Policy"
+    assert_selector "[role='alert']", text: "Store name can't be blank"
+    click_link "Back to Add Purchase"
+    assert_purchase_fields "My edited headphones", "29.95", Date.current - 2, "Keeping"
+    assert_equal 0, @user.store_policies.count
+
+    click_button "Create Store Policy", exact: true
+    fill_in "Store Name", with: "Mobile Shop"
+    fill_in "Return Window (days)", with: "14"
+    click_button "Create Store Policy"
+    assert_select "Store Policy", selected: "Mobile Shop — 14 days"
+    assert_purchase_fields "My edited headphones", "29.95", Date.current - 2, "Keeping"
+    fill_in "Item Name", with: "   "
+    click_button "Add Purchase"
+    assert_selector "[role='alert']", text: "Item name can't be blank"
+    assert_purchase_fields "   ", "29.95", Date.current - 2, "Keeping"
+    fill_in "Item Name", with: "My edited headphones"
+    # Enter must still submit the purchase, not open policy creation again.
+    find_field("Item Name").send_keys(:enter)
+    assert_notice "Purchase added."
+    assert_current_path history_path
+    assert_selector ".purchase-card h2", text: "My edited headphones"
+    assert_equal Date.current + 12, @user.purchases.sole.return_by
   end
 
   test "mobile navigation fits its links and settings selection follows browser history" do
@@ -167,6 +209,10 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     assert_selector ".purchase-card[data-sample='false']", count: 4
     [ 320, 390, 720, 1400 ].each do |width|
       page.current_window.resize_to(width, 1000)
+      assert page.evaluate_script(<<~JS), "Upcoming purchases must appear above statistics at #{width}px"
+        document.querySelector('[aria-labelledby="upcoming-purchases"]').getBoundingClientRect().bottom <=
+          document.querySelector('.rc-stat-grid').getBoundingClientRect().top
+      JS
       problems = page.evaluate_script(<<~JS)
         Array.from(document.querySelectorAll('.purchase-card')).flatMap(card => {
           const bounds = card.getBoundingClientRect()
@@ -200,6 +246,14 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
   end
 
   private
+
+  def assert_purchase_fields(name, price, date, status)
+    assert_field "Item Name", with: name
+    assert_field "Price", with: price
+    assert_field "Purchase Date", with: date.iso8601
+    assert_select "Status", selected: status
+    assert page.evaluate_script("document.documentElement.scrollWidth <= window.innerWidth")
+  end
 
   def assert_notice(message)
     assert_selector "main [role='status']", text: message

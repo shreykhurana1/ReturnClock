@@ -10,11 +10,17 @@ Feature: Record a first purchase
     And I sign in with email "shopper@example.com" and password "Password1!"
     And I follow "Add Purchase"
     Then I should see "Create a store return policy before adding your first purchase." in the main content
-    When I follow "Create Store Policy"
+    When I fill in "Item Name" with "Textbook"
+    And I fill in "Price" with "49.99"
+    And I fill in "Purchase Date" with "2026-11-09"
+    And I press "Create Store Policy"
     And I create a store policy named "Campus Store" with a 30-day return window
     Then the store policy "Campus Store — 30 days" should be selected
     And the purchase status "Active" should be selected
-    When I add a purchase named "Textbook" costing "49.99" purchased today
+    And the "Item Name" field should contain "Textbook"
+    And the "Price" field should contain "49.99"
+    And the "Purchase Date" field should contain "2026-11-09"
+    When I press "Add Purchase"
     Then I should see the "Dashboard" heading
     And I should see "Textbook" in the main content
     And I should see "Campus Store" in the main content

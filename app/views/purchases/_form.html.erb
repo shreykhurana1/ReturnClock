@@ -4,6 +4,10 @@
 <% id_prefix = preview ? "rc-preview" : "rc" %>
 
 <%= form_with(model: purchase, class: "rc-purchase-form", local: true, **(preview ? { url: "#", method: :get, namespace: "rc-preview", data: { action: "submit->rc-purchase-preview#pending", turbo: false } } : {})) do |form| %>
+  <% if purchase.new_record? && !preview %>
+    <%# Keep Enter submitting the purchase rather than the policy handoff button. %>
+    <button type="submit" hidden <%= "disabled" if policies.empty? %>></button>
+  <% end %>
   <%= hidden_field_tag :sample, @sample_purchase.item_name if @sample_purchase %>
   <% if purchase.errors.any? %>
     <div class="rc-form-errors" role="alert" aria-live="polite">
@@ -53,7 +57,16 @@
         <p class="rc-form-helper">Select the store whose return window applies to this purchase.</p>
       </div>
     <% end %>
-    <p class="rc-form-helper"><%= link_to "Create Store Policy", new_store_policy_path(origin: "purchase", sample: @sample_purchase&.item_name), class: "rc-card-link" %> if your store is missing.</p>
+    <p class="rc-form-helper">
+      <% if purchase.new_record? && !preview %>
+        <%= button_tag "Create Store Policy", type: "submit", class: "rc-card-link", formaction: from_purchase_store_policies_path,
+              formnovalidate: true, data: { turbo_frame: "purchase_editor" }, name: "authenticity_token",
+              value: form_authenticity_token(form_options: { action: from_purchase_store_policies_path, method: "post" }) %>
+      <% else %>
+        <%= link_to "Create Store Policy", new_store_policy_path(origin: "purchase", sample: @sample_purchase&.item_name), class: "rc-card-link" %>
+      <% end %>
+      if your store is missing.
+    </p>
     <p class="rc-deadline-note"><strong><%= t("ui.deadline_label") %></strong><%= t("ui.deadline_hint") %></p>
   </section>
 

@@ -1,7 +1,8 @@
 <%= render "shared/form_errors", record: @store_policy %>
 
-<%= form_with model: @store_policy, class: "rc-purchase-form", data: { modal_save: !@from_purchase } do |form| %>
+<%= form_with model: @store_policy, class: "rc-purchase-form", data: { modal_save: !@from_purchase, turbo_frame: ("purchase_editor" if @from_purchase) } do |form| %>
   <%= hidden_field_tag :origin, "purchase" if @from_purchase %>
+  <%= hidden_field_tag :draft, @purchase_draft_token if @purchase_draft_token.present? %>
   <%= hidden_field_tag :sample, params[:sample] if params[:sample].present? %>
 
   <div class="rc-field-grid">

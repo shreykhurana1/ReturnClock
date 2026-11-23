@@ -20,29 +20,6 @@
   <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
   <%= render "shared/sample_purchases" if sample_mode %>
 
-  <div class="rc-stat-grid" role="group" aria-label="Purchase overview">
-    <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.tracked") %></span>
-      <div><strong><%= purchases.size %></strong><small><%= t("ui.purchases_unit") %></small></div>
-      <span class="rc-stat-detail"><%= t("ui.tracked_detail") %></span>
-    </div>
-    <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.due_week") %></span>
-      <div><strong><%= active.count { |purchase| purchase.days_left && purchase.days_left <= 7 && purchase.days_left >= 0 } %></strong><small><%= t("ui.purchases_unit") %></small></div>
-      <span class="rc-stat-detail rc-text-orange"><%= t("ui.needs_attention") %></span>
-    </div>
-    <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.money_at_risk") %></span>
-      <div><strong><%= number_to_currency(purchases.select { |purchase| Purchase::OPEN_STATUSES.include?(purchase.status) }.sum(&:price)) %></strong></div>
-      <span class="rc-stat-detail"><%= t("ui.money_at_risk_detail") %></span>
-    </div>
-    <div class="card rc-stat rc-stat-quiet">
-      <span class="rc-stat-title"><%= t("ui.savings") %></span>
-      <div><strong>—</strong></div>
-      <span class="rc-stat-detail"><%= t("ui.savings_pending") %></span>
-    </div>
-  </div>
-
   <section class="rc-section" aria-labelledby="upcoming-purchases">
     <div class="rc-section-heading">
       <div>
@@ -71,4 +48,27 @@
       </div>
     <% end %>
   </section>
+
+  <div class="rc-stat-grid" role="group" aria-label="Purchase overview">
+    <div class="card rc-stat">
+      <span class="rc-stat-title"><%= t("ui.tracked") %></span>
+      <div><strong><%= purchases.size %></strong><small><%= t("ui.purchases_unit") %></small></div>
+      <span class="rc-stat-detail"><%= t("ui.tracked_detail") %></span>
+    </div>
+    <div class="card rc-stat">
+      <span class="rc-stat-title"><%= t("ui.due_week") %></span>
+      <div><strong><%= active.count { |purchase| purchase.days_left && purchase.days_left <= 7 && purchase.days_left >= 0 } %></strong><small><%= t("ui.purchases_unit") %></small></div>
+      <span class="rc-stat-detail rc-text-orange"><%= t("ui.needs_attention") %></span>
+    </div>
+    <div class="card rc-stat">
+      <span class="rc-stat-title"><%= t("ui.money_at_risk") %></span>
+      <div><strong><%= number_to_currency(purchases.select { |purchase| Purchase::OPEN_STATUSES.include?(purchase.status) }.sum(&:price)) %></strong></div>
+      <span class="rc-stat-detail"><%= t("ui.money_at_risk_detail") %></span>
+    </div>
+    <div class="card rc-stat rc-stat-quiet">
+      <span class="rc-stat-title"><%= t("ui.savings") %></span>
+      <div><strong>—</strong></div>
+      <span class="rc-stat-detail"><%= t("ui.savings_pending") %></span>
+    </div>
+  </div>
 </main>

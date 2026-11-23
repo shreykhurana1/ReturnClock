@@ -38,7 +38,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
     it "guides a first-time user through policy creation, selection, purchase creation, and Dashboard" do
       get new_purchase_path
       expect(response.body).to include("Create a store return policy before adding your first purchase.")
-      expect(response.parsed_body.at_css("main a[href='#{new_store_policy_path(origin: "purchase")}']")).to be_present
+      expect(response.parsed_body.at_css("main button[formaction='#{from_purchase_store_policies_path}']")).to be_present
 
       get new_store_policy_path, params: { origin: "purchase" }
       expect(response).to have_http_status(:ok)

@@ -111,6 +111,15 @@ jobs:
           bin/rails test
           bundle exec cucumber
 
+      - name: Keep RSpec coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rspec-coverage
+          path: coverage/
+          include-hidden-files: true
+          if-no-files-found: ignore
+
   system-test:
     runs-on: ubuntu-latest
 

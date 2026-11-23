@@ -19,7 +19,7 @@ Member 4 UNI: sl4909
 
 ## Setup
 
-**Requirements:** Ruby 3.3.12, Bundler 2.5.22, PostgreSQL 18, Git, and libvips.
+**Requirements:** Ruby 3.3.14, Bundler 2.5.22, PostgreSQL 18, Git, and libvips.
 
 **macOS (Homebrew):**
 
@@ -45,7 +45,7 @@ On WSL, ensure your Linux username has a PostgreSQL role with `CREATEDB` privile
 sudo -u postgres createuser --createdb "$(whoami)"
 ```
 
-Install and configure [rbenv](https://github.com/rbenv/rbenv#installation), then install Ruby 3.3.12.
+Install and configure [rbenv](https://github.com/rbenv/rbenv#installation), then install Ruby 3.3.14.
 
 **Run the application:**
 

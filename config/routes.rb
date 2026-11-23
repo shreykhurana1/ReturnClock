@@ -10,7 +10,9 @@ Rails.application.routes.draw do
   patch "settings", to: "settings#update"
   patch "settings/password", to: "account_passwords#update", as: :settings_password
   resource :sign_up, only: [ :show, :create ]
-  resources :store_policies, only: [ :index, :new, :create, :edit, :update, :destroy ]
+  resources :store_policies, only: [ :index, :new, :create, :edit, :update, :destroy ] do
+    post :from_purchase, on: :collection
+  end
   resources :purchases, only: [ :new, :create, :edit, :update, :destroy ] do
     get :confirm_delete, on: :member
   end
