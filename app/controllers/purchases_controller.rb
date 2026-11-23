@@ -1,4 +1,6 @@
 class PurchasesController < ApplicationController
+  include PurchaseDraftHandoff
+
   before_action :set_purchase, only: [ :edit, :update, :confirm_delete, :destroy ]
   before_action :set_sample_purchase, only: [ :new, :create ]
 
@@ -9,6 +11,12 @@ class PurchasesController < ApplicationController
     if @sample_purchase
       @purchase.assign_attributes(@sample_purchase.attributes.slice("item_name", "price", "purchase_date"))
       @purchase.store_policy ||= @store_policies.find_by(store_name: @sample_purchase.store_policy.store_name)
+    end
+
+    draft = consume_purchase_draft
+    @purchase.assign_attributes(draft.except("store_policy_id"))
+    if draft.any? && !params.key?(:store_policy_id)
+      @purchase.store_policy = @store_policies.find_by(id: draft["store_policy_id"])
     end
   end
 

@@ -1,4 +1,6 @@
 class StorePoliciesController < ApplicationController
+  include PurchaseDraftHandoff
+
   layout "application"
 
   before_action :set_store_policy, only: [ :edit, :update, :destroy ]
@@ -13,11 +15,19 @@ class StorePoliciesController < ApplicationController
     @store_policy = Current.user.store_policies.new
   end
 
+  def from_purchase
+    @purchase_draft_token = save_purchase_draft
+    @from_purchase = true
+    @store_policy = Current.user.store_policies.new
+    # Render directly so Turbo keeps this handoff inside the existing editor frame.
+    render :new
+  end
+
   def create
     @store_policy = Current.user.store_policies.new(store_policy_params)
 
     if @store_policy.save
-      destination = @from_purchase ? new_purchase_path(store_policy_id: @store_policy.id, sample: params[:sample].presence) : store_policies_path
+      destination = @from_purchase ? new_purchase_path(store_policy_id: @store_policy.id, sample: params[:sample].presence, draft: @purchase_draft_token) : store_policies_path
       redirect_to destination, notice: "Store return policy created."
     else
       render :new, status: :unprocessable_entity
@@ -53,6 +63,7 @@ class StorePoliciesController < ApplicationController
 
   def set_creation_context
     @from_purchase = params[:origin] == "purchase"
+    @purchase_draft_token = params[:draft].presence if @from_purchase
   end
 
   def set_store_policy

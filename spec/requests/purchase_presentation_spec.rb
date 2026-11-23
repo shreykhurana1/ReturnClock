@@ -1,7 +1,7 @@
 require "rails_helper"
 
 # Frontend contracts remain in place after purchase backend integration.
-RSpec.describe "Jordan iteration 1 frontend", type: :request do
+RSpec.describe "Dashboard cards and History summaries", type: :request do
   let(:password) { "Password1!" }
   let(:user) { User.create!(email_address: "jordan@example.com", password: password) }
   let(:policy) { user.store_policies.create!(store_name: "Campus Store", window_days: 30) }
@@ -24,17 +24,25 @@ RSpec.describe "Jordan iteration 1 frontend", type: :request do
     expect(card.css("time[datetime='#{purchase.return_by.iso8601}']")).not_to be_empty
   end
 
-  it "shows six initial cards and puts additional items in an expandable section" do
-    7.times do |i|
-      user.purchases.create!(item_name: "Purchase #{i}", price: 15,
-        purchase_date: Date.current + i, store_policy: policy, status: "active")
-    end
-    sign_in
-    get dashboard_path
+  [ 1, 6, 7 ].each do |count|
+    it "shows #{count} purchases in deadline order with at most six initially visible" do
+      # Create in reverse deadline order so insertion order cannot satisfy the assertion.
+      count.times.to_a.reverse_each do |i|
+        user.purchases.create!(item_name: "Purchase #{i}", price: 15,
+          purchase_date: Date.current + i, store_policy: policy, status: "active")
+      end
+      sign_in
+      get dashboard_path
 
-    html = response.parsed_body
-    expect(html.css(".rc-section > .purchase-grid > .purchase-card").size).to eq(6)
-    expect(html.css("details.rc-expand .purchase-card").size).to eq(1)
+      html = response.parsed_body
+      expected = count.times.map { |i| "Purchase #{i}" }
+      initial = html.css(".rc-section > .purchase-grid > .purchase-card h2").map(&:text)
+      additional = html.css("details.rc-expand .purchase-card h2").map(&:text)
+      expect(initial).to eq(expected.first(6))
+      expect(additional).to eq(expected.drop(6))
+      expect(html.css("details.rc-expand").size).to eq(count > 6 ? 1 : 0)
+      expect(html.css(".rc-dashboard > .rc-section, .rc-dashboard > .rc-stat-grid").map(&:name)).to eq([ "section", "div" ])
+    end
   end
 
   it "counts expired purchases separately from refunded, kept and still-actionable purchases" do

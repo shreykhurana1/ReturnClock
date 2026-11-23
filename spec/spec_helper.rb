@@ -1,3 +1,8 @@
+require "simplecov"
+SimpleCov.start "rails" do
+  cover "{app,lib}/**/*.{rb,rake}"
+end
+
 RSpec.configure do |config|
   config.expect_with :rspec do |expectations|
     expectations.syntax = :expect

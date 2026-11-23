@@ -475,6 +475,7 @@ body.rc-body {background:#faf9f5; color:var(--rc-proposal-navy); }
 .rc-chip-secondary {color:#52607a;background:#eef0f5;}
 .rc-card-link,.rc-card-more>summary {color:#c65318!important;}
 .rc-card-link:hover,.rc-card-more>summary:hover {color:#0c2046!important;}
+button.rc-card-link {border:0;background:none;padding:0;font-family:inherit;cursor:pointer;text-decoration:underline;}
 .rc-expand summary {background:#fff3e7;border-color:#f4d9c4;color:#b64609;}
 .rc-expand summary:hover {background:#ffe9d5;}
 .rc-empty {background:#fffdf9!important;}
