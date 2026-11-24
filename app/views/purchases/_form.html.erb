@@ -24,14 +24,16 @@
   <%= hidden_field_tag :in_place, "1" if in_place %>
   <%= hidden_field_tag :return_to, @return_to if in_place && @return_to.present? %>
   <% if purchase.errors.any? %>
-    <div class="rc-form-errors" role="alert" aria-live="polite">
-      <strong>Please correct the following:</strong>
-      <ul>
-        <% purchase.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
+    <rc-error-focus>
+      <div class="rc-form-errors" role="alert" aria-live="polite">
+        <strong>Please correct the following:</strong>
+        <ul>
+          <% purchase.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </rc-error-focus>
   <% end %>
   <div class="rc-draft-notice" data-rc-form-draft-target="notice" role="status" hidden>
     <span data-rc-form-draft-target="noticeText">Unsaved changes restored.</span>
