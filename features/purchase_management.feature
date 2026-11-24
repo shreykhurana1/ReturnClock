@@ -24,6 +24,46 @@ Feature: Manage purchases and saved store policies
     Then I should see the "History" heading
     And I should see "Refunded" in the main content
 
+  Scenario: Create a missing policy while editing a purchase without re-entering my changes
+    When I edit purchase "Textbook"
+    And I fill in "Item Name" with "Updated Textbook"
+    And I fill in "Price" with "35.00"
+    And I fill in "Purchase Date" with "2026-11-07"
+    And I choose purchase status "Returning"
+    And I press "Create Store Policy"
+    And I create a store policy named "   " with a 45-day return window
+    Then I should see the "Create Store Policy" heading
+    And the "Store Name" field should explain "Store name can't be blank"
+    When I create a store policy named "New Store" with a 45-day return window
+    Then I should see the "Edit Purchase" heading
+    And the "Item Name" field should contain "Updated Textbook"
+    And the "Price" field should contain "35.00"
+    And the "Purchase Date" field should contain "2026-11-07"
+    And the purchase status "Returning" should be selected
+    And the store policy "New Store — 45 days" should be selected
+    When I press "Save Purchase"
+    Then I should see the "Dashboard" heading
+    And purchase "Updated Textbook" should have a deadline 43 days from today
+
+  Scenario: Return from policy creation to my unsaved purchase edits
+    When I edit purchase "Textbook"
+    And I fill in "Item Name" with "Kept Textbook"
+    And I fill in "Price" with "35.00"
+    And I choose store policy "Book Shop"
+    And I choose purchase status "Keeping"
+    And I press "Create Store Policy"
+    And I fill in "Store Name" with "Unused Store"
+    And I follow "Cancel"
+    Then the "Item Name" field should contain "Kept Textbook"
+    And the "Price" field should contain "35.00"
+    And the store policy "Book Shop — 14 days" should be selected
+    And the purchase status "Keeping" should be selected
+    When I press "Save Purchase"
+    Then I should see the "History" heading
+    And purchase "Kept Textbook" should have a deadline 14 days from today
+    When I follow "Store Policies"
+    Then I should not see "Unused Store" in the main content
+
   Scenario: Cancel a purchase deletion before confirming it
     When I ask to delete purchase "Textbook"
     Then I should see the "Delete Purchase" heading
@@ -117,6 +157,8 @@ Feature: Manage purchases and saved store policies
     Then I should see the "Edit Purchase" heading
     And I should see "Item name can't be blank" in the main content
     And I should see "Price must be greater than 0" in the main content
+    And the "Item Name" field should explain "Item name can't be blank"
+    And the "Price" field should explain "Price must be greater than 0"
     And the purchase price should be "-5"
     And the store policy "Campus Store — 30 days" should be selected
     When I follow "Back to Dashboard"

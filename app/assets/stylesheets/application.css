@@ -772,3 +772,5 @@ button.rc-card-link {border:0;background:none;padding:0;font-family:inherit;curs
 .rc-body .rc-quick-actions .rc-quick-action{flex:1 1 120px}
 .rc-body .rc-quick-actions .rc-btn{width:100%;white-space:normal;min-height:44px}
 .rc-body .rc-card-actions .rc-status-trigger{white-space:normal}
+
+.rc-form-errors:focus,.auth-error:focus {outline:3px solid var(--rc-focus, #b84b0d);outline-offset:3px}

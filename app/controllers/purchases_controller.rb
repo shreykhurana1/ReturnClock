@@ -13,11 +13,7 @@ class PurchasesController < ApplicationController
       @purchase.store_policy ||= @store_policies.find_by(store_name: @sample_purchase.store_policy.store_name)
     end
 
-    draft = consume_purchase_draft
-    @purchase.assign_attributes(draft.except("store_policy_id"))
-    if draft.any? && !params.key?(:store_policy_id)
-      @purchase.store_policy = @store_policies.find_by(id: draft["store_policy_id"])
-    end
+    restore_purchase_draft
   end
 
   def create
@@ -36,6 +32,7 @@ class PurchasesController < ApplicationController
 
   def edit
     @store_policies = Current.user.store_policies.order(:store_name, :window_days, :id)
+    restore_purchase_draft
   end
 
   def update
@@ -69,6 +66,15 @@ class PurchasesController < ApplicationController
   end
 
   private
+
+  def restore_purchase_draft
+    draft = consume_purchase_draft(purchase: @purchase.persisted? ? @purchase : nil)
+    return if draft.empty?
+
+    @purchase.assign_attributes(draft.except("store_policy_id"))
+    policy_id = params.key?(:store_policy_id) ? params[:store_policy_id] : draft["store_policy_id"]
+    @purchase.store_policy = @store_policies.find_by(id: policy_id)
+  end
 
   def set_sample_purchase
     return if params[:sample].blank?
