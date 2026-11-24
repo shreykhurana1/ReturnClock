@@ -8,13 +8,25 @@
   <div class="rc-field-grid">
     <div class="rc-form-field">
       <%= form.label :store_name, "Store Name", class: "form-label" %>
-      <%= form.text_field :store_name, required: true, class: "form-control", placeholder: "e.g. Campus Store", autocomplete: "organization", maxlength: 255 %>
+      <%= form.text_field :store_name, required: true, class: "form-control", placeholder: "e.g. Campus Store", autocomplete: "organization", maxlength: 255,
+            aria: @store_policy.errors[:store_name].any? ? { invalid: true, describedby: "store-policy-name-errors" } : {} %>
       <p class="rc-form-helper">Use the store name shown on your receipt.</p>
+      <% if @store_policy.errors[:store_name].any? %>
+        <ul id="store-policy-name-errors" class="auth-field-errors">
+          <% @store_policy.errors.full_messages_for(:store_name).each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      <% end %>
     </div>
     <div class="rc-form-field">
       <%= form.label :window_days, "Return Window (days)", class: "form-label" %>
-      <%= form.number_field :window_days, min: 1, step: 1, required: true, class: "form-control", placeholder: "30" %>
+      <%= form.number_field :window_days, min: 1, step: 1, required: true, class: "form-control", placeholder: "30",
+            aria: @store_policy.errors[:window_days].any? ? { invalid: true, describedby: "store-policy-window-errors" } : {} %>
       <p class="rc-form-helper">Enter the number of days allowed for returns.</p>
+      <% if @store_policy.errors[:window_days].any? %>
+        <ul id="store-policy-window-errors" class="auth-field-errors">
+          <% @store_policy.errors.full_messages_for(:window_days).each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      <% end %>
     </div>
   </div>
 
@@ -23,7 +35,9 @@
     <p class="rc-policy-help">Existing purchase deadlines stay unchanged. Changing a purchase's date or selected policy uses the current return window.</p>
   <% end %>
   <div class="rc-form-footer">
-    <% unless @from_purchase %>
+    <% if @from_purchase %>
+      <%= link_to t("ui.cancel"), @purchase_return_path, class: "rc-btn rc-btn-outline", data: { turbo_frame: "purchase_editor" } %>
+    <% else %>
       <%= link_to t("ui.cancel"), store_policies_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
     <% end %>
     <%= form.submit(@store_policy.persisted? ? "Save Store Policy" : "Create Store Policy", class: "rc-btn rc-btn-primary") %>

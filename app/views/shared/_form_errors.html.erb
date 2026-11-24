@@ -1,5 +1,5 @@
 <% if record.errors.any? %>
-  <div class="auth-error" role="alert">
+  <div class="auth-error" role="alert" tabindex="-1" data-controller="rc-error-focus">
     <p>Please correct the following:</p>
     <ul class="auth-field-errors">
       <% record.errors.full_messages.each do |message| %>

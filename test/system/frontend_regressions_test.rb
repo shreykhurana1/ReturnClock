@@ -30,6 +30,7 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
       fill_in "Item Name", with: "   "
       click_button "Save Purchase"
       assert_selector "[role='alert']", text: "Item name can't be blank"
+      assert_error_focus_and_tab_to "Item Name", "Item name can't be blank"
       assert_field "Price", with: "49.99"
       fill_in "Item Name", with: "Updated Textbook"
       select "Keeping", from: "Status"
@@ -60,6 +61,7 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
       fill_in "Return Window (days)", with: "30"
       click_button "Create Store Policy"
       assert_selector "[role='alert']", text: "Store name can't be blank"
+      assert_error_focus_and_tab_to "Store Name", "Store name can't be blank"
       assert_field "Return Window (days)", with: "30"
       fill_in "Store Name", with: "Campus Store"
       click_button "Create Store Policy"
@@ -105,6 +107,7 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     fill_in "Return Window (days)", with: "14"
     click_button "Create Store Policy"
     assert_selector "[role='alert']", text: "Store name can't be blank"
+    assert_error_focus_and_tab_to "Store Name", "Store name can't be blank"
     click_link "Back to Add Purchase"
     assert_purchase_fields "My edited headphones", "29.95", Date.current - 2, "Keeping"
     assert_equal 0, @user.store_policies.count
@@ -118,6 +121,7 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     fill_in "Item Name", with: "   "
     click_button "Add Purchase"
     assert_selector "[role='alert']", text: "Item name can't be blank"
+    assert_error_focus_and_tab_to "Item Name", "Item name can't be blank"
     assert_purchase_fields "   ", "29.95", Date.current - 2, "Keeping"
     fill_in "Item Name", with: "My edited headphones"
     # Enter must still submit the purchase, not open policy creation again.
@@ -126,6 +130,60 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     assert_current_path history_path
     assert_selector ".purchase-card h2", text: "My edited headphones"
     assert_equal Date.current + 12, @user.purchases.sole.return_by
+  end
+
+  [ 1400, 390 ].each do |width|
+    test "edit policy handoff restores unsaved values and accessible errors at #{width}px" do
+      page.current_window.resize_to(width, 844)
+      policy = @user.store_policies.create!(store_name: "Campus Store", window_days: 30)
+      purchase = @user.purchases.create!(store_policy: policy, item_name: "Textbook", price: "40.00",
+        purchase_date: Date.current - 5, status: "active")
+      original = purchase.attributes
+      if width == 1400
+        visit dashboard_path
+        within(".purchase-card", text: "Textbook") { click_link "Edit", exact: true }
+        assert_selector "dialog[open]"
+      else
+        visit edit_purchase_path(purchase)
+        assert_no_selector "dialog"
+      end
+
+      fill_in "Item Name", with: "Edited textbook"
+      fill_in "Price", with: "49.99"
+      fill_in "Purchase Date", with: Date.current - 2
+      select "Returning", from: "Status"
+      click_button "Create Store Policy", exact: true
+      fill_in "Store Name", with: "Not saved"
+      click_link "Cancel", exact: true
+      assert_purchase_fields "Edited textbook", "49.99", Date.current - 2, "Returning"
+      assert_select "Store Policy", selected: policy.label
+      assert_equal original, purchase.reload.attributes
+      assert_equal 1, @user.store_policies.count
+
+      click_button "Create Store Policy", exact: true
+      fill_in "Store Name", with: "   "
+      fill_in "Return Window (days)", with: "45"
+      click_button "Create Store Policy"
+      assert_error_focus_and_tab_to "Store Name", "Store name can't be blank"
+      fill_in "Store Name", with: "New Store"
+      click_button "Create Store Policy"
+      assert_purchase_fields "Edited textbook", "49.99", Date.current - 2, "Returning"
+      assert_select "Store Policy", selected: "New Store — 45 days"
+      assert_equal original, purchase.reload.attributes
+
+      fill_in "Item Name", with: "   "
+      click_button "Save Purchase"
+      assert_error_focus_and_tab_to "Item Name", "Item name can't be blank"
+      assert_purchase_fields "   ", "49.99", Date.current - 2, "Returning"
+      assert_equal original, purchase.reload.attributes
+      fill_in "Item Name", with: "Edited textbook"
+      find_field("Item Name").send_keys(:enter)
+      assert_notice "Purchase updated."
+      assert_current_path dashboard_path
+      assert_selector ".purchase-card h2", text: "Edited textbook"
+      assert_equal Date.current + 43, purchase.reload.return_by
+      assert_equal "returning", purchase.status
+    end
   end
 
   test "mobile navigation fits its links and settings selection follows browser history" do
@@ -246,6 +304,16 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
   end
 
   private
+
+  def assert_error_focus_and_tab_to(label, message)
+    assert_selector "[role='alert']:focus"
+    field = find_field(label)
+    assert_equal "true", field["aria-invalid"]
+    error_id = field["aria-describedby"].split.last
+    assert_selector "##{error_id}", text: message
+    find("[role='alert']:focus").send_keys(:tab)
+    assert_selector "##{field[:id]}:focus"
+  end
 
   def assert_purchase_fields(name, price, date, status)
     assert_field "Item Name", with: name

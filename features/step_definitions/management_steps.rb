@@ -67,6 +67,13 @@ When("I choose store policy {string}") do |store|
   select store, from: "Store Policy"
 end
 
+Then("the {string} field should explain {string}") do |label, message|
+  field = find_field(label, exact: true)
+  expect(field["aria-invalid"]).to eq("true")
+  explanations = field["aria-describedby"].split.map { |id| find("##{id}").text }.join(" ")
+  expect(explanations).to include(message)
+end
+
 Then("purchase {string} should have a deadline {int} days from today") do |name, days|
   card = find(".purchase-card h2", exact_text: name).find(:xpath, "..")
   expect(card).to have_selector("time[datetime='#{(Date.current + days).iso8601}']")
