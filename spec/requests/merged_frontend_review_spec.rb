@@ -25,20 +25,17 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
 
     get history_path, params: { user_id: other_user.id }
     html = response.parsed_body
-    filters = html.css("button[data-rc-purchase-filter-value]")
-    expect(filters.map { |button| button["data-rc-purchase-filter-value"] }).to contain_exactly("all", "keeping", "refunded", "expired")
-    expect(filters.select { |button| button["aria-pressed"] == "true" }.map(&:text)).to eq([ "All" ])
+    filters = html.css("a[data-history-filter]")
+    expect(filters.map { |link| link["data-history-filter"] }).to contain_exactly("all", "keeping", "refunded", "expired")
+    expect(filters.select { |link| link["aria-current"] == "page" }.map(&:text)).to eq([ "All" ])
     cards = html.css(".purchase-card")
     expect(cards.to_h { |card| [ card.at_css("h2").text, card["data-status"] ] }).to eq(
       "My active -1" => "expired", "My keeping -1" => "keeping", "My refunded -1" => "refunded")
     expect(response.body).not_to include("Private purchase", "Private Store")
+    expect(html.css(".rc-status-mini-form")).to be_empty
     cards.each do |card|
-      expect(card["data-rc-purchase-filter-target"]).to eq("card")
-      options = card.css(".rc-status-mini-form option").map { |option| option["value"] }
-      expect(options).to eq(Purchase::STATUSES)
+      expect(card.css("a[href^='/purchases/'][href$='/edit']")).to be_present
     end
-    expired_select = html.at_css("[data-status='expired'] .rc-status-mini-form select")
-    expect(expired_select.at_css("option[selected]")["value"]).to eq("active")
 
     get dashboard_path
     expect(response.parsed_body.css(".purchase-card").map { |card| card["data-status"] })
@@ -55,15 +52,14 @@ RSpec.describe "Merged frontend workflow safeguards", type: :request do
     expect(purchase.reload.attributes).to eq(original)
   end
 
-  it "requires a valid CSRF token for the quick status form when forgery protection is enabled" do
+  it "requires a valid CSRF token for the edit form when forgery protection is enabled" do
     purchase = create_purchase("active", days_left: 1)
     original_protection = [ DashboardController, PurchasesController ].to_h do |controller|
       [ controller, controller.allow_forgery_protection ]
     end
     original_protection.each_key { |controller| controller.allow_forgery_protection = true }
-    get dashboard_path
-    form = response.parsed_body.at_css(".rc-status-mini-form")
-    expect(form["action"]).to eq(purchase_path(purchase))
+    get edit_purchase_path(purchase)
+    form = response.parsed_body.at_css("form[action='#{purchase_path(purchase)}']")
     expect(form.at_css("input[name='_method']")["value"]).to eq("patch")
     token = form.at_css("input[name='authenticity_token']")["value"]
     expect(token).to be_present

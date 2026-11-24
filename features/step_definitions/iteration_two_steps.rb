@@ -4,9 +4,10 @@ When("I set deadline alerts to {string}") do |preference|
 end
 
 Then("purchase {string} should show a/an {string} deadline indicator") do |name, color|
-  classes = { "amber" => "warning", "red" => "danger", "green" => "success" }
+  classes = { "amber" => "rc-days-warning", "red" => "rc-days-danger" }
   card = find(".purchase-card h2", exact_text: name).ancestor(".purchase-card")
-  expect(card).to have_selector(".rc-card-top .rc-chip-#{classes.fetch(color)}", exact_text: "Active")
+  expect(card).to have_selector(".rc-card-top .rc-chip-success", exact_text: "Active")
+  expect(card).to have_selector(".#{classes.fetch(color)}")
 end
 
 When("I choose {string} for purchase {string}") do |action, name|

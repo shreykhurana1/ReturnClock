@@ -17,7 +17,7 @@ RSpec.describe "Sample purchases for empty accounts", type: :request do
           !Rails.application.routes.url_helpers.respond_to?(route)
         end
         expect(cards.css("button[data-action='rc-purchase-preview#edit']").size).to eq(preview_enabled ? cards.size : 0)
-        expect(cards.css(".rc-card-actions a").size).to eq(cards.size)
+        expect(cards.css(".rc-card-edit").size).to eq(cards.size)
         expect(cards.css("form")).to be_empty
         expect(html.css(".rc-empty")).to be_empty
         expect(html.css(".rc-stat strong").first.text).to eq(path == dashboard_path ? "7" : "3")
@@ -48,7 +48,7 @@ RSpec.describe "Sample purchases for empty accounts", type: :request do
     expect(html.at_css(".purchase-card h2").text).to eq("Wireless Headphones")
     expect(html.at_css(".rc-contract-details dd").text).to eq("Campus Store")
     expect(html.css(".rc-product-store")).to be_empty
-    expect(html.at_css(".rc-card-actions a").text).to eq("Edit")
+    expect(html.at_css(".rc-card-edit").text.strip).to eq("Edit")
     expect(html.css(".rc-language-switch")).to be_empty
     expect(html.at_css("main").text).not_to match(/\p{Han}/)
 

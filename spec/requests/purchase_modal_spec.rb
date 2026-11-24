@@ -27,7 +27,7 @@ RSpec.describe "Purchase editor dialog", type: :request do
     get dashboard_path
     html = response.parsed_body
     expect(html.at_css("main a[href='#{new_purchase_path}']")["data-turbo-frame"]).to eq("purchase_editor")
-    expect(html.css(".purchase-card .rc-card-actions a").map { |link| link["data-turbo-frame"] }.uniq).to eq([ "purchase_editor" ])
+    expect(html.css(".purchase-card .rc-card-edit").map { |link| link["data-turbo-frame"] }.uniq).to eq([ "purchase_editor" ])
     expect(html.css("dialog.rc-purchase-modal turbo-frame#purchase_editor").size).to eq(1)
     expect(html.css("dialog[open]")).to be_empty
   end
@@ -114,5 +114,68 @@ RSpec.describe "Purchase editor dialog", type: :request do
     expect(purchase.reload.status).to eq("keeping")
     get response.location
     expect(response.parsed_body.at_css("[role='status']").text).to eq("Purchase updated.")
+  end
+
+  it "marks a framed edit as in-place and remembers the current page" do
+    purchase = user.purchases.create!(item_name: "Notebook", price: 20, purchase_date: Date.current, store_policy: policy)
+    get edit_purchase_path(purchase), headers: { "Turbo-Frame" => "purchase_editor", "Referer" => dashboard_url }
+
+    form = response.parsed_body.at_css("turbo-frame#purchase_editor form")
+    expect(form["data-turbo-stream"]).to eq("true")
+    expect(form["data-modal-in-place"]).to eq("true")
+    expect(form.at_css("input[name='in_place']")["value"]).to eq("1")
+    expect(form.at_css("input[name='return_to']")["value"]).to eq(dashboard_path)
+  end
+
+  it "updates a framed purchase in place without leaving the current list" do
+    purchase = user.purchases.create!(item_name: "Notebook", price: 20, purchase_date: Date.current, store_policy: policy)
+    patch purchase_path(purchase),
+      headers: { "Turbo-Frame" => "purchase_editor", "Accept" => "text/vnd.turbo-stream.html" },
+      params: { purchase: { item_name: "Updated Notebook", status: "active" }, in_place: "1", return_to: dashboard_path }
+
+    expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("target=\"purchase_#{purchase.id}\"", "dashboard-stats", "Updated Notebook updated.")
+    expect(response.body).not_to include("Purchase updated.")
+    expect(purchase.reload.item_name).to eq("Updated Notebook")
+  end
+
+  it "removes a framed purchase when the edit moves it to another list" do
+    purchase = user.purchases.create!(item_name: "Notebook", price: 20, purchase_date: Date.current, store_policy: policy)
+    patch purchase_path(purchase),
+      headers: { "Turbo-Frame" => "purchase_editor", "Accept" => "text/vnd.turbo-stream.html" },
+      params: { purchase: { status: "keeping" }, in_place: "1", return_to: dashboard_path }
+
+    expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+    expect(response.body).to include("action=\"remove\"", "target=\"purchase_#{purchase.id}\"", "dashboard-stats",
+      "Notebook moved to History.")
+    expect(purchase.reload.status).to eq("keeping")
+  end
+
+  it "updates History totals in place when a framed edit stays in History" do
+    purchase = user.purchases.create!(item_name: "Notebook", price: 20, purchase_date: Date.current, store_policy: policy,
+      status: "keeping")
+    patch purchase_path(purchase),
+      headers: { "Turbo-Frame" => "purchase_editor", "Accept" => "text/vnd.turbo-stream.html" },
+      params: { purchase: { status: "refunded" }, in_place: "1", return_to: history_path }
+
+    expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+    expect(response.body).to include("action=\"replace\"", "target=\"purchase_#{purchase.id}\"", "history-stats",
+      "Notebook updated.")
+    expect(purchase.reload.status).to eq("refunded")
+  end
+
+  it "keeps a rejected in-place edit inside the dialog frame" do
+    purchase = user.purchases.create!(item_name: "Notebook", price: 20, purchase_date: Date.current, store_policy: policy)
+    patch purchase_path(purchase),
+      headers: { "Turbo-Frame" => "purchase_editor", "Accept" => "text/vnd.turbo-stream.html" },
+      params: { purchase: { item_name: "Still editing", price: -1 }, in_place: "1", return_to: dashboard_path }
+
+    expect(response.media_type).to eq("text/html")
+    expect(response).to have_http_status(:unprocessable_content)
+    frame = response.parsed_body.at_css("turbo-frame#purchase_editor")
+    expect(frame.at_css("[role='alert']").text).to include("Price must be greater than 0")
+    expect(frame.at_css("input[name='purchase[item_name]']")["value"]).to eq("Still editing")
+    expect(purchase.reload.price).to eq(20)
   end
 end

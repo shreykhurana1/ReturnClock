@@ -25,7 +25,7 @@ RSpec.describe "Dashboard cards and History summaries", type: :request do
   end
 
   [ 1, 6, 7 ].each do |count|
-    it "shows #{count} purchases in deadline order with at most six initially visible" do
+    it "shows #{count} purchases in deadline order and paginates after six" do
       # Create in reverse deadline order so insertion order cannot satisfy the assertion.
       count.times.to_a.reverse_each do |i|
         user.purchases.create!(item_name: "Purchase #{i}", price: 15,
@@ -37,10 +37,18 @@ RSpec.describe "Dashboard cards and History summaries", type: :request do
       html = response.parsed_body
       expected = count.times.map { |i| "Purchase #{i}" }
       initial = html.css(".rc-section > .purchase-grid > .purchase-card h2").map(&:text)
-      additional = html.css("details.rc-expand .purchase-card h2").map(&:text)
       expect(initial).to eq(expected.first(6))
-      expect(additional).to eq(expected.drop(6))
-      expect(html.css("details.rc-expand").size).to eq(count > 6 ? 1 : 0)
+      expect(html.css("details.rc-expand")).to be_empty
+      if count > 6
+        expect(html.at_css(".rc-page-status").text).to eq("Page 1 of 2")
+
+        get dashboard_path, params: { page: 2 }
+        second_page = response.parsed_body
+        expect(second_page.css(".purchase-card h2").map(&:text)).to eq(expected.drop(6))
+        expect(second_page.at_css(".rc-page-status").text).to eq("Page 2 of 2")
+      else
+        expect(html.css(".rc-pagination")).to be_empty
+      end
       expect(html.css(".rc-dashboard > .rc-section, .rc-dashboard > .rc-stat-grid").map(&:name)).to eq([ "section", "div" ])
     end
   end

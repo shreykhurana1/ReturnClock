@@ -51,15 +51,14 @@ class PasswordsControllerTest < ActionDispatch::IntegrationTest
     assert_notice "Password has been reset"
   end
 
-  test "update with non matching passwords" do
+  test "update with non matching passwords keeps the form and shows field errors" do
     token = @user.password_reset_token
     assert_no_changes -> { @user.reload.password_digest } do
       put password_path(token), params: { password: "NewPassword1!", password_confirmation: "Different1!" }
-      assert_redirected_to edit_password_path(token)
+      assert_response :unprocessable_content
+      assert_match "Password confirmation", response.body
+      assert_select "form[action='#{password_path(token)}']", count: 1
     end
-
-    follow_redirect!
-    assert_notice "Passwords did not match"
   end
 
   private

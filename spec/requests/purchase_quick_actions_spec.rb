@@ -55,6 +55,42 @@ RSpec.describe "Card quick actions and dashboard totals", type: :request do
     expect(response.parsed_body.at_css("[role='alert']").text).to include("Status is not included in the list")
   end
 
+  it "replaces the card and totals without navigating for a quick change" do
+    purchase = add_purchase
+    patch purchase_path(purchase), params: { purchase: { status: "returning" }, quick: 1 },
+      headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("action=\"replace\"", "target=\"purchase_#{purchase.id}\"", "dashboard-stats", "Returning",
+      "toast-container", "Item active marked as returning.")
+    expect(purchase.reload.status).to eq("returning")
+  end
+
+  it "removes a completed card without navigating" do
+    purchase = add_purchase
+    patch purchase_path(purchase), params: { purchase: { status: "keeping" }, quick: 1 },
+      headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("action=\"remove\"", "target=\"purchase_#{purchase.id}\"", "dashboard-stats",
+      "toast-container", "Item active moved to History.")
+    expect(purchase.reload.status).to eq("keeping")
+  end
+
+  it "keeps the card and shows the error in place when a quick change is rejected" do
+    purchase = add_purchase
+    patch purchase_path(purchase), params: { purchase: { status: "bogus" }, quick: 1 },
+      headers: { "Accept" => "text/vnd.turbo-stream.html" }
+
+    expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+    expect(response).to have_http_status(:ok)
+    expect(response.body).to include("target=\"purchase_#{purchase.id}\"", "Status is not included in the list")
+    expect(response.body).not_to include("dashboard-stats", "toast-container")
+    expect(purchase.reload.status).to eq("active")
+  end
+
   it "shows money at risk for active and returning purchases only" do
     add_purchase(status: "active", price: 20)
     add_purchase(status: "returning", price: 30)

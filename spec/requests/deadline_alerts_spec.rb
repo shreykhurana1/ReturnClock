@@ -60,14 +60,18 @@ RSpec.describe "Deadline alert settings", type: :request do
     expect(response.parsed_body.at_css("#alerts").text).not_to include("email")
   end
 
-  it "turns cards red using the chosen lead time" do
+  it "colors the days-left value using the chosen lead time while Active stays green" do
     policy = user.store_policies.create!(store_name: "Campus Store", window_days: 30)
     user.purchases.create!(store_policy: policy, item_name: "Lamp", price: 20, purchase_date: Date.current - 25)
     get dashboard_path
-    expect(response.parsed_body.at_css(".rc-card-top .rc-chip-warning")).to be_present
+    card = response.parsed_body.at_css(".purchase-card")
+    expect(card.at_css(".rc-card-top .rc-chip-success").text).to eq("Active")
+    expect(card.at_css(".rc-days-warning")).to be_present
 
     user.update!(reminder_days_before: 7)
     get dashboard_path
-    expect(response.parsed_body.at_css(".rc-card-top .rc-chip-danger")).to be_present
+    card = response.parsed_body.at_css(".purchase-card")
+    expect(card.at_css(".rc-card-top .rc-chip-success").text).to eq("Active")
+    expect(card.at_css(".rc-days-danger")).to be_present
   end
 end

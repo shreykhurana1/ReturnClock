@@ -26,14 +26,6 @@ When("I set purchase {string} to status {string}") do |name, status|
   click_button "Save Purchase"
 end
 
-When("I quickly update purchase {string} to status {string}") do |name, status|
-  within(find(".purchase-card", text: name, exact_text: false)) do
-    find("summary").click
-    select status, from: "Update status"
-    click_button "Confirm status"
-  end
-end
-
 Then("purchase {string} should show status {string}") do |name, status|
   within(find(".purchase-card", text: name, exact_text: false)) do
     expect(page).to have_selector(".rc-chip", exact_text: status)
@@ -41,9 +33,12 @@ Then("purchase {string} should show status {string}") do |name, status|
 end
 
 When("I ask to delete purchase {string}") do |name|
-  within(find(".purchase-card", text: name, exact_text: false)) do
-    click_link "Delete", exact: true
+  unless page.has_field?("Item Name")
+    within(find(".purchase-card", text: name, exact_text: false)) do
+      click_link "Edit", exact: true
+    end
   end
+  click_link "Delete Purchase", exact: true
 end
 
 When("I confirm purchase deletion") do
@@ -57,10 +52,13 @@ When("I change policy {string} to a {int}-day return window") do |name, days|
 end
 
 Then("the {string} policy should explain why deletion is disabled") do |name|
-  within(find(".purchase-card", text: name, exact_text: false)) do
-    expect(find(".rc-policy-delete-hint [role='tooltip']", visible: :all).text(:all)).to eq("In use by purchases; cannot be deleted.")
-    expect(page).to have_button("Delete", disabled: true)
-  end
+  within(find(".purchase-card", text: name, exact_text: false)) { click_link "Edit" }
+
+  expect(page).to have_content("Edit Store Policy")
+  expect(find(".rc-policy-danger-zone .rc-policy-delete-hint [role='tooltip']", visible: :all).text(:all)).to eq("In use by purchases; cannot be deleted.")
+  expect(page).to have_button("Delete Store Policy", disabled: true)
+
+  visit store_policies_path
 end
 
 When("I choose store policy {string}") do |store|

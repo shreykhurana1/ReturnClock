@@ -29,29 +29,29 @@ Feature: Manage purchases and saved store policies
     Then I should see the "Delete Purchase" heading
     And I should see "This cannot be undone." in the main content
     When I follow "Cancel"
-    Then I should see the "Dashboard" heading
-    Then I should see "Textbook" in the main content
+    Then I should see the "Edit Purchase" heading
+    And the "Item Name" field should contain "Textbook"
     When I ask to delete purchase "Textbook"
     And I confirm purchase deletion
     Then I should see the "Dashboard" heading
     And I should not see a purchase named "Textbook"
     And I should see "Purchase deleted." in the main content
 
-  Scenario: Update my return decision directly from a purchase card
-    When I quickly update purchase "Textbook" to status "Keeping"
+  Scenario: Update my return decision from the purchase editor
+    When I set purchase "Textbook" to status "Keeping"
     Then I should see the "History" heading
     And purchase "Textbook" should show status "Keeping"
-    When I quickly update purchase "Textbook" to status "Returning"
+    When I set purchase "Textbook" to status "Returning"
     Then I should see the "Dashboard" heading
     And purchase "Textbook" should show status "Returning"
-    When I quickly update purchase "Textbook" to status "Shipped back"
+    When I set purchase "Textbook" to status "Shipped Back"
     Then purchase "Textbook" should show status "Shipped back"
-    When I quickly update purchase "Textbook" to status "Refund pending"
+    When I set purchase "Textbook" to status "Refund Pending"
     Then purchase "Textbook" should show status "Refund pending"
-    When I quickly update purchase "Textbook" to status "Refunded"
+    When I set purchase "Textbook" to status "Refunded"
     Then I should see the "History" heading
     And purchase "Textbook" should show status "Refunded"
-    When I quickly update purchase "Textbook" to status "Active"
+    When I set purchase "Textbook" to status "Active"
     Then I should see the "Dashboard" heading
     And purchase "Textbook" should show status "Active"
 
@@ -74,13 +74,13 @@ Feature: Manage purchases and saved store policies
     And I save the purchase as "Textbook" costing "49.99" bought 40 days ago using "Campus Store"
     Then I should see the "History" heading
     And purchase "Textbook" should show status "Expired"
-    When I quickly update purchase "Textbook" to status "Returning"
+    When I set purchase "Textbook" to status "Returning"
     Then I should see the "Dashboard" heading
     And purchase "Textbook" should show status "Returning"
     When I follow "History"
     Then I should not see a purchase named "Textbook"
     When I follow "Dashboard"
-    And I quickly update purchase "Textbook" to status "Active"
+    And I set purchase "Textbook" to status "Active"
     Then I should see the "History" heading
     And purchase "Textbook" should show status "Expired"
 
@@ -89,8 +89,8 @@ Feature: Manage purchases and saved store policies
     Then I should see the "History" heading
     When I ask to delete purchase "Textbook"
     And I follow "Cancel"
-    Then I should see the "History" heading
-    And I should see "Textbook" in the main content
+    Then I should see the "Edit Purchase" heading
+    And the "Item Name" field should contain "Textbook"
     When I ask to delete purchase "Textbook"
     And I confirm purchase deletion
     Then I should see the "History" heading

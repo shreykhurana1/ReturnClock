@@ -82,6 +82,134 @@ RSpec.describe "Read-only purchase pages", type: :request do
     expect(card_names).to eq([ "Due today", "Sooner return", "Later return" ])
   end
 
+  it "filters Dashboard purchases by upcoming deadline and keeps global statistics" do
+    create_purchase("Within week", status: "active", deadline: Date.current + 3)
+    create_purchase("Within two weeks", status: "active", deadline: Date.current + 10)
+    create_purchase("Within month", status: "active", deadline: Date.current + 20)
+    create_purchase("Later", status: "active", deadline: Date.current + 40)
+    sign_in
+
+    get dashboard_path, params: { filter: "week" }
+    html = response.parsed_body
+    expect(card_names).to eq([ "Within week" ])
+    expect(html.at_css("a[data-dashboard-filter='week']")["aria-current"]).to eq("page")
+    expect(html.at_css(".rc-stat strong").text).to eq("4")
+
+    get dashboard_path, params: { filter: "two_weeks" }
+    expect(card_names).to eq([ "Within week", "Within two weeks" ])
+
+    get dashboard_path, params: { filter: "month" }
+    expect(card_names).to eq([ "Within week", "Within two weeks", "Within month" ])
+  end
+
+  it "shows the total refunded amount as Amount saved" do
+    create_purchase("Refunded one", status: "refunded", deadline: Date.current - 1)
+    create_purchase("Refunded two", status: "refunded", deadline: Date.current - 2)
+    create_purchase("Kept", status: "keeping", deadline: Date.current - 3)
+    sign_in
+    get dashboard_path
+
+    savings = response.parsed_body.css(".rc-stat").find { |stat| stat.text.include?("Amount saved") }
+    expect(savings.at_css("strong").text).to eq("$99.98")
+  end
+
+  it "counts every refunded purchase in Amount saved regardless of page or filter" do
+    8.times do |index|
+      user.purchases.create!(store_policy: policy, item_name: "Refunded #{index}", price: 10, status: "refunded",
+        purchase_date: Date.current - 10 - index)
+    end
+    sign_in
+    get dashboard_path, params: { filter: "week", page: 2 }
+
+    savings = response.parsed_body.css(".rc-stat").find { |stat| stat.text.include?("Amount saved") }
+    expect(savings.at_css("strong").text).to eq("$80.00")
+  end
+
+  it "keeps overdue in-progress purchases out of remaining-day filters but in All" do
+    create_purchase("Overdue return", status: "returning", deadline: Date.current - 2)
+    create_purchase("Due soon", status: "returning", deadline: Date.current + 3)
+    sign_in
+
+    get dashboard_path, params: { filter: "week" }
+    expect(card_names).to eq([ "Due soon" ])
+    expect(response.parsed_body.at_css(".rc-stat:nth-child(2) strong").text).to eq("1")
+
+    get dashboard_path
+    expect(card_names).to eq([ "Overdue return", "Due soon" ])
+  end
+  it "paginates filtered Dashboard results while keeping the filter" do
+    7.times do |index|
+      create_purchase("Soon #{index}", status: "active", deadline: Date.current + index)
+    end
+    create_purchase("Later", status: "active", deadline: Date.current + 40)
+    sign_in
+
+    get dashboard_path, params: { filter: "week" }
+    expect(response.parsed_body.css(".purchase-card").size).to eq(6)
+    expect(response.parsed_body.at_css(".rc-page-status").text).to eq("Page 1 of 2")
+    expect(response.parsed_body.at_css(".rc-stat strong").text).to eq("8")
+
+    get dashboard_path, params: { filter: "week", page: 2 }
+    expect(response.parsed_body.css(".purchase-card").size).to eq(1)
+    expect(response.parsed_body.at_css(".rc-page-status").text).to eq("Page 2 of 2")
+    expect(response.parsed_body.at_css("a[data-dashboard-filter='week']")["aria-current"]).to eq("page")
+  end
+  it "paginates Dashboard cards while keeping summary statistics for all actionable purchases" do
+    7.times do |index|
+      create_purchase("Active #{index}", status: "active", deadline: Date.current + index)
+    end
+    sign_in
+    get dashboard_path, params: { page: 2 }
+
+    html = response.parsed_body
+    expect(html.css(".purchase-card").size).to eq(1)
+    expect(html.at_css(".rc-page-status").text).to eq("Page 2 of 2")
+    metrics = html.css(".rc-stat strong").map(&:text)
+    expect(metrics[0]).to eq("7")
+    expect(metrics[1]).to eq("7")
+  end
+  it "shows History records above the summary statistics" do
+    create_purchase("Kept record", status: "keeping", deadline: Date.current - 1)
+    sign_in
+    get history_path
+
+    blocks = response.parsed_body.css("main .rc-section, main .rc-stat-grid")
+    expect(blocks.map { |block| block["class"].include?("rc-stat-grid") ? :statistics : :records })
+      .to eq([ :records, :statistics ])
+  end
+
+  it "paginates History six records at a time while keeping full-history statistics" do
+    7.times do |index|
+      create_purchase("Kept #{index}", status: "keeping", deadline: Date.current - index - 1)
+    end
+    sign_in
+    get history_path
+
+    html = response.parsed_body
+    expect(html.css(".purchase-card").size).to eq(6)
+    expect(html.at_css(".rc-page-status").text).to eq("Page 1 of 2")
+    expect(html.at_css(".rc-stat strong").text).to eq("7")
+
+    get history_path, params: { page: 2 }
+    expect(response.parsed_body.css(".purchase-card").size).to eq(1)
+    expect(response.parsed_body.at_css(".rc-page-status").text).to eq("Page 2 of 2")
+  end
+
+  it "filters History before paginating and keeps summary counts for the full history" do
+    7.times do |index|
+      create_purchase("Kept #{index}", status: "keeping", deadline: Date.current - index - 1)
+    end
+    create_purchase("Refunded record", status: "refunded", deadline: Date.current - 1)
+    sign_in
+    get history_path, params: { filter: "refunded" }
+
+    html = response.parsed_body
+    expect(html.css(".purchase-card").map { |card| card.at_css("h2").text }).to eq([ "Refunded record" ])
+    expect(html.at_css("a[data-history-filter='refunded']")["aria-current"]).to eq("page")
+    expect(html.css(".rc-stat strong").map(&:text)).to eq([ "8", "1", "7", "0" ])
+    expect(html.css(".rc-pagination")).to be_empty
+  end
+
   it "separates expired active and completed purchases from the dashboard" do
     create_purchase("Expired active", status: "active", deadline: Date.current - 1)
     create_purchase("Kept early", status: "keeping", deadline: Date.current + 5)

@@ -55,10 +55,11 @@ RSpec.describe "Store policy management", type: :request do
       expect(html.at_css("main a[href='#{new_store_policy_path}']").text).to eq("Create Store Policy")
       expect(html.at_css("main a[href='#{new_store_policy_path}']")["data-turbo-frame"]).to eq("purchase_editor")
       expect(html.css("main a[href='#{new_purchase_path}']")).to be_empty
-      expect(html.at_css("a[href='#{edit_store_policy_path(policy)}']").text).to eq("Edit")
-      expect(html.at_css("form[action='#{store_policy_path(policy)}'] button").text).to eq("Delete")
-      expect(html.at_css("form[action='#{store_policy_path(policy)}'] button")["class"]).to include("rc-btn-outline")
-      expect(html.at_css("a[href='#{edit_store_policy_path(policy)}']")["data-turbo-frame"]).to eq("purchase_editor")
+      edit_link = html.at_css(".rc-policy-card-header a[href='#{edit_store_policy_path(policy)}']")
+      expect(edit_link.text).to eq("Edit")
+      expect(edit_link["data-turbo-frame"]).to eq("purchase_editor")
+      expect(html.css("main form[action='#{store_policy_path(policy)}']")).to be_empty
+      expect(html.css(".rc-small-count")).to be_empty
       expect(html.css("dialog.rc-purchase-modal turbo-frame#purchase_editor").size).to eq(1)
       expect(html.at_css("header a[href='#{store_policies_path}']").text).to eq("Store Policies")
     end
@@ -78,6 +79,14 @@ RSpec.describe "Store policy management", type: :request do
       expect(html.at_css("input[name='store_policy[store_name]']")["value"]).to eq("Campus Store")
       expect(html.at_css("input[name='store_policy[window_days]']")["value"]).to eq("30")
       expect(html.css("input[name='store_policy[user_id]']")).to be_empty
+      delete_form = html.at_css(".rc-policy-danger-zone form[action='#{store_policy_path(policy)}']")
+      expect(delete_form.at_css("button").text).to eq("Delete Store Policy")
+      expect(delete_form.at_css("button")["class"]).to include("rc-btn-outline", "rc-btn-danger")
+      expect(delete_form["data-turbo-frame"]).to eq("_top")
+      help = html.css(".rc-policy-callout")
+      expect(help.size).to eq(1)
+      expect(help.first["role"]).to eq("note")
+      expect(help.text).to include("Good to know", "ReturnClock uses this return window", "Existing purchase deadlines stay unchanged")
     end
 
     it "opens policy creation in the shared dialog with cancel and list-refresh behavior" do
@@ -87,6 +96,7 @@ RSpec.describe "Store policy management", type: :request do
       expect(frame.at_css("h1").text).to eq("Create Store Policy")
       expect(frame.at_css("form")["data-modal-save"]).to eq("true")
       expect(frame.at_css("a[data-modal-dismiss][href='#{store_policies_path}']")).to be_present
+      expect(frame.at_css(".rc-policy-callout").text).to include("ReturnClock uses this return window", "Existing purchase deadlines stay unchanged")
 
       get new_store_policy_path, params: { origin: "purchase" }, headers: { "Turbo-Frame" => "purchase_editor" }
       expect(response.parsed_body.at_css("turbo-frame#purchase_editor form")["data-modal-save"]).to eq("false")
@@ -229,7 +239,11 @@ RSpec.describe "Store policy management", type: :request do
       expect(purchase.reload.store_policy).to eq(policy)
       follow_redirect!
       expect(response.parsed_body.at_css("[role='alert']").text).to include("dependent purchases")
-      hint = response.parsed_body.at_css(".rc-policy-delete-hint")
+      expect(response.parsed_body.css(".rc-policy-delete-hint")).to be_empty
+
+      get edit_store_policy_path(policy)
+      html = response.parsed_body
+      hint = html.at_css(".rc-policy-danger-zone .rc-policy-delete-hint")
       expect(hint["title"]).to be_nil
       expect(hint["tabindex"]).to eq("0")
       tooltip = hint.at_css("[role='tooltip']")
@@ -237,8 +251,8 @@ RSpec.describe "Store policy management", type: :request do
       expect(tooltip.key?("hidden")).to be(true)
       expect(hint["aria-describedby"]).to eq(tooltip["id"])
       expect(hint["data-action"]).to include("mouseenter->rc-tooltip#show", "focusin->rc-tooltip#show", "keydown.esc->rc-tooltip#hide")
-      expect(response.parsed_body.at_css(".rc-policy-actions button[disabled]").text).to eq("Delete")
-      expect(response.parsed_body.css("main form[action='#{store_policy_path(policy)}']")).to be_empty
+      expect(html.at_css(".rc-policy-danger-zone button[disabled]").text).to eq("Delete Store Policy")
+      expect(html.css(".rc-policy-danger-zone form[action='#{store_policy_path(policy)}']")).to be_empty
     end
   end
 end

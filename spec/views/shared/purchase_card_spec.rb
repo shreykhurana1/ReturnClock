@@ -33,17 +33,29 @@ RSpec.describe "shared/_purchase_card", type: :view do
     end
   end
 
-  { -1 => "danger", 0 => "danger", 2 => "danger", 3 => "warning", 7 => "warning", 8 => "success" }.each do |days, color|
-    it "uses #{color} for an active purchase with #{days} days left" do
+  { -1 => "danger", 0 => "rc-days-danger", 2 => "rc-days-danger", 3 => "rc-days-warning", 7 => "rc-days-warning", 8 => nil }.each do |days, days_class|
+    it "keeps the Active chip consistent and uses #{days_class || 'default styling'} with #{days} days left" do
       sample.return_by = Date.current + days
       html = sample_html(previews_enabled: false)
-      expect(html.at_css(".rc-card-top .rc-chip-#{color}")).to be_present
+      if days.negative?
+        expect(html.at_css(".rc-card-top .rc-chip-danger")).to be_present
+        expect(html.at_css(".rc-chip").text).to eq("Expired")
+        expect(html.css(".rc-contract-details dd").map(&:text)).not_to include(days.to_s)
+      else
+        expect(html.at_css(".rc-card-top .rc-chip-success")).to be_present
+        expect(html.at_css(".rc-chip").text).to eq("Active")
+        days_cell = html.at_css(".rc-contract-details dd:last-child")
+        expect(days_cell.text).to eq(days.to_s)
+        if days_class
+          expect(days_cell["class"]).to include(days_class)
+        else
+          expect(days_cell["class"]).to be_blank
+        end
+      end
       expect(html.css(".rc-card-bottom > .rc-muted")).to be_empty
       expect(html.css(".rc-days")).to be_empty
-      expect(html.css(".rc-contract-details dd").map(&:text)).to include(days.to_s) if days >= 0
       expect(html.css(".rc-card-bottom > .rc-days")).to be_empty
-      expect(html.at_css(".rc-chip").text).to eq(days < 0 ? "Expired" : "Active")
-      expect(html.at_css(".purchase-card")["data-status"]).to eq(days < 0 ? "expired" : "active")
+      expect(html.at_css(".purchase-card")["data-status"]).to eq(days.negative? ? "expired" : "active")
     end
   end
 
@@ -60,12 +72,12 @@ RSpec.describe "shared/_purchase_card", type: :view do
     end
   end
 
-  it "keeps the safe demo preview buttons before the backend CRUD routes exist" do
+  it "keeps the safe demo preview Edit button before the backend CRUD routes exist" do
     html = sample_html(previews_enabled: true)
     expect(html.at_css(".purchase-card")["data-sample"]).to eq("true")
-    expect(html.css(".rc-card-actions button[data-action^='rc-purchase-preview#']").size).to eq(3)
+    expect(html.css(".rc-card-top button[data-action^='rc-purchase-preview#']").size).to eq(1)
     expect(html.css(".rc-card-actions form")).to be_empty
-    expect(html.css(".rc-card-actions > .rc-btn").map(&:text)).to eq([ "Edit", "Update status", "Delete" ])
+    expect(html.css(".rc-card-top > button.rc-card-edit").map { |button| button.text.strip }).to eq([ "Edit" ])
     expect(html.css(".rc-card-more")).to be_empty
   end
 
@@ -73,8 +85,8 @@ RSpec.describe "shared/_purchase_card", type: :view do
     html = sample_html(previews_enabled: false)
     expect(html.at_css(".purchase-card")["data-sample"]).to eq("true")
     expect(html.at_css(".rc-product-name").text).to eq("Demo Notebook")
-    link = html.at_css(".rc-card-actions a")
-    expect(link.text).to eq("Edit")
+    link = html.at_css(".rc-card-edit")
+    expect(link.text.strip).to eq("Edit")
     expect(link["href"]).to eq(new_purchase_path(sample: sample.item_name))
     expect(html.css(".rc-card-actions form, .rc-card-actions details, [data-action^='rc-purchase-preview#']")).to be_empty
   end

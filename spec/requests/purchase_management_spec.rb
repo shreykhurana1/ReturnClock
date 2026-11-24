@@ -142,11 +142,6 @@ RSpec.describe "Purchase management", type: :request do
         follow_redirect!
         expect(card_names).to include("Textbook")
         expect(response.body).to include("Purchase updated.")
-        status_select = response.parsed_body.at_css(".rc-status-mini-form select")
-        expect(status_select.css("option").map { |option| option["value"] })
-          .to eq(Purchase::STATUSES)
-        expect(status_select.css("option").map(&:text)).to eq(Purchase::STATUSES.map { |state| I18n.t("ui.#{state}") })
-        expect(status_select.at_css("option[selected]")["value"]).to eq(status)
         get(destination == dashboard_path ? history_path : dashboard_path)
         expect(card_names).not_to include("Textbook")
       end
@@ -178,14 +173,33 @@ RSpec.describe "Purchase management", type: :request do
       expect(purchase.reload.return_by).to eq(deadline)
     end
 
-    it "provides edit and confirmation links on both Dashboard and History cards" do
+    it "keeps only Edit on Dashboard and History cards and puts deletion inside Edit" do
       [ dashboard_path, history_path ].each do |path|
         purchase.update!(status: path == dashboard_path ? "active" : "keeping")
         get path
         card = response.parsed_body.at_css(".purchase-card")
         expect(card.at_css("a[href='#{edit_purchase_path(purchase)}']").text).to eq("Edit")
-        expect(card.at_css("a[href='#{confirm_delete_purchase_path(purchase)}']").text).to eq("Delete")
+        expect(card.at_css("a[href='#{confirm_delete_purchase_path(purchase)}']")).to be_nil
+
+        get edit_purchase_path(purchase)
+        delete_link = response.parsed_body.at_css("a[href='#{confirm_delete_purchase_path(purchase, return_to: edit_purchase_path(purchase))}']")
+        expect(delete_link.text.strip).to eq("Delete Purchase")
+        expect(delete_link["data-turbo-frame"]).to eq("purchase_editor")
       end
+    end
+
+    it "returns from delete confirmation to the edit form and then deletes" do
+      get edit_purchase_path(purchase)
+      delete_link = response.parsed_body.at_css("a[href='#{confirm_delete_purchase_path(purchase, return_to: edit_purchase_path(purchase))}']")
+      get delete_link["href"]
+
+      cancel = response.parsed_body.css("main a").find { |link| link.text == "Cancel" }
+      expect(cancel["href"]).to eq(edit_purchase_path(purchase))
+      expect(cancel["data-modal-dismiss"]).to be_nil
+
+      get cancel["href"]
+      expect(response.parsed_body.at_css("h1").text).to eq("Edit Purchase")
+      expect(response.parsed_body.at_css("input[name='purchase[item_name]']")["value"]).to eq("Textbook")
     end
 
     it "shows a separate confirmation with a cancel link without deleting on GET" do

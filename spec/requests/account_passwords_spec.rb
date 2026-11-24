@@ -48,6 +48,8 @@ RSpec.describe "Account password changes", type: :request do
     it "shows a read-only email and labeled password fields using the existing styling" do
       get settings_path
       html = response.parsed_body
+      expect(html.at_css("#rc-security-heading").text).to eq("Change Password")
+      expect(html.at_css("main").text).not_to include("Current account")
       expect(html.at_css("input[type='email'][readonly]")["value"]).to eq(user.email_address)
       form = html.at_css("main form[action='#{settings_password_path}']")
       expect(form["class"]).to include("rc-purchase-form")

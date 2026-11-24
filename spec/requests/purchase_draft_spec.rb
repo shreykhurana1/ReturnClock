@@ -55,6 +55,69 @@ RSpec.describe "Purchase details during store policy creation", type: :request d
     expect(response.parsed_body.at_css("input[name='purchase[item_name]']")["value"]).to be_nil
   end
 
+  it "returns to Edit Purchase and restores changed fields when creating a policy while editing" do
+    old_policy = user.store_policies.create!(store_name: "Old store", window_days: 30)
+    purchase = user.purchases.create!(item_name: "Original", price: "20.00", purchase_date: Date.new(2026, 11, 1),
+      status: "active", store_policy: old_policy)
+    changed = details.merge(item_name: "Edited while policy shopping")
+
+    patch from_purchase_store_policies_path, params: { purchase_id: purchase.id, purchase: changed }
+    expect(response).to have_http_status(:ok)
+    token = response.parsed_body.at_css("input[name='draft']")["value"]
+    back = response.parsed_body.css("a").find { |link| link.text == "Back to Edit Purchase" }
+    expect(back["href"]).to include(edit_purchase_path(purchase))
+    expect(back["href"]).to include("draft=#{token}")
+
+    post store_policies_path, params: { origin: "purchase", draft: token,
+      store_policy: { store_name: "Edited store", window_days: 45 } }
+    policy = user.store_policies.find_by!(store_name: "Edited store")
+    expect(response).to redirect_to(edit_purchase_path(purchase, store_policy_id: policy.id, draft: token))
+    follow_redirect!
+
+    expect(response.parsed_body.at_css("h1").text).to eq("Edit Purchase")
+    expect_details(changed)
+    expect(response.parsed_body.at_css("select[name='purchase[store_policy_id]'] option[selected]")["value"]).to eq(policy.id.to_s)
+    expect(purchase.reload.item_name).to eq("Original")
+    expect(purchase.store_policy).to eq(old_policy)
+  end
+
+  it "offers the handoff button and purchase context while editing" do
+    policy = user.store_policies.create!(store_name: "Existing", window_days: 30)
+    purchase = user.purchases.create!(item_name: "Original", price: "20.00", purchase_date: Date.current,
+      status: "active", store_policy: policy)
+
+    get edit_purchase_path(purchase)
+    html = response.parsed_body
+    expect(html.at_css("button[formaction='#{from_purchase_store_policies_path}']")).to be_present
+    expect(html.at_css("input[name='purchase_id']")["value"]).to eq(purchase.id.to_s)
+  end
+
+  it "marks purchase and policy forms for tab-scoped draft recovery" do
+    policy = user.store_policies.create!(store_name: "Existing", window_days: 30)
+    purchase = user.purchases.create!(item_name: "Original", price: "20.00", purchase_date: Date.current,
+      status: "active", store_policy: policy)
+
+    get edit_purchase_path(purchase)
+    form = response.parsed_body.at_css("form.rc-purchase-form")
+    expect(form["data-controller"]).to include("rc-form-draft")
+    expect(form["data-rc-form-draft-key-value"]).to include("purchase|edit-#{purchase.id}|#{user.id}")
+
+    get new_store_policy_path
+    policy_form = response.parsed_body.at_css("form.rc-purchase-form")
+    expect(policy_form["data-controller"]).to include("rc-form-draft")
+    expect(policy_form["data-rc-form-draft-key-value"]).to include("store-policy|new|management|#{user.id}")
+  end
+
+  it "rejects a handoff for another user's purchase" do
+    other = User.create!(email_address: "other-handoff@example.com", password: "Password1!")
+    policy = other.store_policies.create!(store_name: "Private", window_days: 30)
+    purchase = other.purchases.create!(item_name: "Private purchase", price: "20.00",
+      purchase_date: Date.current, status: "active", store_policy: policy)
+
+    patch from_purchase_store_policies_path, params: { purchase_id: purchase.id, purchase: details }
+    expect(response).to have_http_status(:not_found)
+  end
+
   it "does not restore an expired draft" do
     token = start_draft
     travel 31.minutes do
@@ -106,6 +169,24 @@ RSpec.describe "Purchase details during store policy creation", type: :request d
     post from_purchase_store_policies_path, params: { purchase: details }
     expect(response).to redirect_to(new_session_path)
     expect(Purchase.count).to eq(0)
+  end
+
+  it "accepts the edit handoff button's patch CSRF token and rejects an invalid one" do
+    original = ActionController::Base.allow_forgery_protection
+    ActionController::Base.allow_forgery_protection = true
+    policy = user.store_policies.create!(store_name: "Existing", window_days: 30)
+    purchase = user.purchases.create!(item_name: "Original", price: "20.00", purchase_date: Date.current,
+      status: "active", store_policy: policy)
+
+    get edit_purchase_path(purchase)
+    button = response.parsed_body.at_css("button[formaction='#{from_purchase_store_policies_path}']")
+    patch from_purchase_store_policies_path, params: { purchase_id: purchase.id, purchase: details, authenticity_token: button["value"] }
+    expect(response).to have_http_status(:ok)
+
+    patch from_purchase_store_policies_path, params: { purchase_id: purchase.id, purchase: details, authenticity_token: "invalid" }
+    expect(response).to have_http_status(:unprocessable_content)
+  ensure
+    ActionController::Base.allow_forgery_protection = original
   end
 
   it "accepts the handoff button's CSRF token and rejects an invalid one" do

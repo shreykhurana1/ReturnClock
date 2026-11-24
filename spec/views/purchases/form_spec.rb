@@ -36,7 +36,11 @@ RSpec.describe "purchases/_form", type: :view do
     purchase.errors.add(:item_name, "<script>bad()</script>")
     html = form_html
     expect(html.at_css("[role='alert']").text).to include("bad()")
-    expect(html.at_css("input[name='purchase[item_name]']")["value"]).to eq(purchase.item_name)
+    field = html.at_css("input[name='purchase[item_name]']")
+    expect(field["value"]).to eq(purchase.item_name)
+    expect(field["aria-invalid"]).to eq("true")
+    expect(field["aria-describedby"]).to eq("rc-item-name-errors")
+    expect(html.at_css("#rc-item-name-errors").text).to include("bad()")
     expect(html.css("script")).to be_empty
   end
 

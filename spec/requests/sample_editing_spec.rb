@@ -11,7 +11,7 @@ RSpec.describe "Editing sample purchase templates", type: :request do
         get path
         card = response.parsed_body.at_css(".purchase-card")
         name = card.at_css("h2").text
-        get card.at_css(".rc-card-actions a")["href"]
+        get card.at_css(".rc-card-edit")["href"]
         expect(response).to have_http_status(:ok)
         html = response.parsed_body
         expect(html.at_css("h1").text).to eq("Edit Sample Purchase")
