@@ -19,6 +19,7 @@
   </head>
   <body class="rc-body" data-controller="rc-purchase-preview">
     <%= render "shared/authenticated_header" if authenticated? %>
+    <div id="toast-container" class="rc-toast-container" aria-live="polite" aria-atomic="true"></div>
     <%= yield %>
     <%= render "shared/purchase_modal" if authenticated? && !content_for?(:purchase_editor_page) %>
     <% if authenticated? && purchase_preview_enabled? %>

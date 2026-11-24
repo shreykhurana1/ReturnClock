@@ -1,0 +1,14 @@
+<% inline = local_assigns.fetch(:inline, false) %>
+<nav class="rc-pagination <%= "rc-pagination-inline" if inline %>" aria-label="<%= local_assigns.fetch(:label, "Pagination") %>" data-controller="rc-scroll-preserve" data-action="click->rc-scroll-preserve#save">
+  <% if page > 1 %>
+    <%= link_to build_path.call(page - 1), class: "rc-btn rc-btn-outline rc-pagination-arrow", rel: "prev" do %><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg><span class="rc-visually-hidden">Previous page</span><% end %>
+  <% else %>
+    <span class="rc-btn rc-btn-outline rc-btn-disabled rc-pagination-arrow" aria-disabled="true"><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m15 18-6-6 6-6"/></svg><span class="rc-visually-hidden">Previous page</span></span>
+  <% end %>
+  <span class="rc-page-status">Page <%= page %> of <%= total_pages %></span>
+  <% if page < total_pages %>
+    <%= link_to build_path.call(page + 1), class: "rc-btn rc-btn-outline rc-pagination-arrow", rel: "next" do %><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6"/></svg><span class="rc-visually-hidden">Next page</span><% end %>
+  <% else %>
+    <span class="rc-btn rc-btn-outline rc-btn-disabled rc-pagination-arrow" aria-disabled="true"><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m9 18 6-6-6-6"/></svg><span class="rc-visually-hidden">Next page</span></span>
+  <% end %>
+</nav>

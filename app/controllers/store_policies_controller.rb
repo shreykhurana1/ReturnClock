@@ -16,9 +16,11 @@ class StorePoliciesController < ApplicationController
   end
 
   def from_purchase
-    @purchase_draft_token = save_purchase_draft
+    @purchase = Current.user.purchases.find(params[:purchase_id]) if params[:purchase_id].present?
+    @purchase_draft_token = save_purchase_draft(purchase: @purchase)
     @from_purchase = true
     @store_policy = Current.user.store_policies.new
+    set_purchase_return_context
     # Render directly so Turbo keeps this handoff inside the existing editor frame.
     render :new
   end
@@ -27,7 +29,11 @@ class StorePoliciesController < ApplicationController
     @store_policy = Current.user.store_policies.new(store_policy_params)
 
     if @store_policy.save
-      destination = @from_purchase ? new_purchase_path(store_policy_id: @store_policy.id, sample: params[:sample].presence, draft: @purchase_draft_token) : store_policies_path
+      destination = if @from_purchase
+        purchase_return_path(store_policy_id: @store_policy.id, sample: params[:sample].presence, draft: @purchase_draft_token)
+      else
+        store_policies_path
+      end
       redirect_to destination, notice: "Store return policy created."
     else
       render :new, status: :unprocessable_entity
@@ -63,7 +69,22 @@ class StorePoliciesController < ApplicationController
 
   def set_creation_context
     @from_purchase = params[:origin] == "purchase"
-    @purchase_draft_token = params[:draft].presence if @from_purchase
+    return unless @from_purchase
+
+    @purchase_draft_token = params[:draft].presence
+    draft = current_purchase_draft if @purchase_draft_token.present?
+    @purchase = Current.user.purchases.find_by(id: draft&.dig("purchase_id"))
+    set_purchase_return_context
+  end
+
+  def set_purchase_return_context
+    @purchase_return_label = @purchase ? "Back to Edit Purchase" : "Back to Add Purchase"
+    @purchase_return_path = purchase_return_path(draft: @purchase_draft_token, sample: params[:sample].presence)
+  end
+
+  def purchase_return_path(draft: nil, store_policy_id: nil, sample: nil)
+    options = { draft: draft, store_policy_id: store_policy_id, sample: sample }.compact
+    @purchase ? edit_purchase_path(@purchase, **options) : new_purchase_path(**options)
   end
 
   def set_store_policy

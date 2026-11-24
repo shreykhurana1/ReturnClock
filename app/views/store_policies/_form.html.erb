@@ -1,31 +1,72 @@
 <%= render "shared/form_errors", record: @store_policy %>
+<% draft_key = [ "store-policy", @store_policy.persisted? ? "edit-#{@store_policy.id}" : "new", @from_purchase ? "purchase" : "management", Current.user.id ].join("|") %>
 
-<%= form_with model: @store_policy, class: "rc-purchase-form", data: { modal_save: !@from_purchase, turbo_frame: ("purchase_editor" if @from_purchase) } do |form| %>
+<%= form_with model: @store_policy, class: "rc-purchase-form", data: { modal_save: !@from_purchase, turbo_frame: ("purchase_editor" if @from_purchase), controller: "rc-form-draft rc-error-focus", rc_form_draft_key_value: draft_key, action: "input->rc-form-draft#save change->rc-form-draft#save" } do |form| %>
   <%= hidden_field_tag :origin, "purchase" if @from_purchase %>
   <%= hidden_field_tag :draft, @purchase_draft_token if @purchase_draft_token.present? %>
   <%= hidden_field_tag :sample, params[:sample] if params[:sample].present? %>
+  <div class="rc-draft-notice" data-rc-form-draft-target="notice" role="status" hidden>
+    <span data-rc-form-draft-target="noticeText">Unsaved changes restored.</span>
+    <button type="button" class="rc-draft-discard" data-rc-form-draft-target="discard" data-action="rc-form-draft#discard">Discard draft</button>
+  </div>
+  <p class="rc-draft-status" data-rc-form-draft-target="status" aria-live="polite" hidden></p>
 
   <div class="rc-field-grid">
     <div class="rc-form-field">
       <%= form.label :store_name, "Store Name", class: "form-label" %>
-      <%= form.text_field :store_name, required: true, class: "form-control", placeholder: "e.g. Campus Store", autocomplete: "organization", maxlength: 255 %>
+      <%= form.text_field :store_name, required: true, class: "form-control", placeholder: "e.g. Campus Store", autocomplete: "organization", maxlength: 255,
+            aria: @store_policy.errors[:store_name].any? ? { invalid: true, describedby: "store-policy-name-errors" } : {} %>
       <p class="rc-form-helper">Use the store name shown on your receipt.</p>
+      <% if @store_policy.errors[:store_name].any? %>
+        <ul id="store-policy-name-errors" class="auth-field-errors">
+          <% @store_policy.errors.full_messages_for(:store_name).each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      <% end %>
     </div>
     <div class="rc-form-field">
       <%= form.label :window_days, "Return Window (days)", class: "form-label" %>
-      <%= form.number_field :window_days, min: 1, step: 1, required: true, class: "form-control", placeholder: "30" %>
+      <%= form.number_field :window_days, min: 1, step: 1, required: true, class: "form-control", placeholder: "30",
+            aria: @store_policy.errors[:window_days].any? ? { invalid: true, describedby: "store-policy-window-errors" } : {} %>
       <p class="rc-form-helper">Enter the number of days allowed for returns.</p>
+      <% if @store_policy.errors[:window_days].any? %>
+        <ul id="store-policy-window-errors" class="auth-field-errors">
+          <% @store_policy.errors.full_messages_for(:window_days).each do |message| %><li><%= message %></li><% end %>
+        </ul>
+      <% end %>
     </div>
   </div>
 
-  <p class="rc-policy-help">ReturnClock uses this return window to calculate a purchase's deadline. Always check the actual store policy for exceptions.</p>
-  <% if @store_policy.persisted? %>
-    <p class="rc-policy-help">Existing purchase deadlines stay unchanged. Changing a purchase's date or selected policy uses the current return window.</p>
-  <% end %>
+  <aside class="rc-policy-help rc-policy-callout" role="note" aria-labelledby="store-policy-guidance">
+    <svg class="rc-policy-help-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><path d="M12 8h.01"/></svg>
+    <div>
+      <strong class="rc-policy-help-title" id="store-policy-guidance">Good to know</strong>
+      <p>ReturnClock uses this return window to calculate a purchase's deadline. Always check the actual store policy for exceptions.</p>
+      <p>Existing purchase deadlines stay unchanged. Changing a purchase's date or selected policy uses the current return window.</p>
+    </div>
+  </aside>
   <div class="rc-form-footer">
     <% unless @from_purchase %>
       <%= link_to t("ui.cancel"), store_policies_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
     <% end %>
-    <%= form.submit(@store_policy.persisted? ? "Save Store Policy" : "Create Store Policy", class: "rc-btn rc-btn-primary") %>
+    <%= form.submit(@store_policy.persisted? ? "Save Store Policy" : "Create Store Policy", class: "rc-btn rc-btn-primary", data: { turbo_submits_with: @store_policy.persisted? ? "Saving…" : "Creating…" }) %>
+  </div>
+<% end %>
+
+<% if @store_policy.persisted? && !@from_purchase %>
+  <div class="rc-policy-danger-zone">
+    <div>
+      <strong>Delete store policy</strong>
+      <p>Permanently remove this return rule. Policies used by purchases cannot be deleted.</p>
+    </div>
+    <% if @store_policy.purchases.exists? %>
+      <span class="rc-policy-delete-hint" tabindex="0" aria-label="Delete unavailable" aria-describedby="<%= dom_id(@store_policy, :delete_lock) %>" data-controller="rc-tooltip" data-action="mouseenter->rc-tooltip#show mouseleave->rc-tooltip#hide focusin->rc-tooltip#show focusout->rc-tooltip#hide keydown.esc->rc-tooltip#hide">
+        <%= button_tag "Delete Store Policy", type: "button", class: "rc-btn rc-btn-outline rc-btn-danger", disabled: true %>
+        <span class="rc-policy-delete-tooltip" id="<%= dom_id(@store_policy, :delete_lock) %>" role="tooltip" data-rc-tooltip-target="tooltip" hidden>In use by purchases; cannot be deleted.</span>
+      </span>
+    <% else %>
+      <%= button_to "Delete Store Policy", store_policy_path(@store_policy), method: :delete,
+            class: "rc-btn rc-btn-outline rc-btn-danger",
+            form: { class: "rc-policy-delete-form", data: { turbo_frame: "_top", turbo_confirm: "Delete this store policy?" } } %>
+    <% end %>
   </div>
 <% end %>

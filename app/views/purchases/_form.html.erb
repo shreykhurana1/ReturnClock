@@ -1,14 +1,28 @@
 <%# 1. Prepare variables using only the existing Purchase and StorePolicy fields. %>
 <% policies = Current.user.store_policies.order(:store_name, :window_days, :id) %>
 <% preview = local_assigns.fetch(:preview, false) %>
+<% in_place = local_assigns.fetch(:in_place, false) %>
 <% id_prefix = preview ? "rc-preview" : "rc" %>
+<% draft_key = [ "purchase", purchase.persisted? ? "edit-#{purchase.id}" : "new", Current.user.id, @sample_purchase&.item_name ].compact.join("|") %>
+<% item_error_id = "#{id_prefix}-item-name-errors" %>
+<% price_error_id = "#{id_prefix}-price-errors" %>
+<% date_error_id = "#{id_prefix}-purchase-date-errors" %>
+<% policy_error_id = "#{id_prefix}-store-policy-errors" %>
+<% status_error_id = "#{id_prefix}-status-errors" %>
+<% form_data = { controller: "rc-form-draft rc-error-focus", rc_form_draft_key_value: draft_key, rc_form_draft_restored_value: @purchase_draft_restored, action: "input->rc-form-draft#save change->rc-form-draft#save" } %>
+<% form_data[:turbo_stream] = true if in_place %>
+<% form_data[:modal_in_place] = true if in_place %>
+<% form_options = preview ? { url: "#", method: :get, namespace: "rc-preview", data: { action: "submit->rc-purchase-preview#pending", turbo: false } } : { data: form_data } %>
 
-<%= form_with(model: purchase, class: "rc-purchase-form", local: true, **(preview ? { url: "#", method: :get, namespace: "rc-preview", data: { action: "submit->rc-purchase-preview#pending", turbo: false } } : {})) do |form| %>
-  <% if purchase.new_record? && !preview %>
+<%= form_with(model: purchase, class: "rc-purchase-form", local: true, **form_options) do |form| %>
+  <% unless preview %>
     <%# Keep Enter submitting the purchase rather than the policy handoff button. %>
     <button type="submit" hidden <%= "disabled" if policies.empty? %>></button>
   <% end %>
   <%= hidden_field_tag :sample, @sample_purchase.item_name if @sample_purchase %>
+  <%= hidden_field_tag :purchase_id, purchase.id if purchase.persisted? %>
+  <%= hidden_field_tag :in_place, "1" if in_place %>
+  <%= hidden_field_tag :return_to, @return_to if in_place && @return_to.present? %>
   <% if purchase.errors.any? %>
     <div class="rc-form-errors" role="alert" aria-live="polite">
       <strong>Please correct the following:</strong>
@@ -19,6 +33,11 @@
       </ul>
     </div>
   <% end %>
+  <div class="rc-draft-notice" data-rc-form-draft-target="notice" role="status" hidden>
+    <span data-rc-form-draft-target="noticeText">Unsaved changes restored.</span>
+    <button type="button" class="rc-draft-discard" data-rc-form-draft-target="discard" data-action="rc-form-draft#discard">Discard draft</button>
+  </div>
+  <p class="rc-draft-status" data-rc-form-draft-target="status" aria-live="polite" hidden></p>
 
   <section class="card rc-form-panel" aria-labelledby="<%= id_prefix %>-purchase-details">
     <div class="rc-form-panel-head">
@@ -28,16 +47,34 @@
     <div class="rc-field-grid">
       <div class="rc-form-field rc-field-wide">
         <%= form.label :item_name, "Item Name", class: "form-label" %>
-        <%= form.text_field :item_name, class: "form-control", placeholder: t("ui.example_item"), required: true, maxlength: 255, autocomplete: "off" %>
+        <%= form.text_field :item_name, class: "form-control", placeholder: t("ui.example_item"), required: true, maxlength: 255, autocomplete: "off",
+              aria: purchase.errors[:item_name].any? ? { invalid: true, describedby: item_error_id } : {} %>
+        <% if purchase.errors[:item_name].any? %>
+          <ul id="<%= item_error_id %>" class="auth-field-errors">
+            <% purchase.errors.full_messages_for(:item_name).each do |message| %><li><%= message %></li><% end %>
+          </ul>
+        <% end %>
       </div>
       <div class="rc-form-field">
         <%= form.label :price, "Price", class: "form-label" %>
-        <div class="rc-input-prefix"><span aria-hidden="true">$</span><%= form.number_field :price, class: "form-control", min: "0.01", step: "0.01", placeholder: "99.99", required: true %></div>
+        <div class="rc-input-prefix"><span aria-hidden="true">$</span><%= form.number_field :price, class: "form-control", min: "0.01", step: "0.01", placeholder: "99.99", required: true,
+              aria: purchase.errors[:price].any? ? { invalid: true, describedby: price_error_id } : {} %></div>
+        <% if purchase.errors[:price].any? %>
+          <ul id="<%= price_error_id %>" class="auth-field-errors">
+            <% purchase.errors.full_messages_for(:price).each do |message| %><li><%= message %></li><% end %>
+          </ul>
+        <% end %>
       </div>
       <div class="rc-form-field">
         <%= form.label :purchase_date, "Purchase Date", class: "form-label" %>
-        <%= form.date_field :purchase_date, class: "form-control", required: true %>
+        <%= form.date_field :purchase_date, class: "form-control", required: true,
+              aria: purchase.errors[:purchase_date].any? ? { invalid: true, describedby: date_error_id } : {} %>
         <p class="rc-form-helper">Choose the date shown on your purchase receipt.</p>
+        <% if purchase.errors[:purchase_date].any? %>
+          <ul id="<%= date_error_id %>" class="auth-field-errors">
+            <% purchase.errors.full_messages_for(:purchase_date).each do |message| %><li><%= message %></li><% end %>
+          </ul>
+        <% end %>
       </div>
     </div>
   </section>
@@ -53,17 +90,25 @@
       <div class="rc-form-field">
         <%= form.label :store_policy_id, "Store Policy", class: "form-label" %>
         <%= form.collection_select :store_policy_id, policies, :id, :label,
-              { prompt: "Select a store policy" }, { class: "form-select", required: true } %>
+              { prompt: "Select a store policy" },
+              { class: "form-select", required: true,
+                aria: purchase.errors[:store_policy_id].any? ? { invalid: true, describedby: policy_error_id } : {} } %>
         <p class="rc-form-helper">Select the store whose return window applies to this purchase.</p>
       </div>
     <% end %>
+    <% if purchase.errors[:store_policy_id].any? %>
+      <ul id="<%= policy_error_id %>" class="auth-field-errors">
+        <% purchase.errors.full_messages_for(:store_policy_id).each do |message| %><li><%= message %></li><% end %>
+      </ul>
+    <% end %>
     <p class="rc-form-helper">
-      <% if purchase.new_record? && !preview %>
-        <%= button_tag "Create Store Policy", type: "submit", class: "rc-card-link", formaction: from_purchase_store_policies_path,
-              formnovalidate: true, data: { turbo_frame: "purchase_editor" }, name: "authenticity_token",
-              value: form_authenticity_token(form_options: { action: from_purchase_store_policies_path, method: "post" }) %>
-      <% else %>
+      <% if preview %>
         <%= link_to "Create Store Policy", new_store_policy_path(origin: "purchase", sample: @sample_purchase&.item_name), class: "rc-card-link" %>
+      <% else %>
+        <% handoff_method = purchase.persisted? ? "patch" : "post" %>
+        <%= button_tag "Create Store Policy", type: "submit", class: "rc-card-link", formaction: from_purchase_store_policies_path,
+              formnovalidate: true, data: { turbo_frame: "purchase_editor", turbo_submits_with: "Opening…" }, name: "authenticity_token",
+              value: form_authenticity_token(form_options: { action: from_purchase_store_policies_path, method: handoff_method }) %>
       <% end %>
       if your store is missing.
     </p>
@@ -75,17 +120,31 @@
       <div class="rc-form-panel-head"><span class="rc-step-num">03</span><div><h2 id="<%= id_prefix %>-status-heading"><%= t("ui.current_status") %></h2><p><%= t("ui.status_hint") %></p></div></div>
       <div class="rc-form-field">
         <%= form.label :status, "Status", class: "form-label" %>
-        <%= form.select :status, purchase_status_options, { prompt: "Select a status" }, { class: "form-select", required: true, aria: { describedby: "purchase-status-hint" } } %>
+        <%= form.select :status, purchase_status_options, { prompt: "Select a status" },
+              { class: "form-select", required: true,
+                aria: { invalid: purchase.errors[:status].any?,
+                  describedby: [ "purchase-status-hint", (status_error_id if purchase.errors[:status].any?) ].compact.join(" ") } } %>
+        <% if purchase.errors[:status].any? %>
+          <ul id="<%= status_error_id %>" class="auth-field-errors">
+            <% purchase.errors.full_messages_for(:status).each do |message| %><li><%= message %></li><% end %>
+          </ul>
+        <% end %>
       </div>
       <p id="purchase-status-hint" class="rc-field-hint">Active means you haven't decided whether to keep or return this purchase.</p>
       <p class="rc-field-hint"><%= t("ui.current_deadline") %><%= purchase.return_by ? l(purchase.return_by, format: :long) : t("ui.calculated_later") %></p>
     </section>
   <div class="rc-form-footer">
+    <% if purchase.persisted? && !preview && respond_to?(:confirm_delete_purchase_path) %>
+      <%= link_to confirm_delete_purchase_path(purchase, return_to: edit_purchase_path(purchase)), class: "rc-btn rc-btn-outline rc-btn-danger rc-delete-inline", data: { turbo_frame: "purchase_editor" } do %>
+        <svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        <span>Delete Purchase</span>
+      <% end %>
+    <% end %>
     <% if preview %>
       <button type="button" class="rc-btn rc-btn-outline" data-action="rc-purchase-preview#close"><%= t("ui.cancel") %></button>
     <% else %>
       <%= link_to t("ui.cancel"), dashboard_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
     <% end %>
-    <%= form.submit(purchase.persisted? ? "Save Purchase" : "Add Purchase", class: "rc-btn rc-btn-primary", disabled: policies.empty?, data: (preview ? { rc_purchase_preview_target: "submitButton" } : {})) %>
+    <%= form.submit(purchase.persisted? ? "Save Purchase" : "Add Purchase", class: "rc-btn rc-btn-primary", disabled: policies.empty?, data: (preview ? { rc_purchase_preview_target: "submitButton" } : { turbo_submits_with: purchase.persisted? ? "Saving…" : "Adding…" })) %>
   </div>
 <% end %>

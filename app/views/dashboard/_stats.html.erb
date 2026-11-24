@@ -1,0 +1,22 @@
+<div class="rc-stat-grid" id="dashboard-stats" role="group" aria-label="Purchase overview">
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.tracked") %></span>
+    <div><strong><%= stats[:total] %></strong><small><%= t("ui.purchases_unit") %></small></div>
+    <span class="rc-stat-detail"><%= t("ui.tracked_detail") %></span>
+  </div>
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.due_week") %></span>
+    <div><strong><%= stats[:due_week] %></strong><small><%= t("ui.purchases_unit") %></small></div>
+    <span class="rc-stat-detail rc-text-orange"><%= t("ui.needs_attention") %></span>
+  </div>
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.money_at_risk") %></span>
+    <div><strong><%= number_to_currency(stats[:money_at_risk]) %></strong></div>
+    <span class="rc-stat-detail"><%= t("ui.money_at_risk_detail") %></span>
+  </div>
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.savings") %></span>
+    <div><strong><%= number_to_currency(stats[:savings]) %></strong></div>
+    <span class="rc-stat-detail"><%= t("ui.savings_detail") %></span>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="rc-stat-grid" id="history-stats" role="group" aria-label="History overview">
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.history_total") %></span>
+    <div><strong><%= stats[:total] %></strong><small><%= t("ui.purchases_unit") %></small></div>
+    <span class="rc-stat-detail"><%= t("ui.history_total_detail") %></span>
+  </div>
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.refunded") %></span>
+    <div><strong><%= stats[:refunded] %></strong><small><%= t("ui.purchases_unit") %></small></div>
+    <span class="rc-stat-detail"><%= t("ui.refunded_detail") %></span>
+  </div>
+  <div class="card rc-stat">
+    <span class="rc-stat-title"><%= t("ui.keeping") %></span>
+    <div><strong><%= stats[:keeping] %></strong><small><%= t("ui.purchases_unit") %></small></div>
+    <span class="rc-stat-detail"><%= t("ui.keeping_detail") %></span>
+  </div>
+  <div class="card rc-stat rc-stat-quiet">
+    <span class="rc-stat-title"><%= t("ui.expired") %></span>
+    <div><strong><%= stats[:expired] %></strong><small><%= t("ui.purchases_unit") %></small></div>
+    <span class="rc-stat-detail"><%= t("ui.expired_detail") %></span>
+  </div>
+</div>

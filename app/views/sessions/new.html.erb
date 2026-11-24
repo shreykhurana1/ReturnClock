@@ -18,7 +18,7 @@
             aria: { invalid: flash[:alert].present?, describedby: ("sign-in-error" if flash[:alert]) } %>
     </div>
 
-    <%= form.submit t("ui.sign_in"), class: "auth-button auth-submit" %>
+    <%= form.submit t("ui.sign_in"), class: "auth-button auth-submit", data: { turbo_submits_with: "Signing in…" } %>
   <% end %>
 
   <div class="auth-form-links">

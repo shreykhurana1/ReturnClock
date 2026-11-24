@@ -1,7 +1,17 @@
 <main class="rc-page rc-dashboard">
   <% sample_mode = !Current.user.purchases.exists? %>
-  <% purchases = sample_mode ? sample_purchases(history: false) : @purchases %>
-  <% active = purchases.select { |purchase| purchase.status == "active" } %>
+  <% sample_records = sample_mode ? sample_purchases(history: false) : [] %>
+  <% visible_sample_records = sample_records.select { |purchase| @filter_days.nil? || purchase.return_by.between?(Date.current, Date.current + @filter_days) } %>
+  <% purchases = sample_mode ? visible_sample_records : @purchases %>
+  <% stats = if sample_mode
+       { total: sample_records.size,
+         due_week: sample_records.count { |purchase| purchase.status == "active" && purchase.days_left&.between?(0, 7) },
+         money_at_risk: sample_records.select { |purchase| Purchase::OPEN_STATUSES.include?(purchase.status) }.sum(&:price),
+         savings: sample_purchases(history: true).select { |purchase| purchase.status == "refunded" }.sum(&:price) }
+     else
+       @stats
+     end %>
+  <% dashboard_filters = { "all" => "All", "week" => "7 days", "two_weeks" => "14 days", "month" => "30 days" } %>
 
   <div class="rc-page-heading">
     <div>
@@ -20,55 +30,34 @@
   <%= tag.div(flash[:alert], class: "auth-error", role: "alert") if flash[:alert] %>
   <%= render "shared/sample_purchases" if sample_mode %>
 
-  <section class="rc-section" aria-labelledby="upcoming-purchases">
-    <div class="rc-section-heading">
-      <div>
-        <h2 id="upcoming-purchases"><%= t("ui.upcoming") %></h2>
-        <p><%= t("ui.upcoming_detail") %></p>
-      </div>
-      <span class="rc-small-count"><%= t("ui.record_count", count: purchases.size) %></span>
+  <section class="rc-section" id="dashboard-purchases" aria-label="Actionable purchases">
+    <div class="rc-list-toolbar">
+      <nav class="rc-filter-row" aria-label="Filter by return deadline">
+        <% dashboard_filters.each do |filter, label| %>
+          <%= link_to label, dashboard_path(filter: filter),
+                class: "rc-filter #{'active' if @filter == filter}",
+                aria: { current: ("page" if @filter == filter) },
+                data: { dashboard_filter: filter } %>
+        <% end %>
+      </nav>
+      <% if !sample_mode && @total_pages > 1 %>
+        <%= render "shared/pagination", page: @page, total_pages: @total_pages, inline: true,
+              build_path: ->(page_number) { dashboard_path(filter: @filter, page: page_number) } %>
+      <% end %>
     </div>
+
     <% if purchases.any? %>
       <div class="purchase-grid rc-card-grid">
-        <%= render partial: "shared/purchase_card", collection: purchases.first(6), as: :purchase %>
+        <%= render partial: "shared/purchase_card", collection: purchases, as: :purchase %>
       </div>
-      <% if purchases.size > 6 %>
-        <details class="rc-expand">
-          <summary><%= t("ui.more_records", count: purchases.size - 6) %> <span aria-hidden="true">⌄</span></summary>
-          <div class="purchase-grid rc-card-grid rc-expanded-grid">
-            <%= render partial: "shared/purchase_card", collection: purchases.drop(6), as: :purchase %>
-          </div>
-        </details>
-      <% end %>
     <% else %>
       <div class="card rc-empty">
         <span class="rc-empty-icon" aria-hidden="true">▦</span>
-        <h3><%= t("ui.dashboard_empty") %></h3>
-        <p><%= t("ui.dashboard_empty_detail") %></p>
+        <h3><%= @filter == "all" ? t("ui.dashboard_empty") : "No purchases match this deadline filter." %></h3>
+        <p><%= @filter == "all" ? t("ui.dashboard_empty_detail") : "Try another deadline range or view all purchases." %></p>
       </div>
     <% end %>
   </section>
 
-  <div class="rc-stat-grid" role="group" aria-label="Purchase overview">
-    <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.tracked") %></span>
-      <div><strong><%= purchases.size %></strong><small><%= t("ui.purchases_unit") %></small></div>
-      <span class="rc-stat-detail"><%= t("ui.tracked_detail") %></span>
-    </div>
-    <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.due_week") %></span>
-      <div><strong><%= active.count { |purchase| purchase.days_left && purchase.days_left <= 7 && purchase.days_left >= 0 } %></strong><small><%= t("ui.purchases_unit") %></small></div>
-      <span class="rc-stat-detail rc-text-orange"><%= t("ui.needs_attention") %></span>
-    </div>
-    <div class="card rc-stat">
-      <span class="rc-stat-title"><%= t("ui.money_at_risk") %></span>
-      <div><strong><%= number_to_currency(purchases.select { |purchase| Purchase::OPEN_STATUSES.include?(purchase.status) }.sum(&:price)) %></strong></div>
-      <span class="rc-stat-detail"><%= t("ui.money_at_risk_detail") %></span>
-    </div>
-    <div class="card rc-stat rc-stat-quiet">
-      <span class="rc-stat-title"><%= t("ui.savings") %></span>
-      <div><strong>—</strong></div>
-      <span class="rc-stat-detail"><%= t("ui.savings_pending") %></span>
-    </div>
-  </div>
+  <%= render "dashboard/stats", stats: stats %>
 </main>

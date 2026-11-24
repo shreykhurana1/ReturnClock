@@ -2,7 +2,7 @@
   <h1><%= t("ui.create_account") %></h1>
 
   <%= form_with model: @user, url: sign_up_path,
-        data: { controller: "signup-validation", action: "submit->signup-validation#submit",
+        data: { controller: "signup-validation rc-error-focus", action: "submit->signup-validation#submit",
           signup_validation_short_message_value: t("ui.password_short"),
           signup_validation_long_message_value: t("ui.password_long"),
           signup_validation_strength_message_value: t("ui.password_strength"),
@@ -60,7 +60,7 @@
       <% end %>
     </div>
 
-    <%= form.submit t("ui.create_account"), class: "auth-button auth-submit", data: { action: "click->signup-validation#validate" } %>
+    <%= form.submit t("ui.create_account"), class: "auth-button auth-submit", data: { action: "click->signup-validation#validate", turbo_submits_with: "Creating…" } %>
   <% end %>
 
   <p class="auth-form-links"><%= t("ui.existing_account") %> <%= link_to t("ui.sign_in"), new_session_path %></p>

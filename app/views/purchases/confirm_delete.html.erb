@@ -12,7 +12,7 @@
     <p>This purchase and its tracking history will be removed from your account.</p>
     <div class="rc-delete-actions">
       <%= button_to "Delete Purchase", purchase_path(@purchase), method: :delete, class: "rc-btn rc-btn-danger", form: { data: { modal_save: true } } %>
-      <%= link_to "Cancel", @cancel_path, class: "rc-btn rc-btn-outline", data: { modal_dismiss: true } %>
+      <%= link_to "Cancel", @cancel_path, class: "rc-btn rc-btn-outline", data: (@return_to_editor ? {} : { modal_dismiss: true }) %>
     </div>
     <nav class="rc-delete-links rc-editor-navigation" aria-label="Other destinations">
       <%= link_to "Back to Dashboard", dashboard_path %>

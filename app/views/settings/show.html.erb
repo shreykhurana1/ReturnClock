@@ -23,7 +23,6 @@
             <h2 id="rc-account-heading"><%= t("ui.account_details") %></h2>
             <p><%= t("ui.account_details_intro") %></p>
           </div>
-          <span class="rc-tag"><%= t("ui.current_account") %></span>
         </div>
         <div class="rc-profile-line">
           <span class="rc-profile-avatar" aria-hidden="true"><%= Current.user.email_address.first.upcase %></span>
@@ -46,7 +45,7 @@
             <p><%= Rails.configuration.x.reminder_emails_enabled ? t("ui.deadline_alerts_intro_email") : t("ui.deadline_alerts_intro") %></p>
           </div>
         </div>
-        <%= form_with model: Current.user, url: settings_path, method: :patch, class: "rc-setting-field" do |form| %>
+        <%= form_with model: Current.user, url: settings_path, method: :patch, class: "rc-setting-field", data: { controller: "rc-error-focus" } do |form| %>
           <%= form.label :reminder_days_before, t("ui.alert_me") %>
           <%= form.select :reminder_days_before, User::REMINDER_OPTIONS, {}, class: "form-select",
                 aria: { invalid: Current.user.errors[:reminder_days_before].any?, describedby: ("alert-preference-errors" if Current.user.errors[:reminder_days_before].any?) } %>
@@ -55,7 +54,7 @@
               <li>Choose an alert preference from the available options.</li>
             </ul>
           <% end %>
-          <%= form.submit t("ui.save_settings"), class: "rc-btn rc-btn-primary rc-btn-small" %>
+          <%= form.submit t("ui.save_settings"), class: "rc-btn rc-btn-primary rc-btn-small", data: { turbo_submits_with: "Saving…" } %>
         <% end %>
       </section>
 

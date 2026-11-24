@@ -1,4 +1,5 @@
 <% days = purchase.days_left %>
+<% alert = local_assigns[:alert] %>
 <% expired = purchase.status == "active" && days && days < 0 %>
 <% show_days = !expired && !%w[keeping refunded].include?(purchase.status) %>
 <% urgency = purchase.urgency(Current.user&.reminder_days_before || Purchase::URGENT_DAYS) %>
@@ -8,33 +9,39 @@
 <% status_names = { "active" => t("ui.active"), "keeping" => t("ui.keeping"), "returning" => t("ui.returning"), "shipped_back" => t("ui.shipped_back"), "refund_pending" => t("ui.refund_pending"), "refunded" => t("ui.refunded") } %>
 <% status_label = expired ? t("ui.expired") : status_names.fetch(purchase.status, purchase.status.humanize) %>
 <% status_colors = { "active" => "success", "keeping" => "secondary", "returning" => "orange", "shipped_back" => "purple", "refund_pending" => "amber", "refunded" => "teal" } %>
-<% color = expired ? "danger" : { urgent: "danger", soon: "warning" }.fetch(urgency) { status_colors.fetch(purchase.status, "secondary") } %>
-<article class="purchase-card card rc-purchase-card" data-sample="<%= !purchase.persisted? %>" data-rc-purchase-filter-target="card" data-status="<%= expired ? 'expired' : purchase.status %>" data-purchase-preview="<%= { item_name: purchase.item_name, price: purchase.price.to_s('F'), purchase_date: purchase.purchase_date.iso8601, store_policy_id: purchase.store_policy_id, store_name: purchase.store_policy.store_name, window_days: purchase.store_policy.window_days, status: purchase.status }.to_json %>">
+<% color = expired ? "danger" : status_colors.fetch(purchase.status, "secondary") %>
+<% days_urgency_class = { urgent: "rc-days-danger", soon: "rc-days-warning" }.fetch(urgency) { "" } %>
+<article <% if purchase.persisted? %>id="<%= dom_id(purchase) %>" <% end %>class="purchase-card card rc-purchase-card" data-sample="<%= !purchase.persisted? %>" data-status="<%= expired ? 'expired' : purchase.status %>" data-purchase-preview="<%= { item_name: purchase.item_name, price: purchase.price.to_s('F'), purchase_date: purchase.purchase_date.iso8601, store_policy_id: purchase.store_policy_id, store_name: purchase.store_policy.store_name, window_days: purchase.store_policy.window_days, status: purchase.status }.to_json %>">
   <div class="rc-card-top">
     <span class="rc-chip rc-chip-<%= color %>"><%= status_label %></span>
+    <% if !purchase.persisted? && purchase_preview_enabled? %>
+      <button type="button" class="rc-card-link rc-card-edit" data-action="rc-purchase-preview#edit" aria-label="<%= t("ui.edit_item", item: purchase.item_name) %>"><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span><%= t("ui.edit") %></span></button>
+    <% elsif !purchase.persisted? %>
+      <%= link_to new_purchase_path(sample: purchase.item_name), class: "rc-card-link rc-card-edit", data: { turbo_frame: "purchase_editor" }, aria: { label: t("ui.edit_item", item: purchase.item_name) } do %><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span><%= t("ui.edit") %></span><% end %>
+    <% elsif respond_to?(:edit_purchase_path) %>
+      <%= link_to edit_purchase_path(purchase), class: "rc-card-link rc-card-edit", data: { turbo_frame: "purchase_editor" }, aria: { label: t("ui.edit_item", item: purchase.item_name) } do %><svg class="rc-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg><span><%= t("ui.edit") %></span><% end %>
+    <% end %>
   </div>
+  <% if alert %><p class="rc-card-alert" role="alert"><%= alert %></p><% end %>
   <h2 class="rc-product-name"><%= purchase.item_name %></h2>
   <p class="rc-price"><%= number_to_currency(purchase.price) %></p>
   <dl class="rc-contract-details">
     <dt><%= t("ui.store") %></dt><dd><%= purchase.store_policy.store_name %></dd>
     <dt><%= t("ui.purchased_on") %></dt><dd><time datetime="<%= purchase.purchase_date.iso8601 %>"><%= l(purchase.purchase_date, format: :long) %></time></dd>
     <dt><%= t("ui.return_deadline") %></dt><dd><time datetime="<%= purchase.return_by.iso8601 %>"><%= l(purchase.return_by, format: :long) %></time></dd>
-    <% if show_days %><dt><%= t("ui.days_remaining") %></dt><dd><%= days %></dd><% end %>
+    <% if show_days %><dt><%= t("ui.days_remaining") %></dt><dd class="<%= days_urgency_class %>"><%= days %></dd><% end %>
   </dl>
   <% if outcome %><p class="rc-outcome"><%= outcome.first %> <time datetime="<%= outcome.last.iso8601 %>"><%= l(outcome.last, format: :long) %></time></p><% end %>
-  <div class="rc-card-bottom">
-    <%# Samples open a prefilled new purchase; only persisted records have mutation actions. %>
-    <% if purchase.persisted? || respond_to?(:new_purchase_path) || purchase_preview_enabled? %>
+  <% can_quick_update = purchase.persisted? && respond_to?(:purchase_path) && !expired && quick_actions.key?(purchase.status) %>
+  <% if can_quick_update %>
+    <div class="rc-card-bottom">
       <div class="rc-card-actions">
-        <% if purchase.persisted? && respond_to?(:purchase_path) && !expired && quick_actions.key?(purchase.status) %>
-          <div class="rc-quick-actions">
-            <% quick_actions.fetch(purchase.status).each do |label, status| %>
-              <%= button_to label, purchase_path(purchase), method: :patch, params: { purchase: { status: status }, quick: 1 }, class: "rc-btn rc-btn-outline rc-btn-small", form_class: "rc-quick-action" %>
-            <% end %>
-          </div>
-        <% end %>
-        <%= render "shared/purchase_actions", purchase: purchase, status_names: status_names %>
+        <div class="rc-quick-actions">
+          <% quick_actions.fetch(purchase.status).each do |label, status| %>
+            <%= button_to label, purchase_path(purchase), method: :patch, params: { purchase: { status: status }, quick: 1 }, class: "rc-btn rc-btn-outline rc-btn-small", form_class: "rc-quick-action", form: { data: { turbo_stream: true } } %>
+          <% end %>
+        </div>
       </div>
-    <% end %>
-  </div>
+    </div>
+  <% end %>
 </article>

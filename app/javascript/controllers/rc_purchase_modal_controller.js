@@ -4,6 +4,22 @@ import { Turbo } from "@hotwired/turbo-rails"
 export default class extends Controller {
   static targets = ["frame", "title"]
 
+  connect() {
+    this.boundCloseAfterInPlaceSave = (event) => this.closeAfterInPlaceSave(event)
+    this.element.addEventListener("turbo:submit-end", this.boundCloseAfterInPlaceSave)
+  }
+
+  disconnect() {
+    this.element.removeEventListener("turbo:submit-end", this.boundCloseAfterInPlaceSave)
+  }
+
+  closeAfterInPlaceSave(event) {
+    if (!event.detail.success) return
+    if (!event.target.matches("form[data-modal-in-place='true']")) return
+
+    this.close()
+  }
+
   open() {
     if (!this.frameTarget.querySelector("form")) return
     this.titleTarget.textContent = this.frameTarget.querySelector("h1").textContent
