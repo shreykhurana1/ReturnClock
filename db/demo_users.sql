@@ -1,4 +1,4 @@
--- Demo data for two users. NOT RUN -- review first.
+-- Demo data for two users. Load with: psql -d <database> -f db/demo_users.sql
 --
 --   power.user@example.com  every status/urgency tier, fully filled in, several store policies
 --   lazy.user@example.com   sparse, stale, rarely updated
@@ -9,8 +9,7 @@
 -- (urgent / soon / later / expired) stay correct whenever this is run.
 -- Re-running fails on the unique email index, which is the intended guard against duplicates.
 --
--- Assumes the planned code change: blank price is stored as 0, so purchases.price allows 0 (the
--- current CHECK price > 0 and the model's greater_than: 0 would reject every row here).
+-- Needs the 20261124120000 migration (users.time_zone, and purchases.price allowing 0).
 -- Every purchase has price 0 and belongs to one of its user's store policies.
 
 BEGIN;
@@ -154,7 +153,7 @@ COMMIT;
 -- ---------------------------------------------------------------------------
 -- 1. Every price is 0, so "Money at risk" is $0.00 for both users and every card shows $0.00. That hides the
 --    money-at-risk stat and any price-based display. Want a few non-zero prices on power.user after all?
--- 2. This only loads after a migration changes CHECK (price > 0) to price >= 0 (and the model/form change).
+-- 2. This only loads once the schema is at 20261124120000 (CHECK price >= 0, users.time_zone).
 -- 3. Store name and return window come from each purchase's store policy; purchases have no store columns of their own.
 -- 4. purchase_date and store_policy_id are still required by the card partial, so they're filled for both users.
 -- 5. cucumber-mvp.md lists statuses awaiting_refund and expired; the code has shipped_back and
@@ -164,4 +163,4 @@ COMMIT;
 -- 7. power.user has unsent reminders (Noise-cancelling headphones, Standing desk mat). If ReminderJob runs
 --    with mail delivery configured, it will email example.com addresses.
 -- 8. A "returning" purchase past its return_by isn't covered: the model only expires "active" ones.
--- 9. Password digest is a real bcrypt hash of Demo-Pass1! (computed locally, nothing was inserted anywhere).
+-- 9. Password digest is a real bcrypt hash of Demo-Pass1!.
