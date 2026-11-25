@@ -774,3 +774,11 @@ button.rc-card-link {border:0;background:none;padding:0;font-family:inherit;curs
 .rc-body .rc-card-actions .rc-status-trigger{white-space:normal}
 
 .rc-form-errors:focus,.auth-error:focus {outline:3px solid var(--rc-focus, #b84b0d);outline-offset:3px}
+
+.rc-live-error{color:#b42318;font-size:14px;line-height:1.5;margin:6px 0 0}
+.rc-live-error:empty{height:0;margin:0;overflow:hidden}
+.rc-save-summary-title{font-size:16px;margin:0 0 10px}
+.rc-save-summary-list{display:grid;grid-template-columns:130px minmax(0,1fr);gap:5px 10px;margin:0}
+.rc-save-summary-list dt,.rc-save-summary-list dd{margin:0;font-size:14px;line-height:1.5}
+.rc-save-summary-list dt{color:#748298;font-weight:500}
+.rc-save-summary-list dd{color:#17284b;font-weight:550;overflow-wrap:anywhere}

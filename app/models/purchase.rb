@@ -20,11 +20,12 @@ class Purchase < ApplicationRecord
   belongs_to :store_policy
 
   before_save :record_status_dates
+  before_validation :default_price
   before_validation :calculate_return_by,
                     if: :deadline_needs_calculation?
 
   validates :item_name, presence: true
-  validates :price, numericality: { greater_than: 0 }
+  validates :price, numericality: { greater_than_or_equal_to: 0 }
   validates :purchase_date, presence: true
   validates :return_by, presence: true
   validates :status, inclusion: { in: STATUSES }
@@ -66,6 +67,11 @@ class Purchase < ApplicationRecord
     when "refunded"
       self.refunded_at = Date.current
     end
+  end
+
+  # A blank price means "not entered" and is stored as 0.
+  def default_price
+    self.price = 0 if price.nil?
   end
 
   def deadline_needs_calculation?

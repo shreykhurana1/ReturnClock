@@ -156,9 +156,9 @@ Feature: Manage purchases and saved store policies
     And I press "Save Purchase"
     Then I should see the "Edit Purchase" heading
     And I should see "Item name can't be blank" in the main content
-    And I should see "Price must be greater than 0" in the main content
+    And I should see "Price must be greater than or equal to 0" in the main content
     And the "Item Name" field should explain "Item name can't be blank"
-    And the "Price" field should explain "Price must be greater than 0"
+    And the "Price" field should explain "Price must be greater than or equal to 0"
     And the purchase price should be "-5"
     And the store policy "Campus Store — 30 days" should be selected
     When I follow "Back to Dashboard"

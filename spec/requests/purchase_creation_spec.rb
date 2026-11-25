@@ -121,6 +121,20 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect(response.body).not_to include(other_policy.store_name)
     end
 
+    it "prefills the new form with today's date and leaves the price blank with a 0.00 placeholder" do
+      get new_purchase_path
+      html = response.parsed_body
+      expect(html.at_css("input[name='purchase[purchase_date]']")["value"]).to eq(Date.current.iso8601)
+      price = html.at_css("input[name='purchase[price]']")
+      expect(price["value"]).to be_nil
+      expect(price["placeholder"]).to eq("0.00")
+    end
+
+    it "stores a blank price as 0" do
+      expect { post purchases_path, params: { purchase: attributes.merge(price: "") } }.to change(user.purchases, :count).by(1)
+      expect(user.purchases.sole.price).to eq(0)
+    end
+
     it "ignores submitted owner and deadline while accepting an allowed status" do
       other_user
       expect do
@@ -134,7 +148,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       expect(other_user.purchases).to be_empty
     end
 
-    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { store_policy_id: "" }, { status: "expired" } ].each do |invalid_attributes|
+    [ { item_name: "" }, { price: -1 }, { purchase_date: "" }, { store_policy_id: "" }, { status: "expired" } ].each do |invalid_attributes|
       it "rejects invalid purchase fields #{invalid_attributes.inspect} without saving" do
         params = attributes.merge(invalid_attributes)
         expect { post purchases_path, params: { purchase: params } }.not_to change(Purchase, :count)
@@ -148,7 +162,7 @@ RSpec.describe "Purchase and store policy creation", type: :request do
       other_policy
       post purchases_path, params: { purchase: attributes.merge(price: "-1") }
       expect(response).to have_http_status(:unprocessable_content)
-      expect(response.body).to include("Price must be greater than 0")
+      expect(response.body).to include("Price must be greater than or equal to 0")
       expect(response.body).not_to include(other_policy.store_name)
       expect(response.parsed_body.at_css("input[name='purchase[item_name]']")["value"]).to eq("Textbook")
       expect(response.parsed_body.at_css("input[name='purchase[price]']")["value"]).to eq("-1")

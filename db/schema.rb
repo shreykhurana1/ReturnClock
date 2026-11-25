@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_24_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,7 +29,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
     t.datetime "reminded_at"
     t.index ["store_policy_id"], name: "index_purchases_on_store_policy_id"
     t.index ["user_id"], name: "index_purchases_on_user_id"
-    t.check_constraint "price > 0::numeric", name: "purchases_price_positive"
+    t.check_constraint "price >= 0::numeric", name: "purchases_price_non_negative"
   end
 
   create_table "sessions", force: :cascade do |t|
@@ -228,6 +228,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_17_140000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.integer "reminder_days_before", default: 2, null: false
+    t.string "time_zone", default: "UTC", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 

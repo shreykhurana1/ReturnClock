@@ -49,6 +49,32 @@ class FrontendRegressionsTest < ApplicationSystemTestCase
     assert_no_selector ".purchase-card h2", text: "Updated Textbook"
   end
 
+  test "purchase form shows what it would save and what it would reject without saving" do
+    policy = @user.store_policies.create!(store_name: "Campus Store", window_days: 30)
+    click_link "Add Purchase", exact: true
+    within("dialog[open]") do
+      assert_selector ".rc-save-summary dd", text: "$0.00"
+      assert_no_selector ".rc-live-error", text: /\S/
+
+      fill_in "Item Name", with: "   "
+      fill_in "Price", with: "-5"
+      assert_selector ".rc-live-error", text: "Item name can't be blank"
+      assert_selector ".rc-live-error", text: "Price must be greater than or equal to 0"
+      assert_selector ".rc-save-summary dd", text: "Fix the price to save"
+
+      fill_in "Price", with: ""
+      assert_no_selector ".rc-live-error", text: "Price"
+      assert_selector ".rc-save-summary dd", text: "$0.00"
+
+      fill_in "Purchase Date", with: Date.current - 5
+      select policy.label, from: "Store Policy"
+      assert_selector ".rc-save-summary dd", text: policy.label
+      assert_selector ".rc-save-summary dd", text: (Date.current + 25).strftime("%B %-d, %Y")
+      assert_selector ".rc-save-summary dd", text: "25", exact_text: true
+    end
+    assert_equal 0, @user.purchases.count
+  end
+
   test "first policy stays in the purchase modal and management saves refresh the policy list" do
     click_link "Add Purchase", exact: true
     within("dialog[open]") do
