@@ -49,7 +49,7 @@ RSpec.describe "Purchase editor dialog", type: :request do
       params: { purchase: { item_name: "Still editing", price: -1 } }
     expect(response).to have_http_status(:unprocessable_content)
     frame = response.parsed_body.at_css("turbo-frame#purchase_editor")
-    expect(frame.at_css("[role='alert']").text).to include("Price must be greater than 0")
+    expect(frame.at_css("[role='alert']").text).to include("Price must be greater than or equal to 0")
     expect(frame.at_css("input[name='purchase[item_name]']")["value"]).to eq("Still editing")
     expect(purchase.reload.attributes).to eq(original)
   end

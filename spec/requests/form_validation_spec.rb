@@ -21,7 +21,7 @@ RSpec.describe "Accessible purchase and policy validation", type: :request do
     end.not_to change(Purchase, :count)
     expect(response).to have_http_status(:unprocessable_content)
     html = response.parsed_body
-    { "item_name" => "Item name can't be blank", "price" => "Price must be greater than 0",
+    { "item_name" => "Item name can't be blank", "price" => "Price must be greater than or equal to 0",
       "purchase_date" => "Purchase date can't be blank", "store_policy_id" => "Store policy must exist",
       "status" => "Status is not included" }.each do |field, error|
       expect_field_error(html, "purchase[#{field}]", error)

@@ -55,6 +55,9 @@
               <li>Choose an alert preference from the available options.</li>
             </ul>
           <% end %>
+          <%= form.label :time_zone, t("ui.time_zone") %>
+          <%= form.time_zone_select :time_zone, nil, {}, class: "form-select" %>
+          <small><%= t("ui.time_zone_intro") %></small>
           <%= form.submit t("ui.save_settings"), class: "rc-btn rc-btn-primary rc-btn-small" %>
         <% end %>
       </section>

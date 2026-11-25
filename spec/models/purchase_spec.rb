@@ -24,11 +24,19 @@ RSpec.describe Purchase, type: :model do
     end
   end
 
-  [ nil, "", 0, -1, "invalid" ].each do |price|
+  [ -1, "invalid" ].each do |price|
     it "rejects a price of #{price.inspect}" do
       purchase.price = price
       expect(purchase).not_to be_valid
       expect(purchase.errors[:price]).to be_present
+    end
+  end
+
+  [ nil, "", 0 ].each do |price|
+    it "stores a price of #{price.inspect} as 0" do
+      purchase.price = price
+      purchase.save!
+      expect(purchase.reload.price).to eq(0)
     end
   end
 

@@ -46,9 +46,7 @@ Feature: Record a first purchase
 
     Examples:
       | price | purchase date | store policy          | error                              |
-      |       | 2026-11-09    | Campus Store          | Price is not a number              |
-      | 0     | 2026-11-09    | Campus Store          | Price must be greater than 0       |
-      | -5    | 2026-11-09    | Campus Store          | Price must be greater than 0       |
+      | -5    | 2026-11-09    | Campus Store          | Price must be greater than or equal to 0       |
       | 49.99 |               | Campus Store          | Purchase date can't be blank       |
       | 49.99 | 2026-11-09    | Select a store policy | Store policy must exist            |
 

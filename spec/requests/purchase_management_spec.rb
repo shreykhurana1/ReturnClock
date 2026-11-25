@@ -110,7 +110,7 @@ RSpec.describe "Purchase management", type: :request do
       expect(purchase.reload.attributes).to eq(original)
     end
 
-    [ { item_name: "" }, { price: 0 }, { purchase_date: "" }, { store_policy_id: -1 }, { status: "expired" } ].each do |invalid|
+    [ { item_name: "" }, { price: -1 }, { purchase_date: "" }, { store_policy_id: -1 }, { status: "expired" } ].each do |invalid|
       it "renders edit errors without changing the purchase for #{invalid.inspect}" do
         original = purchase.attributes
         patch purchase_path(purchase), params: { purchase: invalid }
